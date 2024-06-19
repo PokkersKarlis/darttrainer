@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'game' => 'Self-motivation darts game training assistant',
+    'game' => 'Training assistant for game of darts and development of self motivation',
     'game_description' => 'Don\'t you find it boring to choose the sectors yourself to throw a dart at? For me personally
         - a lot! Therefore, this is a game WHICH WILL DETERMINE which square you have to hit. All you have to do is choose
          the type of squares you want to throw - regular, double, triple or any. After a certain number of games, accuracy
@@ -17,4 +17,5 @@ return [
     'game_step_3' => '3. Analyze the results',
     'game_step_3_description' => 'The game collects information about each square played in the game and has in-depth
         progress / regression statistics for each of the sectors played in the game.',
+
 ];

@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'game' => 'Pašmotivācijas šautriņu spēles apmācības palīgs',
+    'game' => 'Pašmotivācijas un šautriņu spēles apmācības palīgs',
     'game_description' => 'Vai jums neliekās garlaicīgi pašam izvēlēties sektorus, uz kuriem mest šautriņu? Man personīgi
         - ļoti! Tādēļ šī ir spēle, KURA NOTEIKS kurā lauciņā Tev jātrāpa. Tev atliek izvēlēties kāda tipa lauciņus vēlēsies
         mest - parastos, dubultos, drīskāršos vai jebkuru. Sākot ar noteiktu spēļu skaitu, būs pieejama arī statistika par

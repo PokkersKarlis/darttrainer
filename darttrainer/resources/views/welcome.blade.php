@@ -5,22 +5,26 @@
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-77VRB146DR"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+
         gtag('js', new Date());
 
         gtag('config', 'G-77VRB146DR');
     </script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta property="og:title" content="Dart trainer" />
-    <meta property="og:url" content="https://traindart.com/" />
-    <meta property="og:image" content="{{ asset('images/open-graph-logo.jpg') }}" />
-    <meta property="og:type" content="webapp" />
-    <meta property="og:description" content="Dart trainer is a planned web application for training darts players" />
-    <meta property="og:locale" content="en_GB" />
+    <meta property="og:title" content="Darts game trainer - traindart.com"/>
+    <meta property="og:url" content="https://traindart.com/"/>
+    <meta property="og:image" content="{{ asset('images/open-graph-logo.jpg') }}"/>
+    <meta property="og:type" content="webapp"/>
+    <meta property="og:description" content="Darts game trainer is a web application for training players specific tasks"/>
+    <meta property="og:locale" content="en_GB"/>
     <title>Dart trainer</title>
     <meta property="title" content="Dart trainer">
-    <meta property="description" content="Dart trainer is a planned web application for training darts players">
+    <meta property="description" content="Darts game trainer is a web application for training players specific tasks">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -53,13 +57,17 @@
             .button-container {
                 margin-top: 100px !important;
             }
+
+            .button {
+                min-width: 40% !important;
+            }
         }
 
         .button {
             background-color: #ff532b;
             border: none;
             color: white;
-            padding: 15px 32px;
+            padding: 15px 16px;
             text-align: center;
             text-decoration: none;
             display: inline-block;
@@ -68,6 +76,7 @@
             cursor: pointer;
             border-radius: 8px;
             transition: background-color 0.3s ease;
+            width: 100%;
         }
 
         .singles {
@@ -102,6 +111,10 @@
             background-color: #802f19;
         }
 
+        .highlighted {
+            fill: #469def;
+        }
+
     </style>
     <!-- Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -129,7 +142,24 @@
                 @endif
             </header>
             <main class="mt-12">
-                <H1>UNDER DEVELOPMENT...</H1>
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <strong class="font-bold">UNDER DEVELOPMENT...</strong>
+                    <span class="absolute top-0 bottom-0 right-0 px-4 py-3"></span>
+                </div>
+                <div class="bg-indigo-900 text-center py-4 lg:px-4">
+                    <div class="p-2 bg-indigo-800 items-center text-indigo-100 leading-none lg:rounded-full flex lg:inline-flex" role="alert">
+                        <span class="flex rounded-full bg-indigo-500 uppercase px-2 py-1 text-xs font-bold mr-3">New</span>
+                        <span class="font-semibold mr-2 text-left flex-auto">If You find this usefull help me develop this training room</span>
+                        <svg class="fill-current opacity-75 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M12.95 10.707l.707-.707L8 4.343 6.586 5.757 10.828 10l-4.242 4.243L8 15.657l4.95-4.95z"/></svg>
+                        <form action="https://www.paypal.com/donate" method="post" target="_top">
+                            <input type="hidden" name="hosted_button_id" value="A3THH5ND6F4NJ"/>
+                            <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0"
+                                   name="submit" title="PayPal - The safer, easier way to pay online!"
+                                   alt="Donate with PayPal button"/>
+                            <img alt="" border="0" src="https://www.paypal.com/en_LV/i/scr/pixel.gif" width="1" height="1"/>
+                        </form>
+                    </div>
+                </div>
             </main>
             <main class="mt-6">
                 <div class="grid gap-6 lg:grid-cols-2 lg:gap-8">
@@ -368,7 +398,7 @@
                     </div>
 
                     <div
-                        class="flex items-start gap-4 rounded-lg bg-white p-6 shadow-[0px_14px_34px_0px_rgba(0,0,0,0.08)] ring-1 ring-white/[0.05] lg:pb-10 dark:bg-zinc-900 dark:ring-zinc-800">
+                        class="flex items-start gap-4 rounded-lg bg-white p-6 shadow-[0px_14px_34px_0px_rgba(0,0,0,0.08)] ring-1 ring-white/[0.05] transition duration-300 hover:text-black/70 hover:ring-black/20 focus:outline-none focus-visible:ring-[#FF2D20] lg:pb-10 dark:bg-zinc-900 dark:ring-zinc-800 dark:hover:text-white/70 dark:hover:ring-zinc-700 dark:focus-visible:ring-[#FF2D20]">
                         <div
                             class="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#FF2D20]/10 sm:size-16">
                             <svg class="size-5 sm:size-6" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -391,7 +421,8 @@
                 </div>
             </main>
 
-            <footer style="background-color: #333; color: white; padding: 20px 0; text-align: center;">
+            <footer style="background-color: #333; color: white; margin-top: 35px; text-align: center;"
+                    class="rounded-lg p-6">
                 <div>
                     <p>Contact us: <a href="mailto:karlis@pokkers.lv" style="color: #ff532b;">karlis@pokkers.lv</a></p>
                     <p>
@@ -411,5 +442,48 @@
         </div>
     </div>
 </div>
+<script>
+    function changeColor() {
+        let highlightedElements = document.getElementsByClassName('highlighted');
+        while (highlightedElements.length > 0) {
+            highlightedElements[0].classList.remove('highlighted');
+        }
+
+        const myArray = [
+            "s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10",
+            "s11", "s12", "s13", "s14", "s15", "s16", "s17", "s18", "s19", "s20",
+            "d1", "d2", "d3", "d4", "d5", "d6", "d7", "d8", "d9", "d10",
+            "d11", "d12", "d13", "d14", "d15", "d16", "d17", "d18", "d19", "d20",
+            "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10",
+            "t11", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20",
+            "bull", "Outer"
+        ];
+
+        function getRandomElementFromArray(array) {
+            const randomIndex = Math.floor(Math.random() * array.length);
+            return array[randomIndex];
+        }
+
+        const randomElement1 = getRandomElementFromArray(myArray);
+        const randomElement2 = getRandomElementFromArray(myArray);
+        const randomElement3 = getRandomElementFromArray(myArray);
+
+        let areaElement1 = document.getElementById(randomElement1);
+        let areaElement2 = document.getElementById(randomElement2);
+        let areaElement3 = document.getElementById(randomElement3);
+
+        if (areaElement1) {
+            areaElement1.classList.add('highlighted');
+        }
+        if (areaElement2) {
+            areaElement2.classList.add('highlighted');
+        }
+        if (areaElement3) {
+            areaElement3.classList.add('highlighted');
+        }
+    }
+
+    setInterval(changeColor, 2500);
+</script>
 </body>
 </html>
