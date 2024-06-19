@@ -11,12 +11,12 @@ class RangeSelector extends Component
 
     public function updatedFrom($value)
     {
-        $this->to = $value + 20;
+        $this->to = $value + 1;
     }
 
     public function updatedTo($value)
     {
-        $this->from = $value - 20;
+        $this->from = $value - 1;
     }
 
     public function render()

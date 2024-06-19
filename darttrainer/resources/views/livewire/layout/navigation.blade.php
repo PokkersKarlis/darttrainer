@@ -23,7 +23,7 @@ new class extends Component
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}" wire:navigate>
+                    <a href="{{ route('index') }}" wire:navigate>
                         <img src="{{asset('/images/logo.png')}}" alt="logo" style="width: 120px; height: auto;">
                     </a>
                 </div>
