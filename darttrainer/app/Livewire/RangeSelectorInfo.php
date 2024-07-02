@@ -2,35 +2,44 @@
 
 namespace App\Livewire;
 
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
+use Illuminate\Foundation\Application;
 use Livewire\Component;
 
 class RangeSelectorInfo extends Component
 {
-    public $from = 2;
-    public $to = 22;
+    public int $from = 2;
+    public int $to = 22;
 
-    protected $listeners = ['updatedFromTo' => '$refresh'];
-
-    public function updatedFrom($value)
+    public function controlInputs(): void
     {
-        // Adjust 'to' value based on 'from' value
-        $this->to = $value + 20;
+        if ($this->from - 20 < 2) {
+            $this->from = 2;
+        }
 
-        // Emit event to update the UI
-        $this->emit('updatedFromTo');
+        if ($this->from >= $this->to || $this->to - 20 < 3) {
+            if ($this->from - 20 < 2) {
+                $this->to = 3;
+            } else {
+                $this->to = $this->from + 20;
+            }
+        }
     }
 
-    public function updatedTo($value)
+    public function xx ()
     {
-        // Adjust 'from' value based on 'to' value
-        $this->from = $value - 20;
-
-        // Emit event to update the UI
-        $this->emit('updatedFromTo');
+        $this->validate([
+           'from' => 'required|integer|min:2',
+           'to' => 'required|integer|min:3',
+        ]);
     }
 
-    public function render()
+
+
+    public function render(): Factory|Application|View|\Illuminate\Contracts\Foundation\Application
     {
+        $this->controlInputs();
         return view('livewire.range-selector-info');
     }
 }

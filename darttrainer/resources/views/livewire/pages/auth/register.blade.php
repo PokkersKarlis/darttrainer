@@ -14,6 +14,7 @@ new #[Layout('layouts.guest')] class extends Component
     public string $email = '';
     public string $password = '';
     public string $password_confirmation = '';
+    public string $secret_santa_code = '';
 
     /**
      * Handle an incoming registration request.
@@ -24,6 +25,7 @@ new #[Layout('layouts.guest')] class extends Component
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
+            'secret_santa_code' => ['string', 'max:10'],
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
@@ -73,6 +75,12 @@ new #[Layout('layouts.guest')] class extends Component
                             name="password_confirmation" required autocomplete="new-password" />
 
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+        </div>
+
+        <div class="mt-4">
+            <x-input-label for="secret_santa_code" :value="__('Secret Santa Code (Optional)')" />
+            <x-text-input wire:model="secret_santa_code" id="secret_santa_code" class="block mt-1 w-full" type="text" name="secret_santa_code" autofocus autocomplete="secret_santa_code" />
+            <x-input-error :messages="$errors->get('secret_santa_code')" class="mt-2" />
         </div>
 
         <div class="flex items-center justify-end mt-4">

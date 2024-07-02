@@ -36,16 +36,15 @@
             position: relative;
             width: 100%; /* Ensures the parent div takes full width */
             height: auto; /* Ensures height is relative to width */
+            margin-left: 50%;
+            transform: translate(-50%);
+            padding: 32px 0 0 0;
         }
 
         #svg {
             max-width: 100%; /* Ensures the SVG scales with its parent */
             max-height: 100%; /* Ensures the SVG scales with its parent */
             width: 100%;
-        }
-
-        .highlighted {
-            fill: #469def;
         }
 
         @media (min-width: 1400px) {
