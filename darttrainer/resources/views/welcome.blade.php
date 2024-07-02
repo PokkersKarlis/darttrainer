@@ -137,6 +137,7 @@
     <meta name="theme-color" content="#ffffff">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="{{ asset('/css/cookiealert.css') }}">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="antialiased font-sans">
 <div class="bg-gray-50 text-black/50 dark:bg-black dark:text-white/50">
@@ -169,18 +170,36 @@
                             <path
                                 d="M12.95 10.707l.707-.707L8 4.343 6.586 5.757 10.828 10l-4.242 4.243L8 15.657l4.95-4.95z"/>
                         </svg>
-                        <form action="https://www.paypal.com/donate" method="post" target="_top">
-                            <input type="hidden" name="hosted_button_id" value="A3THH5ND6F4NJ"/>
-                            <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif"
-                                   border="0"
-                                   name="submit" title="PayPal - The safer, easier way to pay online!"
-                                   alt="Donate with PayPal button"/>
-                            <img alt="" border="0" src="https://www.paypal.com/en_LV/i/scr/pixel.gif" width="1"
-                                 height="1"/>
-                        </form>
+                        <br>
+
+
+                    </div>
+                    <form action="https://www.paypal.com/donate" method="post" target="_top">
+                        <input type="hidden" name="hosted_button_id" value="A3THH5ND6F4NJ" />
+                        <input type="image" src="https://pics.paypal.com/00/s/YTViYjhlMWYtOWZiMC00YTg0LThhYmYtZWFmMDU2NzFmNmE1/file.JPG" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
+                        <img alt="" border="0" src="https://www.paypal.com/en_LV/i/scr/pixel.gif" width="1" height="1" />
+                    </form>
+                </div>
+                <div class="bg-teal-100 border-t-4 border-teal-500 rounded-b text-teal-900 px-4 py-3 shadow-md" role="alert">
+                    <div class="flex">
+                        <div class="py-1"><svg class="fill-current h-6 w-6 text-teal-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/></svg></div>
+                        <div>
+                            <p class="font-bold">UPCOMING :</p>
+                            <p class="text-sm">First iteration of dashboard section and game functionality.</p>
+                            <p class="font-bold">Latest update 21.06.2024. :</p>
+                            <p class="text-sm">10 of 10 game presentation upgrade DONE! Resolved some server ang github
+                                problem. Adjusted sizes for some elements, Created cookies page and notification. First
+                                iteration for Welcome page DONE!</p>
+                            <p class="font-bold">Later updates : 21.06.2024.</p>
+                            <p class="text-sm">Slider and input fields validation. Registration addon - new formfields
+                                and DB columns, navigation update for index page - profile dropdown show</p>
+                            <p class="font-bold">Later updates : 20.06.2024.</p>
+                            <p class="text-sm">Added visual for second game and improved games range selector. So far -
+                                so good! <br> Next steps : refactor "10 of 10" game presentation. Database design for
+                                games. Start some test games.<br> IN ACTIVE DEVELOPMENT! </p>
+                        </div>
                     </div>
                 </div>
-            </main>
             <main class="mt-6">
                 <div class="grid gap-6 lg:grid-cols-2 lg:gap-8">
                     <div class="space-y-6">
