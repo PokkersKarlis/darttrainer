@@ -5,6 +5,9 @@ use Illuminate\Support\Facades\Route;
 Route::view('/', 'welcome')
     ->name('index');
 
+Route::view('/cookies', 'cookies')
+    ->name('cookies');
+
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');

@@ -1,4 +1,0 @@
-
-RewriteEngine on
-
-RewriteRule ^(.*)$ darttrainer/public/$1 [L]
