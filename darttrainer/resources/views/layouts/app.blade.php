@@ -128,6 +128,7 @@
         .modal {
             display: none;
         }
+
         .modal.open {
             display: flex;
         }
