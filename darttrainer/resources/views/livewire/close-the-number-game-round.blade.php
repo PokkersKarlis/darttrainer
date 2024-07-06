@@ -7,7 +7,8 @@
                     <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
                 </div>
 
-                <div class="bg-white rounded-lg text-left shadow-xl transform transition-all w-4/5 h-4/5 sm:w-3/4 sm:h-3/4 max-h-screen overflow-auto">
+                <div
+                    class="bg-white rounded-lg text-left shadow-xl transform transition-all w-4/5 h-4/5 sm:w-3/4 sm:h-3/4 max-h-screen overflow-auto">
                     <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                         <button wire:click="endGame({{ $game->id }})"
                                 type="button"
@@ -20,18 +21,24 @@
                             Results:
                         </h3>
                         <div class="mt-2">
-                            <ul class="list-disc list-inside flex flex-wrap justify-center" style="color: #1a202c; list-style: none; padding: 0;">
+                            <ul class="list-disc list-inside flex flex-wrap justify-center"
+                                style="color: #1a202c; list-style: none; padding: 0;">
                                 @foreach($game->finishedElements as $game_element)
-                                    <li class="rounded inline-block" style="border: 2px solid darkgreen; padding: 5px; margin: 5px; background-color: white; display: flex; flex-direction: column; align-items: center;">
-                                        <div style="border: 2px solid black; border-radius: 5px; background-color: {{ $game_element->darts_count > 0 ? 'darkgreen' : 'red' }}; padding: 5px; font-weight: bold; width: 100%; text-align: center;">
+                                    <li class="rounded inline-block"
+                                        style="border: 2px solid darkgreen; padding: 5px; margin: 5px; background-color: white; display: flex; flex-direction: column; align-items: center;">
+                                        <div
+                                            style="border: 2px solid black; border-radius: 5px; background-color: {{ $game_element->darts_count > 0 ? 'darkgreen' : 'red' }}; padding: 5px; font-weight: bold; width: 100%; text-align: center;">
                                             Given number :
-                                            <span style="background-color: lightgray; padding: 5px; border: 2px solid black; display: inline-block; margin-top: 5px;">
+                                            <span
+                                                style="background-color: lightgray; padding: 5px; border: 2px solid black; display: inline-block; margin-top: 5px;">
                                     {{ $game_element->given_number }}
                                 </span>
                                         </div>
-                                        <div style="border: 2px solid black; border-radius: 5px; background-color:{{ $game_element->darts_count > 0 ? 'darkgreen' : 'red' }}; padding: 5px; font-weight: bold; width: 100%; text-align: center; margin-top: 5px;">
+                                        <div
+                                            style="border: 2px solid black; border-radius: 5px; background-color:{{ $game_element->darts_count > 0 ? 'darkgreen' : 'red' }}; padding: 5px; font-weight: bold; width: 100%; text-align: center; margin-top: 5px;">
                                             Dart count :
-                                            <span style="background-color: {{ $game_element->darts_count > 0 ? 'lightgreen' : 'lightcoral' }}; padding: 5px; border: 2px solid black; display: inline-block; margin-top: 5px;">
+                                            <span
+                                                style="background-color: {{ $game_element->darts_count > 0 ? 'lightgreen' : 'lightcoral' }}; padding: 5px; border: 2px solid black; display: inline-block; margin-top: 5px;">
                                     {{ $game_element->darts_count > 0 ? $game_element->darts_count : 'miss'}}
                                 </span>
                                         </div>
@@ -155,11 +162,11 @@
                                     echo 'endGame';
                                 } ?>({{$game->id}})"
                                     class="px-4 py-2 rounded-md text-white bg-black hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
-                                    <?php if (Auth::check()) {
-                                    echo 'Pause game';
-                                } else {
-                                    echo 'Cancel game';
-                                } ?>
+                                @if (Auth::check())
+                                    Pause game
+                                @else
+                                    Cancel game
+                                @endif
                             </button>
                         </div>
                     @else
@@ -180,11 +187,11 @@
                                     echo 'endGame';
                                 } ?>({{$game->id}})"
                                     class="px-4 py-2 rounded-md text-white bg-black hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
-                                    <?php if (Auth::check()) {
-                                    echo 'Pause game';
-                                } else {
-                                    echo 'Cancel game';
-                                } ?>
+                                @if (Auth::check())
+                                    Pause game
+                                @else
+                                    Cancel game
+                                @endif
                             </button>
                         </div>
                     @endif
