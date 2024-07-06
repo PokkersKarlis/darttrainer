@@ -6,8 +6,8 @@ use Livewire\Component;
 
 class RangeSelector extends Component
 {
-    public $from = 50;
-    public $to = 70;
+    public $starting_number = 50;
+    public $ending_number = 70;
 
     public function startGame()
     {

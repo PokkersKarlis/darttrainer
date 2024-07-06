@@ -15,7 +15,7 @@ class RangeSelectorInfo extends Component
     #[Rule('required|integer|min:2|max:330')]
     public int $starting_number = 2;
     #[Rule('required|integer|min:3|max:350')]
-    public int $ending_number = 22;
+    public int $ending_number = 3;
     public int $player_id;
     #[Rule('string|max:255')]
     public string $session_id;
@@ -52,17 +52,18 @@ class RangeSelectorInfo extends Component
 
     public function controlInputs(): void
     {
-        if ($this->starting_number - 20 < 2) {
+        if ($this->starting_number < 2) {
             $this->starting_number = 2;
         }
 
-        if ($this->starting_number >= $this->ending_number || $this->ending_number - 20 < 3) {
-            if ($this->starting_number - 20 < 2) {
-                $this->ending_number = 3;
-            } else {
-                $this->ending_number = $this->starting_number + 20;
-            }
+        if ($this->ending_number < 3) {
+            $this->ending_number = 3;
         }
+
+        if ($this->ending_number < $this->starting_number) {
+            $this->ending_number = $this->starting_number + 20;
+        }
+
     }
 
     public function render(): Factory|Application|View|\Illuminate\Contracts\Foundation\Application
