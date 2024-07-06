@@ -156,11 +156,12 @@
                                 Miss
                             </button>
                             &nbsp;
-                            <button wire:click="<?php if (Auth::check()) {
-                                    echo 'pauseGame';
-                                } else {
-                                    echo 'endGame';
-                                } ?>({{$game->id}})"
+                            <button wire:click="@if (Auth::check())
+                                    pauseGame
+                                @else
+                                    endGame
+                                @endif
+                                ({{$game->id}})"
                                     class="px-4 py-2 rounded-md text-white bg-black hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
                                 @if (Auth::check())
                                     Pause game
@@ -181,11 +182,11 @@
                                 Miss
                             </button>
                             &nbsp;
-                            <button wire:click="<?php if (Auth::check()) {
-                                    echo 'pauseGame';
-                                } else {
-                                    echo 'endGame';
-                                } ?>({{$game->id}})"
+                            <button wire:click="@if (Auth::check())
+                                    pauseGame
+                                @else
+                                    endGame
+                                @endif({{$game->id}})"
                                     class="px-4 py-2 rounded-md text-white bg-black hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
                                 @if (Auth::check())
                                     Pause game
