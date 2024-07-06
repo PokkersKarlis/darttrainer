@@ -59,21 +59,7 @@
                     </svg>
                 </div>
                 <div>
-                    <p class="font-bold">UPCOMING :</p>
-                    <p class="text-sm">First iteration of dashboard section (Currently unavailable) Game "10 of 10" First iteration - public (non-registered users).</p>
-                    <p class="font-bold">Latest update 06.07.2024. :</p>
-                    <p class="text-sm">Game "Close the number" is available to play without statistics collection (non-registered users).</p>
-                    <p class="font-bold">Latest update 03.07.2024. :</p>
-                    <p class="text-sm">10 of 10 game presentation upgrade DONE! Resolved some server ang github
-                        problem. Adjusted sizes for some elements, Created cookies page and notification. First
-                        iteration for Welcome page DONE!</p>
-                    <p class="font-bold">Later updates : 21.06.2024.</p>
-                    <p class="text-sm">Slider and input fields validation. Registration addon - new formfields
-                        and DB columns, navigation update for index page - profile dropdown show</p>
-                    <p class="font-bold">Later updates : 20.06.2024.</p>
-                    <p class="text-sm">Added visual for second game and improved games range selector. So far -
-                        so good! <br> Next steps : refactor "10 of 10" game presentation. Database design for
-                        games. Start some test games.<br> IN ACTIVE DEVELOPMENT! </p>
+                    <p class="font-bold">UPDATE : Game "Close the number" is available for early access and testing without statistics collection (non-registered users).</p>
                 </div>
             </div>
         </div>
