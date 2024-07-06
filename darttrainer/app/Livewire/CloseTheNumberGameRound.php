@@ -17,12 +17,14 @@ class CloseTheNumberGameRound extends Component
     public const DART_COUNT_MISS = -1;
     public const GAME_STATUS_FINISHED_OUT_OF_RANGE = -2;
 
+    public $try_count = 2;
+
     public function setValue($number)
     {
         switch ($number) {
             case self::DART_COUNT_MISS:
                 $this->counter_active = false;
-                session()->flash('round_selected_miss', 'Number: ' . $this->game->activeElement->given_number . ' . Darts count: miss. Close the number without register dart count.
+                session()->flash('round_selected_miss', 'Try count: ' . $this->try_count  . '. Number: ' . $this->game->activeElement->given_number . ' . Darts count: miss. Close the number without register dart count.
                 Result saved successfully!');
                 break;
             case self::GAME_STATUS_FINISHED_OUT_OF_RANGE:
@@ -42,7 +44,7 @@ class CloseTheNumberGameRound extends Component
             session()->flash('game_end', 'Game finished');
             //return redirect()->to('/');
         }
-
+        $this->try_count = $this->try_count + 1;
         return view('livewire.close-the-number-game-round');
     }
 
