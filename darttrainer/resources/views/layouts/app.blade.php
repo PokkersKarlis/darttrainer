@@ -16,15 +16,16 @@
     </script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta property="og:title" content="Dart trainer"/>
+    <meta property="og:title" content="Darts game trainer - traindart.com"/>
     <meta property="og:url" content="https://traindart.com/"/>
     <meta property="og:image" content="{{ asset('images/open-graph-logo.jpg') }}"/>
     <meta property="og:type" content="webapp"/>
-    <meta property="og:description" content="Dart trainer is a planned web application for training darts players"/>
+    <meta property="og:description"
+          content="Darts game trainer is a web application for training players specific tasks"/>
     <meta property="og:locale" content="en_GB"/>
     <title>Dart trainer</title>
     <meta property="title" content="Dart trainer">
-    <meta property="description" content="Dart trainer is a planned web application for training darts players">
+    <meta property="description" content="Darts game trainer is a web application for training players specific tasks">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -35,6 +36,9 @@
             position: relative;
             width: 100%; /* Ensures the parent div takes full width */
             height: auto; /* Ensures height is relative to width */
+            margin-left: 50%;
+            transform: translate(-50%);
+            padding: 16px 0 0 0;
         }
 
         #svg {
@@ -43,13 +47,15 @@
             width: 100%;
         }
 
-        .highlighted {
-            fill: #469def;
-        }
-
         @media (min-width: 1400px) {
             .button-container {
                 margin-top: 100px !important;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .game-info {
+                min-height: 920px !important;
             }
         }
 
@@ -115,6 +121,17 @@
             fill: #469def;
         }
 
+        ol {
+            list-style: circle !important;
+        }
+
+        .modal {
+            display: none;
+        }
+        .modal.open {
+            display: flex;
+        }
+
     </style>
     <!-- Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -126,25 +143,107 @@
     <meta name="msapplication-TileColor" content="#da532c">
     <meta name="theme-color" content="#ffffff">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{{ asset('/css/cookiealert.css') }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    @livewireStyles
 </head>
-<body class="font-sans antialiased">
-<div class="min-h-screen bg-gray-100 dark:bg-gray-900">
-    <livewire:layout.navigation/>
 
-    <!-- Page Heading -->
-    @if (isset($header))
-        <header class="bg-white dark:bg-gray-800 shadow">
-            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                {{ $header }}
-            </div>
-        </header>
-    @endif
+<body class="antialiased font-sans">
+<div class="bg-gray-50 text-black/50 dark:bg-black dark:text-white/50">
+    <div
+        class="relative min-h-screen flex flex-col items-center justify-center selection:bg-[#FF2D20] selection:text-white">
+        <div class="relative w-full max-w-2xl px-6 lg:max-w-7xl">
+            <header class="grid grid-cols-2 items-center gap-2 py-10 lg:grid-cols-3"
+                    style="background-image: url('/images/header.jpg');">
+                <div class="flex lg:justify-center lg:col-start-2">
+                    <img src="{{asset('/images/logo.png')}}" alt="logo">
+                </div>
+                @if (Route::has('login'))
+                    <livewire:welcome.navigation/>
+                @endif
+            </header>
+            @yield('content')
 
-    <!-- Page Content -->
-    <main>
-        {{ $slot }}
-    </main>
+            <footer style="background-color: #333; color: white; margin-top: 35px; text-align: center;"
+                    class="rounded-lg p-6">
+                <div>
+                    <p>Contact us: <a href="mailto:karlis@pokkers.lv" style="color: #ff532b;">karlis@pokkers.lv</a></p>
+                    <p>
+                        Created and powered by
+                        <a href="https://pokkers.lv" style="color: #ff532b;">Pokkers</a>
+                    </p>
+                    <p>
+                        <a href="https://www.facebook.com/carlopokker" style="color: #ff532b;">
+                            <i class="fa fa-facebook-f"></i> carlopokker
+                        </a> |
+                        <a href="https://www.instagram.com/carlopokker" style="color: #ff532b;">
+                            <i class="fa fa-instagram"></i> carlopokker
+                        </a>
+                    </p>
+                </div>
+            </footer>
+        </div>
+    </div>
 </div>
+<div class="container" style="z-index: 999999">
+    <div class="row">
+        <div class="col-12">
+            <div class="alert text-center cookiealert" role="alert">
+                <p>@lang('cookies.cookies_title')</p> <a href="{{ asset('/cookies') }}" target="_blank"
+                                                         style="color: white">@lang('cookies.learn')</a>
+
+                <button type="button" class="btn btn-sm acceptcookies" style="background-color: #1cdea0; padding: 5px">
+                    @lang('cookies.agree')
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function changeColor() {
+        let highlightedElements = document.getElementsByClassName('highlighted');
+        while (highlightedElements.length > 0) {
+            highlightedElements[0].classList.remove('highlighted');
+        }
+
+        const myArray = [
+            "s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10",
+            "s11", "s12", "s13", "s14", "s15", "s16", "s17", "s18", "s19", "s20",
+            "d1", "d2", "d3", "d4", "d5", "d6", "d7", "d8", "d9", "d10",
+            "d11", "d12", "d13", "d14", "d15", "d16", "d17", "d18", "d19", "d20",
+            "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10",
+            "t11", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20",
+            "bull", "Outer"
+        ];
+
+        function getRandomElementFromArray(array) {
+            const randomIndex = Math.floor(Math.random() * array.length);
+            return array[randomIndex];
+        }
+
+        const randomElement1 = getRandomElementFromArray(myArray);
+        const randomElement2 = getRandomElementFromArray(myArray);
+        const randomElement3 = getRandomElementFromArray(myArray);
+
+        let areaElement1 = document.getElementById(randomElement1);
+        let areaElement2 = document.getElementById(randomElement2);
+        let areaElement3 = document.getElementById(randomElement3);
+
+        if (areaElement1) {
+            areaElement1.classList.add('highlighted');
+        }
+        if (areaElement2) {
+            areaElement2.classList.add('highlighted');
+        }
+        if (areaElement3) {
+            areaElement3.classList.add('highlighted');
+        }
+    }
+
+    setInterval(changeColor, 2500);
+</script>
+<script src="{{ asset('/js/cookiealert.js') }}"></script>
 @livewireScripts
 </body>
 </html>
+
