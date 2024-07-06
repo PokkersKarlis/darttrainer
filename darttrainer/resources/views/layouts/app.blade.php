@@ -156,7 +156,7 @@
             <header class="grid grid-cols-2 items-center gap-2 py-10 lg:grid-cols-3"
                     style="background-image: url('/images/header.jpg');">
                 <div class="flex lg:justify-center lg:col-start-2">
-                    <img src="{{asset('/images/logo.png')}}" alt="logo">
+                    <a href="/"><img src="{{asset('/images/logo.png')}}" alt="logo"></a>
                 </div>
                 @if (Route::has('login'))
                     <livewire:welcome.navigation/>
