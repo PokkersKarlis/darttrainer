@@ -78,7 +78,9 @@
                     </svg>
                 </div>
                 <div>
-                    <p class="font-bold">UPDATE : Game "Close the number" is available for early access and testing without statistics collection (non-registered users).</p>
+                    <p class="font-bold">UPDATE : Game "Close the number" is available for early access and testing <span style="text-decoration: line-through">without statistics collection (non-registered users)</span>.<br>
+                    Registered user game progress is saved automatically and data now is collected. Dashboard with statistics coming after second game. <br>
+                    You can now play and collect data!!!</p>
                 </div>
             </div>
         </div>
