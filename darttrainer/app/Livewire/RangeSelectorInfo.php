@@ -7,6 +7,7 @@ use App\Models\GameCloseTheNumberElement;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Rule;
 use Livewire\Component;
 
@@ -22,6 +23,7 @@ class RangeSelectorInfo extends Component
     public string $game_button = 'Play';
     public int $upcoming_number;
     public bool $game_started = false;
+    public $player_game = null;
 
     public function startGame()
     {
@@ -34,9 +36,20 @@ class RangeSelectorInfo extends Component
             ->where('finished', 1)
             ->first();
 
-        if ($game === null && $finished_game === null) {
+        if (Auth::check()) {
+            $this->player_game = GameCloseTheNumber::where('player_id', Auth::id())
+                ->where('finished', 0)
+                ->first();
+        }
+
+        if ($game === null && $finished_game === null && $this->player_game === null) {
             $validated = $this->validate();
             $game = GameCloseTheNumber::create($validated);
+            if (Auth::check()) {
+                // Get the logged-in user's ID and assign it to player_id
+                $game->player_id = Auth::id();
+                $game->save();
+            }
             for ($i = $validated['starting_number']; $i <= $validated['ending_number']; $i++) {
                 $game_element = new GameCloseTheNumberElement();
                 $game_element->game_id = $game->id;
@@ -69,6 +82,7 @@ class RangeSelectorInfo extends Component
     public function render(): Factory|Application|View|\Illuminate\Contracts\Foundation\Application
     {
         $this->session_id = session()->getId();
+
         $game = GameCloseTheNumber::where('session_id', $this->session_id)
             ->where('finished', 0)
             ->first();
@@ -77,9 +91,24 @@ class RangeSelectorInfo extends Component
             ->where('finished', 1)
             ->first();
 
-        if ($finished_game) {
-            $this->game_button = 'View results';
+        if (Auth::check()) {
+            if ($game) {
+                if ($game->player_id === Auth::id()) {
+                    $game->player_id = Auth::id();
+                    $game->save();
+                }
+            } else {
+                $game = GameCloseTheNumber::where('player_id', Auth::id())
+                    ->where('finished', 0)
+                    ->first();
+            }
+        } else {
+            if ($finished_game) {
+                $this->game_button = 'View results';
+            }
         }
+
+
 
         if ($game) {
             $this->game_started = true;

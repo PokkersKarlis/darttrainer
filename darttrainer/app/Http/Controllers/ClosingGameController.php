@@ -25,6 +25,13 @@ class ClosingGameController extends Controller
             ->where('finished', 1)
             ->first();
 
+        if (Auth::check()) {
+            $game = GameCloseTheNumber::where('player_id', Auth::id())
+                ->where('finished', 0)
+                ->first();
+            return view('livewire.game-close-the-number-game', ['game' => $game]);
+        }
+
         if ($game || $finished_game) {
             return view('livewire.game-close-the-number-game', ['game' => $game]);
         }

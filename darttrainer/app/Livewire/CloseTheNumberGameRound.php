@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\GameCloseTheNumber;
 use App\Models\GameCloseTheNumberElement;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class CloseTheNumberGameRound extends Component
@@ -36,21 +37,41 @@ class CloseTheNumberGameRound extends Component
         $this->game->activeElement->darts_count = $number;
         $this->game->activeElement->save();
         if ($this->game->activeElement->given_number === $this->game->ending_number && ($number > 0 || $number ===  self::GAME_STATUS_FINISHED_OUT_OF_RANGE)) {
-            $this->game->finished = 1;
+            if (Auth::check()) {
+                $this->game->finished = 2;
+            } else {
+                $this->game->finished = 1;
+            }
             $this->game->save();
             $this->results = true;
             session()->flash('game_end', 'Game finished');
             //return redirect()->to('/');
         }
-        sleep(1);
+        sleep(0.5);
         return view('livewire.close-the-number-game-round');
     }
 
     public function endGame($id)
     {
-        GameCloseTheNumberElement::where('game_id', $id)->delete();
-        GameCloseTheNumber::where('id', $id)->delete();
-        session()->flash('game_end', 'Game finished!');
+        if (!Auth::check()) {
+            GameCloseTheNumberElement::where('game_id', $id)->delete();
+            GameCloseTheNumber::where('id', $id)->delete();
+        } else {
+            session()->flash('game_end', 'Game ended!');
+        }
+
+        return redirect()->to('/');
+    }
+
+    public function pauseGame($id)
+    {
+        if (!Auth::check()) {
+            GameCloseTheNumberElement::where('game_id', $id)->delete();
+            GameCloseTheNumber::where('id', $id)->delete();
+        } else {
+            session()->flash('game_end', 'Game paused!');
+        }
+
         return redirect()->to('/');
     }
 
@@ -64,10 +85,31 @@ class CloseTheNumberGameRound extends Component
         $finished_game = GameCloseTheNumber::where('session_id', $session_id)
             ->where('finished', 1)
             ->first();
+
         if ($finished_game) {
-            $this->results = true;
-            $this->game = $finished_game;
+            if (!Auth::check()) {
+                $this->results = true;
+                $this->game = $finished_game;
+            }
         }
+
+        if (Auth::check()) {
+            $active_game = GameCloseTheNumber::where('player_id', Auth::id())
+                ->where('finished', 0)
+                ->first();
+            if($active_game) {
+                $game = $active_game;
+            }
+            $finished_game = GameCloseTheNumber::where('player_id', Auth::id())
+                ->where('finished', 1)
+                ->first();
+            if ($finished_game) {
+                $this->results = true;
+                $this->game = $finished_game;
+                return view('livewire.close-the-number-game-round');
+            }
+        }
+
         if($game) {
             $this->game = $game;
             if($this->game->activeElement->darts_count === 0){

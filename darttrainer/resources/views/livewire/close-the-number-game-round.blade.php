@@ -1,3 +1,4 @@
+@php use Illuminate\Support\Facades\Auth; @endphp
 <div>
     <div class="min-h-full">
         @if ($results)
@@ -22,13 +23,13 @@
                             <ul class="list-disc list-inside flex flex-wrap justify-center" style="color: #1a202c; list-style: none; padding: 0;">
                                 @foreach($game->finishedElements as $game_element)
                                     <li class="rounded inline-block" style="border: 2px solid darkgreen; padding: 5px; margin: 5px; background-color: white; display: flex; flex-direction: column; align-items: center;">
-                                        <div style="border: 2px solid black; border-radius: 5px; background-color: darkgreen; padding: 5px; font-weight: bold; width: 100%; text-align: center;">
+                                        <div style="border: 2px solid black; border-radius: 5px; background-color: {{ $game_element->darts_count > 0 ? 'darkgreen' : 'red' }}; padding: 5px; font-weight: bold; width: 100%; text-align: center;">
                                             Given number :
                                             <span style="background-color: lightgray; padding: 5px; border: 2px solid black; display: inline-block; margin-top: 5px;">
                                     {{ $game_element->given_number }}
                                 </span>
                                         </div>
-                                        <div style="border: 2px solid black; border-radius: 5px; background-color: darkgreen; padding: 5px; font-weight: bold; width: 100%; text-align: center; margin-top: 5px;">
+                                        <div style="border: 2px solid black; border-radius: 5px; background-color:{{ $game_element->darts_count > 0 ? 'darkgreen' : 'red' }}; padding: 5px; font-weight: bold; width: 100%; text-align: center; margin-top: 5px;">
                                             Dart count :
                                             <span style="background-color: {{ $game_element->darts_count > 0 ? 'lightgreen' : 'lightcoral' }}; padding: 5px; border: 2px solid black; display: inline-block; margin-top: 5px;">
                                     {{ $game_element->darts_count > 0 ? $game_element->darts_count : 'miss'}}
@@ -148,9 +149,17 @@
                                 Miss
                             </button>
                             &nbsp;
-                            <button wire:click="endGame({{$game->id}})"
+                            <button wire:click="<?php if (Auth::check()) {
+                                    echo 'pauseGame';
+                                } else {
+                                    echo 'endGame';
+                                } ?>({{$game->id}})"
                                     class="px-4 py-2 rounded-md text-white bg-black hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
-                                Cancel game
+                                    <?php if (Auth::check()) {
+                                    echo 'Pause game';
+                                } else {
+                                    echo 'Cancel game';
+                                } ?>
                             </button>
                         </div>
                     @else
@@ -165,9 +174,17 @@
                                 Miss
                             </button>
                             &nbsp;
-                            <button wire:click="endGame({{$game->id}})"
+                            <button wire:click="<?php if (Auth::check()) {
+                                    echo 'pauseGame';
+                                } else {
+                                    echo 'endGame';
+                                } ?>({{$game->id}})"
                                     class="px-4 py-2 rounded-md text-white bg-black hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
-                                Cancel game
+                                    <?php if (Auth::check()) {
+                                    echo 'Pause game';
+                                } else {
+                                    echo 'Cancel game';
+                                } ?>
                             </button>
                         </div>
                     @endif
