@@ -122,7 +122,7 @@
                 <div class="flex-1 flex bg-gray-100 p-4">
                     <!-- Left Side with "Hello World" -->
                     <div class="flex-1 flex items-center justify-center">
-                        <livewire:ten-of-ten-board>
+                        <livewire:ten-of-ten-board-active>
                     </div>
                     <!-- Right Side with Active Element -->
                     <div class="flex-1 flex items-center justify-center">
