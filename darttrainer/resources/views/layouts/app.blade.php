@@ -41,6 +41,12 @@
             padding: 35px 0 0 0;
         }
 
+        .parent-div-game {
+            position: relative;
+            width: 100%; /* Ensures the parent div takes full width */
+            height: auto; /* Ensures height is relative to width */
+        }
+
         #svg {
             max-width: 100%; /* Ensures the SVG scales with its parent */
             max-height: 100%; /* Ensures the SVG scales with its parent */

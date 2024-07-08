@@ -1,4 +1,4 @@
-<div>
+<div class="w-full">
     <div id="screenshot-container" class="relative flex w-full items-stretch">
         @if($game_selector)
             <livewire:ten-of-ten-select-game>
@@ -15,7 +15,9 @@
             </div>
         @endif
         @if(!$game_selector)
-            <button wire:click.prevent="selectGame" class="button singles" type="submit">Play</button>
+            <div class="w-full flex ">
+                <button wire:click.prevent="selectGame" class="button singles" type="submit" style="width: 100%S">Play</button>
+            </div>
         @endif
     </div>
 </div>

@@ -68,8 +68,17 @@ class TenOfTenSelectGame extends Component
                     break;
             }
 
+
             $shuffled_game_elements = array_rand($game_elements, 10);
+//dump($game_elements);
+//dump($shuffled_game_elements);
+            $random_values = [];
+
             foreach ($shuffled_game_elements as $shuffled_game_element) {
+                $random_values[] = $game_elements[$shuffled_game_element];
+            }
+
+            foreach ($random_values as $shuffled_game_element) {
                 $game_element_model = new GameTenOfTenElement();
                 $game_element_model->game_id = $game->id;
                 $game_element_model->given_number_type = $this->game_type;
