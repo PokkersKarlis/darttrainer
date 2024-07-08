@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ClosingGameController;
+use App\Http\Controllers\TenOfTenGameController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')
@@ -23,6 +24,10 @@ Route::view('profile', 'profile')
 
 Route::get('/close-the-number', [ClosingGameController::class, 'index'])
     ->name('close-the-number');
+
+Route::get('/ten-of-ten', [TenOfTenGameController::class, 'index'])
+    ->name('ten-of-ten');
+
 
 
 require __DIR__ . '/auth.php';

@@ -13,18 +13,19 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('game_close_the_numbers', function (Blueprint $table) {
+        Schema::create('game_ten_of_tens', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('player_id')->nullable();
+            $table->string('session_id',)->nullable();
+            $table->integer('game_type');
             $table->integer('finished')->default(0);
-            $table->integer('starting_number');
-            $table->integer('ending_number');
             $table->timestamps();
         });
 
-        Schema::create('game_close_the_number_elements', function (Blueprint $table) {
+        Schema::create('game_ten_of_ten_elements', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('game_id');
+            $table->integer('given_number_type');
             $table->integer('given_number');
             $table->integer('darts_count')->default(0);
             $table->timestamps();

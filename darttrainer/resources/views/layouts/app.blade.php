@@ -38,7 +38,7 @@
             height: auto; /* Ensures height is relative to width */
             margin-left: 50%;
             transform: translate(-50%);
-            padding: 16px 0 0 0;
+            padding: 35px 0 0 0;
         }
 
         #svg {
