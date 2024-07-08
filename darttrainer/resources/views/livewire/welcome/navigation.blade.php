@@ -18,12 +18,6 @@ new class extends Component
 
 <nav class="flex flex-1 justify-end items-center space-x-4">
     @auth
-        <a style="color: white"
-           href="{{ url('/dashboard') }}"
-           class="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
-        >
-            Dashboard
-        </a>
         <x-dropdown align="right" width="48" class="h-full">
             <x-slot name="trigger" class="h-full">
                 <button
@@ -42,6 +36,10 @@ new class extends Component
             </x-slot>
 
             <x-slot name="content">
+                <x-dropdown-link :href="url('/dashboard')" wire:navigate>
+                    {{ __('Dashboard') }}
+                </x-dropdown-link>
+
                 <x-dropdown-link :href="route('profile')" wire:navigate>
                     {{ __('Profile') }}
                 </x-dropdown-link>

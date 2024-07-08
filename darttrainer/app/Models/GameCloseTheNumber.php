@@ -19,7 +19,7 @@ class GameCloseTheNumber extends Model
     {
         return $this->hasOne(GameCloseTheNumberElement::class, 'game_id')
             ->whereIn('darts_count', [-1, 0])
-            ->orderBy('id', 'asc');
+            ->orderByRaw('darts_count = -1 DESC, darts_count = 0 DESC, given_number ASC');
     }
 
     public function finishedElements(): HasMany
