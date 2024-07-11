@@ -352,13 +352,13 @@
                             @endif
                         </div>
                         <div class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold text-green-800">
-                                <?php if ($game->activeElement->given_number === \App\Livewire\TenOfTenSelectGame::GREEN) {
-                                echo 'Outer';
-                            } elseif ($game->activeElement->given_number === \App\Livewire\TenOfTenSelectGame::BULL) {
-                                echo 'Bull';
-                            } else {
-                                echo $game->activeElement->given_number;
-                            } ?>
+                            @if($game->activeElement->given_number === \App\Livewire\TenOfTenSelectGame::GREEN)
+                                Outer
+                            @elseif($game->activeElement->given_number === \App\Livewire\TenOfTenSelectGame::BULL)
+                                Bull
+                            @else
+                                {{ $game->activeElement->given_number }}
+                            @endif
                         </div>
                     </div>
                 </div>
