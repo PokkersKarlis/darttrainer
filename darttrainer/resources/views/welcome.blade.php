@@ -280,7 +280,7 @@
                 const element = document.getElementById('close-the-number');
                 if (element) {
                     window.scrollTo({
-                        top: element.offsetTop - 150, // Subtract 50 pixels from the top position
+                        top: element.offsetTop - 200, // Subtract 50 pixels from the top position
                         behavior: 'smooth'
                     });
                 }
