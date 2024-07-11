@@ -63,6 +63,13 @@
             .game-info {
                 min-height: 920px !important;
             }
+            .parent-div-game {
+                position: relative;
+                width: 100%; /* Ensures the parent div takes full width */
+                height: auto; /* Ensures height is relative to width */
+                margin-left: 50%;
+                transform: translate(-50%);
+            }
         }
 
         @media (max-width: 600px) {
@@ -124,7 +131,7 @@
         }
 
         .highlighted {
-            fill: #469def;
+            fill: #33FFFF
         }
 
         ol {
@@ -206,49 +213,6 @@
         </div>
     </div>
 </div>
-<script>
-    function changeColor() {
-        let highlightedElements = document.getElementsByClassName('highlighted');
-        while (highlightedElements.length > 0) {
-            highlightedElements[0].classList.remove('highlighted');
-        }
-
-        const myArray = [
-            "s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10",
-            "s11", "s12", "s13", "s14", "s15", "s16", "s17", "s18", "s19", "s20",
-            "d1", "d2", "d3", "d4", "d5", "d6", "d7", "d8", "d9", "d10",
-            "d11", "d12", "d13", "d14", "d15", "d16", "d17", "d18", "d19", "d20",
-            "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10",
-            "t11", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20",
-            "bull", "Outer"
-        ];
-
-        function getRandomElementFromArray(array) {
-            const randomIndex = Math.floor(Math.random() * array.length);
-            return array[randomIndex];
-        }
-
-        const randomElement1 = getRandomElementFromArray(myArray);
-        const randomElement2 = getRandomElementFromArray(myArray);
-        const randomElement3 = getRandomElementFromArray(myArray);
-
-        let areaElement1 = document.getElementById(randomElement1);
-        let areaElement2 = document.getElementById(randomElement2);
-        let areaElement3 = document.getElementById(randomElement3);
-
-        if (areaElement1) {
-            areaElement1.classList.add('highlighted');
-        }
-        if (areaElement2) {
-            areaElement2.classList.add('highlighted');
-        }
-        if (areaElement3) {
-            areaElement3.classList.add('highlighted');
-        }
-    }
-
-    setInterval(changeColor, 2500);
-</script>
 <script src="{{ asset('/js/cookiealert.js') }}"></script>
 @livewireScripts
 </body>

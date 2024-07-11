@@ -70,8 +70,8 @@ class TenOfTenSelectGame extends Component
 
 
             $shuffled_game_elements = array_rand($game_elements, 10);
-//dump($game_elements);
-//dump($shuffled_game_elements);
+
+            shuffle($shuffled_game_elements);
             $random_values = [];
 
             foreach ($shuffled_game_elements as $shuffled_game_element) {
@@ -81,7 +81,7 @@ class TenOfTenSelectGame extends Component
             foreach ($random_values as $shuffled_game_element) {
                 $game_element_model = new GameTenOfTenElement();
                 $game_element_model->game_id = $game->id;
-                $game_element_model->given_number_type = $this->game_type;
+                $game_element_model->given_number_type = $this->game_type === self::GAME_TYPE_MIXED ? rand(1, 3): $this->game_type;
                 $game_element_model->given_number = $shuffled_game_element;
                 $game_element_model->save();
             }

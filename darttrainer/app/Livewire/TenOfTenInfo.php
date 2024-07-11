@@ -12,11 +12,6 @@ class TenOfTenInfo extends Component
         $this->game_selector = true;
     }
 
-    public function startGame($type)
-    {
-        dump('$type');
-    }
-
     public function render()
     {
         return view('livewire.ten-of-ten-info');

@@ -16,7 +16,7 @@
         @endif
         @if(!$game_selector)
             <div class="w-full flex ">
-                <button wire:click.prevent="selectGame" class="button singles" type="submit" style="width: 100%S">Play</button>
+                <button wire:click.prevent="selectGame" class="button singles" type="submit" style="width: 100%">Play</button>
             </div>
         @endif
     </div>
