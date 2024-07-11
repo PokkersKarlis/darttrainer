@@ -281,15 +281,15 @@
                     <div class="flex-1 flex flex-col items-center justify-center text-center">
                         <div class="text-4xl sm:text-2xl md:text-2xl lg:text-7xl xl:text-8xl text-black">
                                 <?php switch ($game->activeElement->given_number_type) {
-                                case \App\Livewire\TenOfTenGameRound::GAME_TYPE_SINGLES: ?>
-                                    SINGLE
-                                    <?php break;
-                                case \App\Livewire\TenOfTenGameRound::GAME_TYPE_DOUBLES: ?>
-                                    DOUBLE
-                                    <?php break;
-                                case \App\Livewire\TenOfTenGameRound::GAME_TYPE_TRIPLES: ?>
-                                    TRIPLE
-                                    <?php break;
+                                case \App\Livewire\TenOfTenSelectGame::GAME_TYPE_SINGLES:
+                                    echo 'SINGLE';
+                                    break;
+                                case \App\Livewire\TenOfTenSelectGame::GAME_TYPE_DOUBLES:
+                                    echo 'DOUBLE';
+                                    break;
+                                case \App\Livewire\TenOfTenSelectGame::GAME_TYPE_TRIPLES:
+                                    echo 'TRIPLE';
+                                    break;
                             } ?>
                         </div>
                         <div class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold text-green-800">
