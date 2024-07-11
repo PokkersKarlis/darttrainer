@@ -81,8 +81,14 @@ class TenOfTenSelectGame extends Component
             foreach ($random_values as $shuffled_game_element) {
                 $game_element_model = new GameTenOfTenElement();
                 $game_element_model->game_id = $game->id;
-                $game_element_model->given_number_type = $this->game_type === self::GAME_TYPE_MIXED ? rand(1, 3): $this->game_type;
                 $game_element_model->given_number = $shuffled_game_element;
+                if ($shuffled_game_element === self::GREEN) {
+                    $game_element_model->given_number_type = self::GAME_TYPE_SINGLES;
+                } elseif ($shuffled_game_element === self::BULL) {
+                    $game_element_model->given_number_type = self::GAME_TYPE_DOUBLES;
+                } else {
+                    $game_element_model->given_number_type = $this->game_type === self::GAME_TYPE_MIXED ? rand(1, 3): $this->game_type;
+                }
                 $game_element_model->save();
             }
         }

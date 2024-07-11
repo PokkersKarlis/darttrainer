@@ -20,10 +20,6 @@ class TenOfTenGameRound extends Component
     public const DART_COUNT_MISS = -1;
     public const GAME_STATUS_FINISHED_OUT_OF_RANGE = -2;
 
-    public const GAME_TYPE_SINGLES = 1;
-    public const GAME_TYPE_DOUBLES = 2;
-    public const GAME_TYPE_TRIPLES = 3;
-    public const GAME_TYPE_MIXED = 4;
     #[Reactive]
     public $active_number;
 

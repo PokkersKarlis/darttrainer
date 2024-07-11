@@ -21,6 +21,7 @@
                             Results:
                         </h3>
                         <div class="mt-2">
+                            xdfht
                             <ul class="list-disc list-inside flex flex-wrap justify-center"
                                 style="color: #1a202c; list-style: none; padding: 0;">
                                 @foreach($game->finishedElements as $game_element)
@@ -28,6 +29,16 @@
                                         style="border: 2px solid darkgreen; padding: 5px; margin: 5px; background-color: white; display: flex; flex-direction: column; align-items: center;">
                                         <div
                                             style="border: 2px solid black; border-radius: 5px; background-color: {{ $game_element->darts_count > 0 ? 'darkgreen' : 'red' }}; padding: 5px; font-weight: bold; width: 100%; text-align: center;">
+                                            Number type :
+                                            <br>
+                                            @if($game_element->given_number_type === \App\Livewire\TenOfTenSelectGame::GAME_TYPE_SINGLES)
+                                                SINGLE
+                                            @elseif($game_element->given_number_type === \App\Livewire\TenOfTenSelectGame::GAME_TYPE_DOUBLES)
+                                                DOUBLE
+                                            @elseif($game_element->given_number_type === \App\Livewire\TenOfTenSelectGame::GAME_TYPE_TRIPLES)
+                                                TRIPLE
+                                            @endif
+                                            <br>
                                             Given number :
                                             <span
                                                 style="background-color: lightgray; padding: 5px; border: 2px solid black; display: inline-block; margin-top: 5px;">
