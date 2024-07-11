@@ -356,7 +356,7 @@
                                 Outer
                             @elseif($game->activeElement->given_number === \App\Livewire\TenOfTenSelectGame::BULL)
                                 Bull
-                            @else
+                            @elseif($game->activeElement->given_number > 0)
                                 {{ $game->activeElement->given_number }}
                             @endif
                         </div>
