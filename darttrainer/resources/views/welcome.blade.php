@@ -33,12 +33,16 @@
             </div>
         @endif
         <!-- Buttons Container -->
-        <div class="flex flex-col space-y-4 md:hidden items-center justify-center mb-2">
+        <div class="flex items-center justify-center mb-2 md:hidden space-x-4">
             <!-- Close the number Button -->
+            <button id="ten-button" class="bg-gray-500 text-white py-2 px-4 rounded border border-black">
+                Ten of Ten
+            </button>
             <button id="close-button" class="bg-gray-500 text-white py-2 px-4 rounded border border-black">
                 Close the number
             </button>
         </div>
+
         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
             <strong class="font-bold">UNDER DEVELOPMENT...</strong>
             <span class="absolute top-0 bottom-0 right-0 px-4 py-3"></span>
@@ -101,7 +105,7 @@
                         class="flex game-info flex-col items-start gap-6 overflow-hidden rounded-lg bg-white p-6 shadow-[0px_14px_34px_0px_rgba(0,0,0,0.08)] ring-1 ring-white/[0.05] transition duration-300 hover:text-black/70 hover:ring-black/20 focus:outline-none focus-visible:ring-[#FF2D20] lg:p-10 lg:pb-10 dark:bg-zinc-900 dark:ring-zinc-800 dark:hover:text-white/70 dark:hover:ring-zinc-700 dark:focus-visible:ring-[#FF2D20]"
                     >
 
-                        <div class="pt-3 sm:pt-5 flex items-center gap-4">
+                        <div class="pt-3 sm:pt-5 flex items-center gap-4" id="ten-of-ten">
                             <div
                                 class="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#FF2D20]/10 sm:size-16">
                                 <svg class="size-5 sm:size-6" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -272,7 +276,7 @@
         </main>
         <script>
             // Function to scroll to the screenshot-container element
-            function scrollToScreenshotContainer() {
+            function scrollToCloseTheNumberContainer() {
                 const element = document.getElementById('close-the-number');
                 if (element) {
                     window.scrollTo({
@@ -282,9 +286,19 @@
                 }
             }
 
+            function scrollToTenOfTenContainer() {
+                const element = document.getElementById('ten-of-ten');
+                if (element) {
+                    window.scrollTo({
+                        top: element.offsetTop - 150, // Subtract 50 pixels from the top position
+                        behavior: 'smooth'
+                    });
+                }
+            }
+
             // Add event listeners to the buttons
-            document.getElementById('close-button').addEventListener('click', scrollToScreenshotContainer);
-            //document.getElementById('ten-button').addEventListener('click', scrollToScreenshotContainer);
+            document.getElementById('close-button').addEventListener('click', scrollToCloseTheNumberContainer);
+            document.getElementById('ten-button').addEventListener('click', scrollToTenOfTenContainer);
         </script>
         <script>
             function changeColor() {
