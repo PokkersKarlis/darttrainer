@@ -1,5 +1,5 @@
 <div
-    class="items-start gap-6 overflow-hidden rounded-lg bg-white p-6 shadow-[0px_14px_34px_0px_rgba(0,0,0,0.08)] ring-1 ring-white/[0.05] transition duration-300 hover:text-black/70 hover:ring-black/20 focus:outline-none focus-visible:ring-[#FF2D20]    dark:bg-zinc-900 dark:ring-zinc-800 dark:hover:text-white/70 dark:hover:ring-zinc-700 dark:focus-visible:ring-[#FF2D20]"
+    class="items-start parent-div gap-6 overflow-hidden rounded-lg bg-white p-6 shadow-[0px_14px_34px_0px_rgba(0,0,0,0.08)] ring-1 ring-white/[0.05] transition duration-300 hover:text-black/70 hover:ring-black/20 focus:outline-none focus-visible:ring-[#FF2D20]    dark:bg-zinc-900 dark:ring-zinc-800 dark:hover:text-white/70 dark:hover:ring-zinc-700 dark:focus-visible:ring-[#FF2D20]"
     style="padding: 20px">
     @if($game_started)
         <div class="w-full flex">
@@ -40,7 +40,7 @@
     @if(!Auth::check())
         <div class="bg-orange-100 border-l-4 border-orange-500 text-orange-700 p-4" role="alert">
             <p class="font-bold">Play without registration</p>
-            <p>Game is based on user session. There will be statistics only for single game. If You want to collect statistics for every game, please register and use dashboard playground!</p>
+            <p>Game is based on user session. There will be statistics only for single game. If You want to collect statistics for every game, please register/log-in!</p>
         </div>
     @endif
     <button wire:click.prevent="startGame" class="button singles" type="submit">{{ $game_button }}</button>

@@ -10,7 +10,7 @@ Route::view('/', 'welcome')
 Route::view('/cookies', 'cookies')
     ->name('cookies');
 
-Route::view('dashboard', 'dashboard')
+Route::view('/dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 

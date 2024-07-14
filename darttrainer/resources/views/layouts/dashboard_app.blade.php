@@ -126,6 +126,124 @@
     <meta name="msapplication-TileColor" content="#da532c">
     <meta name="theme-color" content="#ffffff">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Define a CSS class to highlight the path */
+        .parent-div {
+            position: relative;
+            width: 100%; /* Ensures the parent div takes full width */
+            height: auto; /* Ensures height is relative to width */
+            margin-left: 50%;
+            transform: translate(-50%);
+            padding: 35px 0 0 0;
+        }
+
+        .parent-div-game {
+            position: relative;
+            width: 100%; /* Ensures the parent div takes full width */
+            height: auto; /* Ensures height is relative to width */
+        }
+
+        #svg {
+            max-width: 91%; /* Ensures the SVG scales with its parent */
+            max-height: 91%; /* Ensures the SVG scales with its parent */
+            width: 91%;
+        }
+
+        @media (min-width: 1400px) {
+            .button-container {
+                margin-top: 100px !important;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .game-info {
+                min-height: 920px !important;
+            }
+            .parent-div-game {
+                position: relative;
+                width: 100%; /* Ensures the parent div takes full width */
+                height: auto; /* Ensures height is relative to width */
+                margin-left: 50%;
+                transform: translate(-50%);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .button-container {
+                margin-top: 100px !important;
+            }
+
+            .button {
+                min-width: 40% !important;
+            }
+        }
+
+        .button {
+            background-color: #ff532b;
+            border: none;
+            color: white;
+            padding: 15px 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+
+        .singles {
+            background-color: #ff532b;
+        }
+
+        .doubles {
+            background-color: #e04627;
+        }
+
+        .triples {
+            background-color: #c03e22;
+        }
+
+        .mixed {
+            background-color: #a0371e;
+        }
+
+        .singles:hover {
+            background-color: #e04627;
+        }
+
+        .doubles:hover {
+            background-color: #c03e22;
+        }
+
+        .triples:hover {
+            background-color: #a0371e;
+        }
+
+        .mixed:hover {
+            background-color: #802f19;
+        }
+
+        .highlighted {
+            fill: #33FFFF
+        }
+
+        ol {
+            list-style: circle !important;
+        }
+
+        .modal {
+            display: none;
+        }
+
+        .modal.open {
+            display: flex;
+        }
+
+    </style>
 </head>
 <body class="font-sans antialiased">
 <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
