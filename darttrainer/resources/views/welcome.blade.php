@@ -2,7 +2,8 @@
 
 @section('content')
 
-    <main class="mt-12">
+    <main>
+        <livewire:statistics-scroller/>
         <div class="flex justify-end w-full mb-5">
             <a href="https://discord.gg/rG2pHQY9" target="_blank"
                class="text-gray-800 hover:text-blue-500 inline-flex items-center font-bold">
@@ -42,7 +43,6 @@
                 Close the number
             </button>
         </div>
-
         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
             <strong class="font-bold">UNDER DEVELOPMENT...</strong>
             <span class="absolute top-0 bottom-0 right-0 px-4 py-3"></span>

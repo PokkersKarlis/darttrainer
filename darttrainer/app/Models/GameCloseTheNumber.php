@@ -28,4 +28,9 @@ class GameCloseTheNumber extends Model
             ->whereIn('darts_count', [-2, 1, 2, 3, 4, 5, 6])
             ->orderBy('given_number', 'asc');
     }
+
+    public function user()
+    {
+        return $this->hasOne(User::class, 'id', 'player_id');
+    }
 }

@@ -146,6 +146,18 @@
             display: flex;
         }
 
+        @keyframes slide {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+        .animate-slide {
+            animation: slide 10s linear infinite;
+        }
+
     </style>
     <!-- Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
