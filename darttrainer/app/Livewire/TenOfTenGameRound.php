@@ -120,12 +120,34 @@ class TenOfTenGameRound extends Component
             $round->save();
             $this->game->refresh();
             $round = $this->game->lastUpdatedElement;
+            
             if ($round === null) {
                 $this->finished_rounds = false;
             }
+
+            switch ($this->game->activeElement->given_number_type) {
+                case TenOfTenSelectGame::GAME_TYPE_SINGLES:
+                    $this->area = 's' . $this->game->activeElement->given_number;
+                    if ($this->game->activeElement->given_number === TenOfTenSelectGame::GREEN) {
+                        $this->area = 'Outer';
+                    }
+                    break;
+                case TenOfTenSelectGame::GAME_TYPE_DOUBLES:
+                    $this->area = 'd' . $this->game->activeElement->given_number;
+                    if ($this->game->activeElement->given_number === TenOfTenSelectGame::BULL) {
+                        $this->area = 'Bull';
+                    }
+                    break;
+                case TenOfTenSelectGame::GAME_TYPE_TRIPLES:
+                    $this->area = 't' . $this->game->activeElement->given_number;
+                    break;
+            }
+            $this->active_number = $this->area;
         } else {
             $this->finished_rounds = true;
         }
+
+
 
         return view('livewire.ten-of-ten-game-round');
     }
