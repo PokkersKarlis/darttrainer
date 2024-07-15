@@ -5,7 +5,7 @@
     <main>
         <livewire:statistics-scroller/>
         <div class="flex justify-end w-full mb-5">
-            <a href="https://discord.gg/rG2pHQY9" target="_blank"
+            <a href="https://discord.gg/Hjs8wvKPPg" target="_blank"
                class="text-gray-800 hover:text-blue-500 inline-flex items-center font-bold">
                 DISCORD
                 <svg viewBox="0 -28.5 256 256" version="1.1" xmlns="http://www.w3.org/2000/svg"
