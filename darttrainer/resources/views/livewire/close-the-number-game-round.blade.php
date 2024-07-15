@@ -120,6 +120,9 @@
             <main class="h-full flex flex-col">
                 <!-- First Row: Centered Number -->
                 <div class="flex-1 flex items-center justify-center bg-gray-100 p-4">
+                    Round : {{ $round }} / {{ $round_count }}
+                </div>
+                <div class="flex-1 flex items-center justify-center bg-gray-100 p-4">
                     <div class="text-8xl font-bold text-green-800">
                         {{ $game->activeElement->given_number }}
                     </div>
@@ -151,6 +154,13 @@
                             @endfor
                         </div>
                         <div class="flex justify-center">
+                            @if($finished_rounds === false)
+                                <button wire:click="undo"
+                                        class="px-4 py-2 rounded-md text-white bg-blue-700 hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                    Undo
+                                </button>
+                            @endif
+                            &nbsp;
                             <button wire:click="setValue(-1)"
                                     class="px-4 py-2 rounded-md text-white bg-red-700 hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-blue-400">
                                 Miss
@@ -172,21 +182,23 @@
                         </div>
                     @else
                         <div class="flex justify-center">
+                            @if($finished_rounds === false)
+                                <button wire:click="undo"
+                                        class="px-4 py-2 rounded-md text-white bg-blue-700 hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                    Undo
+                                </button>
+                            @endif
+                            &nbsp;
                             <button wire:click="setValue(-2)"
                                     class="px-4 py-2 rounded-md text-white bg-orange-700 hover:bg-orange-900 focus:outline-none focus:ring-2 focus:ring-blue-400">
                                 Close
                             </button>
                             &nbsp;
-                            <button wire:click="setValue(-1)"
-                                    class="px-4 py-2 rounded-md text-white bg-red-700 hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-blue-400">
-                                Miss
-                            </button>
-                            &nbsp;
                             <button wire:click="@if (Auth::check())
-                                    pauseGame
+                                    pauseGame({{$game->id}})
                                 @else
-                                    endGame
-                                @endif({{$game->id}})"
+                                    endGame({{$game->id}})
+                                @endif()"
                                     class="px-4 py-2 rounded-md text-white bg-black hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
                                 @if (Auth::check())
                                     Pause game

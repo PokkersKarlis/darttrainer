@@ -28,4 +28,16 @@ class GameTenOfTen extends Model
             ->whereIn('darts_count', [-2, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
             ->orderBy('id', 'asc');
     }
+
+    public function allElements(): HasMany
+    {
+        return $this->hasMany(GameTenOfTenElement::class, 'game_id');
+    }
+
+    public function lastUpdatedElement(): HasOne
+    {
+        return $this->hasOne(GameTenOfTenElement::class, 'game_id')
+            ->whereIn('darts_count', [-2, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+            ->orderBy('id', 'desc');
+    }
 }

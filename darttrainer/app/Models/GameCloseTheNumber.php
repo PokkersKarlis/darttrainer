@@ -29,8 +29,20 @@ class GameCloseTheNumber extends Model
             ->orderBy('given_number', 'asc');
     }
 
+    public function allElements(): HasMany
+    {
+        return $this->hasMany(GameCloseTheNumberElement::class, 'game_id');
+    }
+
     public function user()
     {
         return $this->hasOne(User::class, 'id', 'player_id');
+    }
+
+    public function lastUpdatedElement(): HasOne
+    {
+        return $this->hasOne(GameCloseTheNumberElement::class, 'game_id')
+            ->whereIn('darts_count', [-2, -1, 1, 2, 3, 4, 5, 6])
+            ->orderBy('id', 'desc');
     }
 }

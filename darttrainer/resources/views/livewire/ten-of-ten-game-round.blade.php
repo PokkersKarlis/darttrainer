@@ -352,6 +352,7 @@
                     </div>
                     <!-- Right Side with Active Element -->
                     <div class="flex-1 flex flex-col items-center justify-center text-center">
+                        Round : {{ $round }} / {{ $round_count }}
                         <div class="text-4xl sm:text-2xl md:text-2xl lg:text-7xl xl:text-8xl text-black">
 
                             @if($game->activeElement->given_number_type === \App\Livewire\TenOfTenSelectGame::GAME_TYPE_SINGLES)
@@ -455,6 +456,13 @@
                         </div>
 
                         <div class="flex justify-center">
+                            @if($finished_rounds === false)
+                                <button wire:click="undo"
+                                        class="px-4 py-2 rounded-md text-white bg-blue-700 hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                    Undo
+                                </button>
+                            @endif
+                            &nbsp;
                             <button wire:click="setValue(-1)"
                                     class="px-4 py-2 rounded-md text-white bg-red-700 hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-blue-400">
                                 Miss
@@ -475,14 +483,16 @@
                         </div>
                     @else
                         <div class="flex justify-center">
+                            @if($finished_rounds === false)
+                                <button wire:click="undo"
+                                        class="px-4 py-2 rounded-md text-white bg-blue-700 hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                    Undo
+                                </button>
+                            @endif
+                            &nbsp;
                             <button wire:click="setValue(-2)"
                                     class="px-4 py-2 rounded-md text-white bg-orange-700 hover:bg-orange-900 focus:outline-none focus:ring-2 focus:ring-blue-400">
                                 Close
-                            </button>
-                            &nbsp;
-                            <button wire:click="setValue(-1)"
-                                    class="px-4 py-2 rounded-md text-white bg-red-700 hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-blue-400">
-                                Miss
                             </button>
                             &nbsp;
                             <button wire:click="@if (Auth::check())

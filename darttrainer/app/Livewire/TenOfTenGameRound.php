@@ -17,6 +17,12 @@ class TenOfTenGameRound extends Component
 
     public $area = null;
 
+    public $finished_rounds = false;
+
+    public $round = 1;
+
+    public $round_count = 0;
+
     public const DART_COUNT_MISS = -1;
     public const GAME_STATUS_FINISHED_OUT_OF_RANGE = -2;
 
@@ -76,6 +82,7 @@ class TenOfTenGameRound extends Component
             }
             $this->active_number = $this->area;
         }
+        $this->finished_rounds = true;
         return view('livewire.ten-of-ten-game-round', ['active_number' => $this->area]);
     }
 
@@ -103,6 +110,24 @@ class TenOfTenGameRound extends Component
         }
 
         return redirect()->to('/');
+    }
+
+    public function undo()
+    {
+        $round = $this->game->lastUpdatedElement;
+        if ($round !== null) {
+            $round->darts_count = 0;
+            $round->save();
+            $this->game->refresh();
+            $round = $this->game->lastUpdatedElement;
+            if ($round === null) {
+                $this->finished_rounds = false;
+            }
+        } else {
+            $this->finished_rounds = true;
+        }
+
+        return view('livewire.ten-of-ten-game-round');
     }
 
     public function render()
@@ -164,7 +189,17 @@ class TenOfTenGameRound extends Component
                         break;
                 }
             }
+            $this->round = 1 + count($this->game->finishedElements);
+            $this->round_count = count($this->game->allElements);
         }
+
+        $round = $this->game->lastUpdatedElement;
+        if ($round === null) {
+            $this->finished_rounds = true;
+        } else {
+            $this->finished_rounds = false;
+        }
+
         return view('livewire.ten-of-ten-game-round', [
             'active_number' => $this->area,
         ]);

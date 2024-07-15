@@ -15,6 +15,12 @@ class CloseTheNumberGameRound extends Component
 
     public $results = false;
 
+    public $finished_rounds = false;
+
+    public $round = 1;
+
+    public $round_count = 0;
+
     public const DART_COUNT_MISS = -1;
     public const GAME_STATUS_FINISHED_OUT_OF_RANGE = -2;
 
@@ -45,8 +51,9 @@ class CloseTheNumberGameRound extends Component
             $this->game->save();
             $this->results = true;
             session()->flash('game_end', 'Game finished');
-            //return redirect()->to('/');
+            return redirect()->to('/');
         }
+        $this->finished_rounds = true;
         sleep(0.5);
         return view('livewire.close-the-number-game-round');
     }
@@ -73,6 +80,24 @@ class CloseTheNumberGameRound extends Component
         }
 
         return redirect()->to('/');
+    }
+
+    public function undo()
+    {
+        $round = $this->game->lastUpdatedElement;
+        if ($round !== null) {
+            $round->darts_count = 0;
+            $round->save();
+            $this->game->refresh();
+            $round = $this->game->lastUpdatedElement;
+            if ($round === null) {
+                $this->finished_rounds = false;
+            }
+        } else {
+            $this->finished_rounds = true;
+        }
+
+        return view('livewire.ten-of-ten-game-round');
     }
 
     public function render()
@@ -115,6 +140,14 @@ class CloseTheNumberGameRound extends Component
             if($this->game->activeElement->darts_count === 0){
                 $this->counter_active = true;
             }
+            $round = $this->game->lastUpdatedElement;
+            if ($round === null) {
+                $this->finished_rounds = true;
+            } else {
+                $this->finished_rounds = false;
+            }
+            $this->round = 1 + count($this->game->finishedElements);
+            $this->round_count = count($this->game->allElements);
         }
 
         return view('livewire.close-the-number-game-round');
