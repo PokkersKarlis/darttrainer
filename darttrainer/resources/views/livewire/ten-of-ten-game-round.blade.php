@@ -21,7 +21,6 @@
                             Results:
                         </h3>
                         <div class="mt-2">
-                            xdfht
                             <ul class="list-disc list-inside flex flex-wrap justify-center"
                                 style="color: #1a202c; list-style: none; padding: 0;">
                                 @foreach($game->finishedElements as $game_element)
