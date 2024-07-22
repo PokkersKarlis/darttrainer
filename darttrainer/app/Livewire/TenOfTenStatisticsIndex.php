@@ -2,11 +2,9 @@
 
 namespace App\Livewire;
 
-use App\Models\GameCloseTheNumber;
 use App\Models\GameTenOfTen;
 use App\Models\GameTenOfTenElement;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class TenOfTenStatisticsIndex extends Component
@@ -40,6 +38,9 @@ class TenOfTenStatisticsIndex extends Component
                 if ($records->isNotEmpty()) {
                     $dart_count_sum = 0;
                     foreach ($records as $record) {
+                        if ($record->darts_count < 0) {
+                            continue;
+                        }
                         $dart_count_sum += $record->darts_count;
                     }
                     $all_records_average = round($dart_count_sum / count($records), 2);
@@ -49,22 +50,28 @@ class TenOfTenStatisticsIndex extends Component
                     // Merge the results into the collection
                     $allRecordsExceptLast = $allRecordsExceptLast->merge($records_except_last);
 
-                    $dart_count_without_last_sum = 0;
-                    foreach ($allRecordsExceptLast as $record_except_last) {
-                        $dart_count_without_last_sum += $record_except_last->darts_count;
-                    }
-                    $all_records_except_last_average = round($dart_count_without_last_sum / count($allRecordsExceptLast), 2);
+                    if (!$allRecordsExceptLast->isEmpty()) {
+                        $dart_count_without_last_sum = 0;
+                        foreach ($allRecordsExceptLast as $record_except_last) {
+                            $dart_count_without_last_sum += $record_except_last->darts_count;
+                        }
+                        $all_records_except_last_average = round($dart_count_without_last_sum / count($allRecordsExceptLast), 2);
 
-                    if ($all_records_average - $all_records_except_last_average < 0) {
-                        $result['difference'] = 'down';
-                        $result['result'] = (string)$all_records_average . ' (-' . $all_records_except_last_average - $all_records_average . ')';
-                    } elseif ($all_records_average - $all_records_except_last_average > 0) {
-                        $result['difference'] = 'up';
-                        $result['result'] = (string)$all_records_average . ' (+' . $all_records_average- $all_records_except_last_average . ')';
+                        if ($all_records_average - $all_records_except_last_average < 0) {
+                            $result['difference'] = 'down';
+                            $result['result'] = (string)$all_records_average . ' (-' . $all_records_except_last_average - $all_records_average . ')';
+                        } elseif ($all_records_average - $all_records_except_last_average > 0) {
+                            $result['difference'] = 'up';
+                            $result['result'] = (string)$all_records_average . ' (+' . $all_records_average - $all_records_except_last_average . ')';
+                        } else {
+                            $result['difference'] = 'stable';
+                            $result['result'] = (string)$all_records_average;
+                        }
                     } else {
                         $result['difference'] = 'stable';
                         $result['result'] = (string)$all_records_average;
                     }
+
                 } else {
                     $result = 'n/a';
                 }
