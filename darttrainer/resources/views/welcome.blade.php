@@ -82,9 +82,8 @@
                     </svg>
                 </div>
                 <div>
-                    <p class="font-bold">UPDATE : BOTH TRAINING GAMES are available for early access and testing.<br>
-                    Registered and logged in user game progress is saved automatically and data now is collected. DASHBOARD OPENED. Statistics in dashboard coming SOON. <br>
-                    You can now play and collect data!!!</p>
+                    <p class="font-bold">UPDATE : BASIC STATISTICS FOR GAME ten of ten is LIVE IN DASHBOARD!!! BOTH TRAINING GAMES are available for early access and testing.<br>
+                    Registered and logged in user game progress is saved automatically and data now is collected.</p>
                 </div>
             </div>
         </div>
