@@ -35,6 +35,30 @@
                                 @if(is_array($result[1]))
                                     <td class="text-left py-3 px-4 border border-gray-200">
                                         {{ $result[1]['result'] }} d/av
+                                        @if($result[1]['difference'] === 'up')
+                                            <div class="text-red-500">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                          d="M5 15l7-7 7 7"/>
+                                                </svg>
+                                            </div>
+                                        @elseif($result[1]['difference'] === 'down')
+                                            <div class="text-green-500">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                          d="M19 9l-7 7-7-7"/>
+                                                </svg>
+                                            </div>
+                                        @elseif($result[1]['difference'] === 'stable')
+                                            <div class="text-gray-500">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14"/>
+                                                </svg>
+                                            </div>
+                                        @endif
                                     </td>
                                 @else
                                     <td class="text-left py-3 px-4 border border-gray-200">
@@ -46,6 +70,30 @@
                                 @if(is_array($result[2]))
                                     <td class="text-left py-3 px-4 border border-gray-200">
                                         {{ $result[2]['result'] }} d/av
+                                        @if($result[2]['difference'] === 'up')
+                                            <div class="text-red-500">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                          d="M5 15l7-7 7 7"/>
+                                                </svg>
+                                            </div>
+                                        @elseif($result[2]['difference'] === 'down')
+                                            <div class="text-green-500">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                          d="M19 9l-7 7-7-7"/>
+                                                </svg>
+                                            </div>
+                                        @elseif($result[2]['difference'] === 'stable')
+                                            <div class="text-gray-500">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14"/>
+                                                </svg>
+                                            </div>
+                                        @endif
                                     </td>
                                 @else
                                     <td class="text-left py-3 px-4 border border-gray-200">
@@ -57,6 +105,30 @@
                                 @if(is_array($result[3]))
                                     <td class="text-left py-3 px-4 border border-gray-200">
                                         {{ $result[3]['result'] }} d/av
+                                        @if($result[3]['difference'] === 'up')
+                                            <div class="text-red-500">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                          d="M5 15l7-7 7 7"/>
+                                                </svg>
+                                            </div>
+                                        @elseif($result[3]['difference'] === 'down')
+                                            <div class="text-green-500">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                          d="M19 9l-7 7-7-7"/>
+                                                </svg>
+                                            </div>
+                                        @elseif($result[3]['difference'] === 'stable')
+                                            <div class="text-gray-500">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14"/>
+                                                </svg>
+                                            </div>
+                                        @endif
                                     </td>
                                 @else
                                     <td class="text-left py-3 px-4 border border-gray-200">

@@ -21,7 +21,6 @@ class TenOfTenStatisticsIndex extends Component
             ->where('finished', 2)
             ->pluck('id');
 
-
         $allRecordsExceptLast = collect();
 
         foreach (self::NUMBER_ARRAY as $number) {
@@ -39,24 +38,23 @@ class TenOfTenStatisticsIndex extends Component
                     $dart_count_sum = 0;
                     foreach ($records as $record) {
                         if ($record->darts_count < 0) {
-                            continue;
+                            $dart_count_sum += 10;
+                        } else {
+                            $dart_count_sum += $record->darts_count;
                         }
-                        $dart_count_sum += $record->darts_count;
                     }
-                    $all_records_average = round($dart_count_sum / count($records), 2);
+
+                    $all_records_average = round($dart_count_sum / ((count($records) * 10) / 10), 2);
 
                     $records_except_last = $records->skip(1);
 
-                    // Merge the results into the collection
-                    $allRecordsExceptLast = $allRecordsExceptLast->merge($records_except_last);
-
-                    if (!$allRecordsExceptLast->isEmpty()) {
+                    if (!$records_except_last->isEmpty()) {
                         $dart_count_without_last_sum = 0;
-                        foreach ($allRecordsExceptLast as $record_except_last) {
+                        foreach ($records_except_last as $record_except_last) {
                             $dart_count_without_last_sum += $record_except_last->darts_count;
                         }
-                        $all_records_except_last_average = round($dart_count_without_last_sum / count($allRecordsExceptLast), 2);
 
+                        $all_records_except_last_average = round($dart_count_without_last_sum / (count($records_except_last) * 10 / 10), 2);
                         if ($all_records_average - $all_records_except_last_average < 0) {
                             $result['difference'] = 'down';
                             $result['result'] = (string)$all_records_average . ' (-' . $all_records_except_last_average - $all_records_average . ')';
@@ -66,6 +64,7 @@ class TenOfTenStatisticsIndex extends Component
                         } else {
                             $result['difference'] = 'stable';
                             $result['result'] = (string)$all_records_average;
+
                         }
                     } else {
                         $result['difference'] = 'stable';
