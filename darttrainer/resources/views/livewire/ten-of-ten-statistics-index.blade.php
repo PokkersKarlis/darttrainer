@@ -23,7 +23,7 @@
                     @foreach($results as $number => $result)
                         @if($number >= 1)
                             <tr>
-                                <td class="text-left py-3 px-4 border border-gray-200">
+                                <td class="text-left py-1 px-1 border border-gray-200">
                                     <div class="py-2 px-2 uppercase font-bold text-xs border-black text-center
                     {{ in_array($number, [1, 4, 6, 15, 17, 19, 16, 11, 9, 5], true) ? 'bg-green-600' : 'bg-red-600' }}
                     rounded border-2">
@@ -33,7 +33,7 @@
 
                                 {{-- First result column --}}
                                 @if(is_array($result[1]))
-                                    <td class="text-left py-3 px-4 border border-gray-200">
+                                    <td class="text-left py-1 px-1 border border-gray-200">
                                         {{ $result[1]['result'] }} d/av
                                         @if($result[1]['difference'] === 'up')
                                             <div class="text-red-500">
@@ -61,14 +61,14 @@
                                         @endif
                                     </td>
                                 @else
-                                    <td class="text-left py-3 px-4 border border-gray-200">
+                                    <td class="text-left py-1 px-1 border border-gray-200">
                                         {{ $result[1] }}
                                     </td>
                                 @endif
 
                                 {{-- Second result column --}}
                                 @if(is_array($result[2]))
-                                    <td class="text-left py-3 px-4 border border-gray-200">
+                                    <td class="text-left py-1 px-1 border border-gray-200">
                                         {{ $result[2]['result'] }} d/av
                                         @if($result[2]['difference'] === 'up')
                                             <div class="text-red-500">
@@ -96,14 +96,14 @@
                                         @endif
                                     </td>
                                 @else
-                                    <td class="text-left py-3 px-4 border border-gray-200">
+                                    <td class="text-left py-1 px-1 border border-gray-200">
                                         {{ $result[2] }}
                                     </td>
                                 @endif
 
                                 {{-- Third result column --}}
                                 @if(is_array($result[3]))
-                                    <td class="text-left py-3 px-4 border border-gray-200">
+                                    <td class="text-left py-1 px-1 border border-gray-200">
                                         {{ $result[3]['result'] }} d/av
                                         @if($result[3]['difference'] === 'up')
                                             <div class="text-red-500">
@@ -131,7 +131,7 @@
                                         @endif
                                     </td>
                                 @else
-                                    <td class="text-left py-3 px-4 border border-gray-200">
+                                    <td class="text-left py-1 px-1 border border-gray-200">
                                         {{ $result[3] }}
                                     </td>
                                 @endif
