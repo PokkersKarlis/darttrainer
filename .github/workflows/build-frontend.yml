@@ -1,0 +1,41 @@
+# CloudLinux / cPanel: `vite build` bieži krīt ar WASM OOM. Uzbūvē šeit un augšupielādē `public/build` uz servera.
+name: Build frontend (Vite)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'darttrainer/package.json'
+      - 'darttrainer/package-lock.json'
+      - 'darttrainer/vite.config.js'
+      - 'darttrainer/resources/js/**'
+      - 'darttrainer/resources/css/**'
+      - 'darttrainer/resources/views/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: darttrainer
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: darttrainer/package-lock.json
+
+      - name: Install & build
+        run: |
+          npm ci
+          npm run build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: darttrainer-public-build
+          path: darttrainer/public/build
+          if-no-files-found: error
