@@ -5,7 +5,7 @@ import './i18n/messages.js';
 
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
-import App from './App.vue';
+import App from './app/App.vue';
 import router from './router/index.js';
 import { api } from './api/client.js';
 import { installApiInterceptors } from './api/interceptors.js';
@@ -25,7 +25,7 @@ import ShellSidebarAdminLink from './components/shell/ShellSidebarAdminLink.js';
 import ShellSidebar from './components/shell/ShellSidebar.js';
 import ShellMainContent from './components/shell/ShellMainContent.js';
 import ShellRightAds from './components/shell/ShellRightAds.js';
-import AppShellBody from './components/shell/AppShellBody.vue';
+import AppShellBody from './components/shell/layout/AppShellBody.vue';
 import DartboardInput from './components/DartboardInput.js';
 import X01ThrowInput from './components/X01ThrowInput.js';
 import CricketClosedCheck from './components/CricketClosedCheck.js';

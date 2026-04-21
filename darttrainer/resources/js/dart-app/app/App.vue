@@ -1,10 +1,10 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
-import { useAuthStore } from './store/auth.js';
-import { useLocaleStore } from './store/locale.js';
-import { useFriendsStore } from './store/friends.js';
-import { dartSafeDisplayMessage } from './utils/safeDisplay.js';
-import AppShellHeader from './components/shell/AppShellHeader.vue';
+import { useAuthStore } from '../store/auth.js';
+import { useLocaleStore } from '../store/locale.js';
+import { useFriendsStore } from '../store/friends.js';
+import { dartSafeDisplayMessage } from '../utils/safeDisplay.js';
+import AppShellHeader from '../components/shell/layout/AppShellHeader.vue';
 
 const auth = useAuthStore();
 const locale = useLocaleStore();

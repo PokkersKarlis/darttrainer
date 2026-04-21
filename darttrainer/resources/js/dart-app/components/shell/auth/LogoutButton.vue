@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { useAuthStore, useLocaleStore } from '../../store/index.js';
+import { useAuthStore, useLocaleStore } from '../../../store/index.js';
 
 const auth = useAuthStore();
 const locale = useLocaleStore();

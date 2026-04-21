@@ -1,5 +1,5 @@
 <script setup>
-import { useLocaleStore } from '../../store/index.js';
+import { useLocaleStore } from '../../../store/index.js';
 
 const locale = useLocaleStore();
 const t = (k) => locale.t(k);

@@ -1,5 +1,5 @@
 <script setup>
-import { useLocaleStore } from '../../store/index.js';
+import { useLocaleStore } from '../../../store/index.js';
 
 defineProps({
   disabled: { type: Boolean, default: false },

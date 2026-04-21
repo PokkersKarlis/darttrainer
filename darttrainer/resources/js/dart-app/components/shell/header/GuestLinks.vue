@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { useLocaleStore } from '../../store/index.js';
+import { useLocaleStore } from '../../../store/index.js';
 
 const locale = useLocaleStore();
 const t = (k) => locale.t(k);

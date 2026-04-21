@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import { useAuthStore, useLocaleStore, useFriendsStore } from '../../store/index.js';
+import { useAuthStore, useLocaleStore, useFriendsStore } from '../../../store/index.js';
 
 const auth = useAuthStore();
 const friends = useFriendsStore();

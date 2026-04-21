@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import { useAuthStore } from '../../store/index.js';
+import { useAuthStore } from '../../../store/index.js';
 
 const auth = useAuthStore();
 
