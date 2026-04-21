@@ -101,6 +101,9 @@
                             <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:#64748b;">
                                 {{ __('mail.verify_footer', ['app' => $appName]) }}
                             </p>
+                            <p style="margin:6px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:#64748b;">
+                                {{ __('mail.verify_official_site', ['host' => $siteHost]) }}
+                            </p>
                         </td>
                     </tr>
                 </table>

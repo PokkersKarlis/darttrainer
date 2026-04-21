@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\TrainDartVerifyEmail;
 use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,6 +12,14 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, MustVerifyEmailTrait, Notifiable;
+
+    /**
+     * Pielāgota vēstule (resources/views/mail/verify-email.blade.php), nevis Laravel Markdown noklusējums.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new TrainDartVerifyEmail);
+    }
 
     /**
      * The attributes that are mass assignable.

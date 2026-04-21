@@ -21,6 +21,8 @@ return [
 
     'verify_footer' => 'Šo vēsti nosūtīja :app.',
 
+    'verify_official_site' => 'Tīmekļa vietne: :host',
+
     'verify_text_opening_named' => "Sveiki, :name!\n\nPaldies, ka reģistrējāties :app.",
 
     'verify_text_opening_anon' => "Sveiki!\n\nPaldies, ka reģistrējāties :app.\n",

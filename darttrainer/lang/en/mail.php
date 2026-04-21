@@ -21,6 +21,8 @@ return [
 
     'verify_footer' => 'This message was sent by :app.',
 
+    'verify_official_site' => 'Website: :host',
+
     'verify_text_opening_named' => "Hello :name,\n\nThanks for signing up for :app.",
 
     'verify_text_opening_anon' => "Thanks for signing up for :app.\n",

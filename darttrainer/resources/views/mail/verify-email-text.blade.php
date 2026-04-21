@@ -7,3 +7,4 @@
 
 {{ __('mail.verify_text_expiry') }}
 {{ __('mail.verify_footer', ['app' => $appName]) }}
+{{ __('mail.verify_official_site', ['host' => $siteHost]) }}
