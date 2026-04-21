@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>DartTrainer</title>
-  <!-- Pirms Vue: #app satur {{ … }} — paslēpt, lai nerādās neapstrādāts teksts (v-cloak vien var būt par vēlu līdz ar CSS) -->
+  <!-- Līdz Vue mount: paslēpt neapstrādātos {{ }}; failsafe atrodas lapas beigās, ja boot apstājas (piem. API) -->
   <style>#app:not([data-app-mounted]){visibility:hidden!important}</style>
 
   <script>
@@ -189,6 +189,45 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #1e3050; border-radius: 4px; }
 
+    /* ── Top header: šaurie ekrāni (logo + valoda + auth bez pārgriešanas) ── */
+    .app-shell-header {
+      box-sizing: border-box;
+    }
+    @media (max-width: 639px) {
+      .app-shell-header {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+        gap: 6px !important;
+      }
+      .dt-header-logo img {
+        max-height: 34px !important;
+        max-width: 82px !important;
+      }
+      .app-shell-header .dt-header-lang {
+        gap: 2px !important;
+        margin-right: 0 !important;
+        flex-shrink: 0;
+      }
+      .app-shell-header .dt-header-lang button {
+        padding: 4px 6px !important;
+        font-size: 10px !important;
+      }
+      .app-shell-header .dt-header-auth {
+        min-width: 0 !important;
+        flex: 0 1 auto;
+        gap: 6px !important;
+      }
+      .app-shell-header .dt-header-auth a.dt-header-register {
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        padding: 5px 8px !important;
+      }
+      .app-shell-header .dt-header-auth a.dt-header-login {
+        font-size: 11px !important;
+        padding: 4px 6px !important;
+      }
+    }
+
     /* ── Sidebar nav link ───────────────────────────────── */
     .nav-link {
       display: flex; align-items: center; gap: 10px;
@@ -209,6 +248,12 @@
     }
     .nav-link--soon { font-size: 9px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #475569; margin-left: auto; }
 
+    .nav-card--locked {
+      opacity: 0.42;
+      cursor: not-allowed;
+      filter: grayscale(0.2);
+    }
+
     /* ── Mobile bottom nav ──────────────────────────────── */
     .bnav-item {
       display: flex; flex-direction: column; align-items: center;
@@ -221,7 +266,7 @@
     .bnav-item:hover, .bnav-item.active { color: #f59e0b; }
     .bnav-item .bicon { font-size: 20px; line-height: 1; }
     .bnav-item--disabled {
-      opacity: 0.4;
+      opacity: 0.38;
       cursor: not-allowed;
       pointer-events: none;
       color: #475569 !important;
@@ -301,10 +346,10 @@
   <!-- ══════════════════════════════════════════════════════════
        TOP HEADER
   ══════════════════════════════════════════════════════════ -->
-  <header class="app-shell-header" style="height:56px;flex-shrink:0;background:#0a1120;border-bottom:1px solid #162540;display:flex;align-items:center;padding:0 16px;gap:16px;z-index:30">
+  <header class="app-shell-header" style="min-height:56px;height:56px;flex-shrink:0;background:#0a1120;border-bottom:1px solid #162540;display:flex;align-items:center;padding:0 12px;gap:12px;z-index:30">
 
     <!-- Logo (klasiskais logo.png no Laravel public) -->
-    <a href="#/" style="display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0">
+    <a href="#/" class="dt-header-logo" style="display:flex;align-items:center;gap:8px;text-decoration:none;flex-shrink:0;min-width:0">
       <img src="/images/logo.png" alt="DartTrainer" width="160" height="52"
            style="height:48px;width:auto;max-width:200px;object-fit:contain;display:block"
            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
@@ -318,7 +363,9 @@
 
     <!-- Friend requests (!) -->
     <button v-if="auth.hydrated && auth.user" type="button" @click="friends.openModal()"
+            :disabled="needsEmailVerify"
             style="position:relative;flex-shrink:0;width:36px;height:36px;border-radius:10px;border:1px solid #334155;background:#0f1c30;color:#f59e0b;font-weight:900;font-size:18px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center"
+            :style="needsEmailVerify ? 'opacity:0.45;cursor:not-allowed' : ''"
             :title="t('friends.incomingModalTitle')">
       !
       <span v-if="friends.incomingCount"
@@ -328,7 +375,7 @@
     </button>
 
     <!-- Language -->
-    <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;margin-right:4px">
+    <div class="dt-header-lang" style="display:flex;align-items:center;gap:4px;flex-shrink:0;margin-right:2px">
       <button type="button" @click="locale.setLocale('lv')"
               :style="locale.locale === 'lv'
                 ? 'font-size:11px;font-weight:800;padding:5px 9px;border-radius:6px;border:1px solid #f59e0b;background:#f59e0b;color:#000;cursor:pointer'
@@ -344,22 +391,21 @@
     </div>
 
     <!-- User / Auth area (ne «viesis», kamēr nav pabeigta /auth/me — novērš mirgojumu pārlādē) -->
-    <div style="display:flex;align-items:center;gap:10px;min-width:min(200px,28vw)">
+    <div class="dt-header-auth" style="display:flex;align-items:center;gap:8px;min-width:0;flex-shrink:1">
       <template v-if="auth.hydrated && auth.user">
         <a v-if="auth.user?.is_admin" href="#/admin"
+           :class="{ 'nav-link--disabled': needsEmailVerify }"
            style="display:inline-flex;align-items:center;gap:6px;flex-shrink:0;text-decoration:none;
                   font-size:12px;font-weight:800;color:#0a1120;background:linear-gradient(135deg,#fbbf24,#f59e0b);
                   padding:8px 14px;border-radius:10px;border:none;box-shadow:0 2px 12px rgba(245,158,11,.35);
-                  white-space:nowrap;transition:filter .15s,transform .1s"
-           onmouseover="this.style.filter='brightness(1.08)'"
-           onmouseout="this.style.filter=''">
+                  white-space:nowrap;transition:filter .15s,transform .1s">
           <span aria-hidden="true">⚙️</span>{{ t('shell.adminBtn') }}
         </a>
         <div style="display:flex;align-items:center;gap:8px">
           <div style="width:30px;height:30px;border-radius:50%;background:#1e3050;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#f59e0b;flex-shrink:0">
-            {{ auth.user.name[0].toUpperCase() }}
+            {{ (auth.user.name && auth.user.name[0] ? auth.user.name[0] : '?').toUpperCase() }}
           </div>
-          <span class="hidden sm:inline" style="font-size:13px;color:#94a3b8;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ auth.user.name }}</span>
+          <span class="hidden sm:inline" style="font-size:13px;color:#94a3b8;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ auth.user.name || '—' }}</span>
         </div>
         <button @click="auth.logout()"
                 style="font-size:12px;color:#ef4444;background:rgba(239,68,68,.12);border:none;padding:5px 10px;border-radius:6px;cursor:pointer;font-weight:600;transition:background .15s"
@@ -369,14 +415,14 @@
         </button>
       </template>
       <template v-else-if="auth.hydrated && !auth.user">
-        <a href="#/login"
-           style="font-size:13px;color:#94a3b8;text-decoration:none;padding:5px 10px;border-radius:6px;transition:color .15s"
+        <a href="#/login" class="dt-header-login"
+           style="font-size:13px;color:#94a3b8;text-decoration:none;padding:5px 8px;border-radius:6px;transition:color .15s;white-space:nowrap;flex-shrink:0"
            onmouseover="this.style.color='#f1f5f9'"
            onmouseout="this.style.color='#94a3b8'">{{ t('shell.login') }}</a>
-        <a href="#/register"
-           style="font-size:13px;background:#f59e0b;color:#000;font-weight:700;padding:6px 14px;border-radius:8px;text-decoration:none;transition:background .15s"
+        <a href="#/register" class="dt-header-register"
+           style="font-size:13px;background:#f59e0b;color:#000;font-weight:700;padding:6px 10px;border-radius:8px;text-decoration:none;transition:background .15s;white-space:nowrap;flex-shrink:0"
            onmouseover="this.style.background='#fbbf24'"
-           onmouseout="this.style.background='#f59e0b'">{{ t('shell.register') }}</a>
+           onmouseout="this.style.background='#f59e0b'">{{ t('shell.registerShort') }}</a>
       </template>
       <template v-else>
         <div class="flex items-center gap-1.5 px-1" role="status" :aria-label="t('shell.authPending')" :title="t('shell.authPending')">
@@ -388,6 +434,16 @@
       </template>
     </div>
   </header>
+
+  <div v-if="needsEmailVerify"
+       style="flex-shrink:0;background:#422006;border-bottom:1px solid #92400e;padding:10px 16px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px;z-index:25">
+    <p style="margin:0;font-size:13px;color:#fde68a;text-align:center;line-height:1.45;max-width:42rem">
+      {{ t('auth.verifyBanner') }}
+    </p>
+    <dt-button variant="secondary" size="sm" :disabled="resendBusy" @click="resendVerification">
+      {{ t('auth.resendVerification') }}
+    </dt-button>
+  </div>
 
   <!-- Viss zem header: saturs + mobilā reklāma + apakšējā nav — lai augstums iekļaujas 100dvh -->
   <div style="flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden">
@@ -406,15 +462,16 @@
         <a href="#/" class="nav-link"><span class="icon">🏠</span>{{ t('nav.home') }}</a>
 
         <div style="margin:8px 0 4px 12px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#334155">Multiplayer</div>
-        <a href="#/lobby" class="nav-link"><span class="icon">🎮</span>{{ t('nav.lobby') }}</a>
-        <a href="#/friends" class="nav-link"><span class="icon">👥</span>{{ t('nav.friends') }}</a>
+        <a href="#/lobby" class="nav-link" :class="{ 'nav-link--disabled': needsEmailVerify }"><span class="icon">🎮</span>{{ t('nav.lobby') }}</a>
+        <a href="#/friends" class="nav-link" :class="{ 'nav-link--disabled': needsEmailVerify }"><span class="icon">👥</span>{{ t('nav.friends') }}</a>
 
         <div style="margin:8px 0 4px 12px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#334155">Treniņš</div>
-        <a href="#/training/x01" class="nav-link"><span class="icon">🎯</span>{{ t('nav.x01solo') }}</a>
+        <a href="#/training/x01" class="nav-link" :class="{ 'nav-link--disabled': needsEmailVerify }"><span class="icon">🎯</span>{{ t('nav.x01solo') }}</a>
 
         <div style="margin:8px 0 4px 12px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#334155">Progress</div>
-        <a href="#/stats" class="nav-link"><span class="icon">📊</span>{{ t('nav.stats') }}</a>
+        <a href="#/stats" class="nav-link" :class="{ 'nav-link--disabled': needsEmailVerify }"><span class="icon">📊</span>{{ t('nav.stats') }}</a>
         <a v-if="auth.user?.is_admin" href="#/admin"
+           :class="{ 'nav-link--disabled': needsEmailVerify }"
            style="display:flex;align-items:center;justify-content:center;gap:8px;margin:10px 4px 0;padding:11px 12px;
                   border-radius:12px;text-decoration:none;font-weight:800;font-size:13px;color:#0a1120;
                   background:linear-gradient(135deg,#fbbf24,#f59e0b);border:1px solid #d97706;
@@ -461,9 +518,9 @@
     <!-- PAGE CONTENT -->
     <main style="flex:1;overflow:hidden;min-width:0;min-height:0;background:#060d18;display:flex;flex-direction:column">
       <div class="shell-main-scroll" style="flex:1;min-height:0;min-width:0;overflow-y:auto;overflow-x:hidden">
-        <div class="shell-main-scroll-inner" style="min-height:100%;min-height:min-content">
+        <div class="shell-main-scroll-inner" style="flex:1;min-height:0;display:flex;flex-direction:column">
           <transition name="fade" mode="out-in">
-            <router-view class="shell-router-outlet" style="display:flex;flex-direction:column;min-height:min-content"></router-view>
+            <router-view class="shell-router-outlet" style="flex:1;min-height:0;display:flex;flex-direction:column;min-width:0"></router-view>
           </transition>
         </div>
       </div>
@@ -501,29 +558,29 @@
     <a href="#/" class="bnav-item">
       <span class="bicon">🏠</span><span>{{ t('nav.home') }}</span>
     </a>
-    <a href="#/lobby" class="bnav-item">
+    <a href="#/lobby" :class="['bnav-item', { 'bnav-item--disabled': needsEmailVerify }]">
       <span class="bicon">🎮</span><span>{{ t('nav.lobby') }}</span>
     </a>
-    <a href="#/friends" class="bnav-item">
+    <a href="#/friends" :class="['bnav-item', { 'bnav-item--disabled': needsEmailVerify }]">
       <span class="bicon">👥</span><span>{{ t('nav.friends') }}</span>
     </a>
-    <a href="#/training/x01" class="bnav-item">
+    <a href="#/training/x01" :class="['bnav-item', { 'bnav-item--disabled': needsEmailVerify }]">
       <span class="bicon">🎯</span><span>{{ t('nav.x01solo') }}</span>
     </a>
-    <a href="#/stats" class="bnav-item">
+    <a href="#/stats" :class="['bnav-item', { 'bnav-item--disabled': needsEmailVerify }]">
       <span class="bicon">📊</span><span>{{ t('nav.stats') }}</span>
     </a>
-    <a v-if="auth.user?.is_admin" href="#/admin" class="bnav-item" style="color:#fbbf24">
+    <a v-if="auth.user?.is_admin" href="#/admin" :class="['bnav-item', { 'bnav-item--disabled': needsEmailVerify }]" style="color:#fbbf24">
       <span class="bicon">⚙️</span><span style="font-weight:800">{{ t('nav.admin') }}</span>
     </a>
   </nav>
   <nav v-else-if="auth.hydrated && !auth.user" class="lg:hidden dt-shell-mobile-bnav"
-       style="flex-shrink:0;height:60px;background:#0a1120;border-top:1px solid #162540;display:flex;justify-content:center;gap:8px;padding:0 12px">
-    <a href="#/login" class="bnav-item" style="flex:1;max-width:160px">
-      <span class="bicon">🔑</span><span>{{ t('shell.login') }}</span>
+       style="flex-shrink:0;height:60px;background:#0a1120;border-top:1px solid #162540;display:flex;justify-content:center;gap:8px;padding:0 10px">
+    <a href="#/login" class="bnav-item" style="flex:1;min-width:0">
+      <span class="bicon">🔑</span><span style="text-align:center;line-height:1.2">{{ t('shell.login') }}</span>
     </a>
-    <a href="#/register" class="bnav-item" style="flex:1;max-width:160px;color:#fbbf24">
-      <span class="bicon">✨</span><span style="font-weight:800">{{ t('shell.register') }}</span>
+    <a href="#/register" class="bnav-item" style="flex:1;min-width:0;color:#fbbf24">
+      <span class="bicon">✨</span><span style="font-weight:800;text-align:center;line-height:1.2">{{ t('shell.registerShort') }}</span>
     </a>
   </nav>
 
@@ -550,11 +607,11 @@
 <!-- ══════════════════════════════════════════════════════════
      APP SCRIPTS  (?v= — keša laušana; palielini pēc JS izmaiņām)
 ══════════════════════════════════════════════════════════ -->
-<script src="/js/i18n/messages.js?v=spa-20260426-1"></script>
+<script src="/js/i18n/messages.js?v=spa-20260429-2"></script>
 <script src="/js/utils/safeDisplay.js?v=spa-20260425-1"></script>
-<script src="/js/api.js?v=spa-20260426-1"></script>
+<script src="/js/api.js?v=spa-20260429-1"></script>
 <script src="/js/store/locale.js?v=spa-20260421-1"></script>
-<script src="/js/store/auth.js?v=spa-20260421-1"></script>
+<script src="/js/store/auth.js?v=spa-20260429-2"></script>
 <script src="/js/store/game.js?v=spa-20260424-1"></script>
 <script src="/js/store/friends.js?v=spa-20260421-1"></script>
 <script src="/js/composables/useBodyShellClass.js?v=spa-20260425-1"></script>
@@ -567,16 +624,27 @@
 <script src="/js/components/CricketMarkCell.js?v=spa-20260421-1"></script>
 <script src="/js/components/MatchReport.js?v=spa-20260424-1"></script>
 <script src="/js/components/X01SoloProtocol.js?v=spa-20260424-1"></script>
-<script src="/js/pages/Home.js?v=spa-20260427-1"></script>
-<script src="/js/pages/Login.js?v=spa-20260425-1"></script>
-<script src="/js/pages/Register.js?v=spa-20260425-1"></script>
+<script src="/js/pages/Home.js?v=spa-20260429-1"></script>
+<script src="/js/pages/Login.js?v=spa-20260429-1"></script>
+<script src="/js/pages/Register.js?v=spa-20260429-2"></script>
 <script src="/js/pages/Lobby.js?v=spa-20260425-1"></script>
 <script src="/js/pages/Friends.js?v=spa-20260422-4"></script>
 <script src="/js/pages/Game.js?v=spa-20260425-1"></script>
-<script src="/js/pages/X01Training.js?v=spa-20260424-1"></script>
+<script src="/js/pages/X01Training.js?v=spa-20260429-1"></script>
 <script src="/js/pages/Statistics.js?v=spa-20260424-2"></script>
 <script src="/js/pages/Admin.js?v=spa-20260421-1"></script>
 <script src="/js/router.js?v=spa-20260427-1"></script>
-<script src="/js/app.js?v=spa-20260426-1"></script>
+<script src="/js/app.js?v=spa-20260429-1"></script>
+<script>
+(function () {
+  setTimeout(function () {
+    var el = document.getElementById('app');
+    if (el && !el.hasAttribute('data-app-mounted')) {
+      el.setAttribute('data-app-mounted', '');
+      console.warn('DartTrainer: boot failsafe — pārbaudi /api (CSRF), tīklu un konsoli');
+    }
+  }, 14000);
+})();
+</script>
 </body>
 </html>

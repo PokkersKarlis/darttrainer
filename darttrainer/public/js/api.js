@@ -2,6 +2,7 @@
 const api = axios.create({
   baseURL: '/api',
   withCredentials: true,
+  timeout: 15000,
   xsrfCookieName: 'XSRF-TOKEN',
   xsrfHeaderName: 'X-XSRF-TOKEN',
   headers: {
@@ -39,6 +40,10 @@ api.interceptors.response.use(
     const status = err.response?.status;
     const url = err.config?.url || '';
     const data = err.response?.data;
+
+    if (status === 403 && data?.code === 'email_unverified') {
+      return Promise.reject(err);
+    }
 
     if (status === 403 && data?.code === 'account_banned') {
       if (!_accountBanned403Handled) {
@@ -101,6 +106,7 @@ const Auth = {
   login:    data   => api.post('/auth/login', data),
   register: data   => api.post('/auth/register', data),
   logout:   (config) => api.post('/auth/logout', {}, config || {}),
+  resendVerification: (config) => api.post('/auth/email/resend', {}, config || {}),
 };
 
 // ── Rooms ─────────────────────────────────────────────────────────────────────

@@ -18,23 +18,27 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('/public/home-summary', [PublicStatsController::class, 'homeSummary']);
 });
 
-// ── Auth ──────────────────────────────────────────────────────────────────────
+// ── Auth (sesija; daļa bez e-pasta apstiprinājuma) ───────────────────────────
 Route::middleware('throttle:8,1')->group(function () {
     Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/login', [AuthController::class, 'login']);
 });
-Route::post('/auth/logout', [AuthController::class, 'logout'])->middleware('auth:web');
-Route::get('/auth/me', [AuthController::class, 'me']);
-
-// ── Rooms ───────────────────────────────────────────────────────────────────────
 Route::middleware('auth:web')->group(function () {
-    Route::get('/rooms/my-active',     [RoomController::class, 'myActive']);
-    Route::get('/rooms/my-actives',    [RoomController::class, 'myActives']);
-    Route::post('/rooms',              [RoomController::class, 'create']);
-    Route::post('/rooms/join',         [RoomController::class, 'join']);
-    Route::get('/rooms/{room}',        [RoomController::class, 'show']);
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::get('/auth/me', [AuthController::class, 'me']);
+    Route::post('/auth/email/resend', [AuthController::class, 'sendVerificationEmail'])
+        ->middleware('throttle:6,1');
+});
+
+// ── Rooms, draugi, spēles — tikai ar apstiprinātu e-pastu ─────────────────────
+Route::middleware(['auth:web', 'verified.email'])->group(function () {
+    Route::get('/rooms/my-active', [RoomController::class, 'myActive']);
+    Route::get('/rooms/my-actives', [RoomController::class, 'myActives']);
+    Route::post('/rooms', [RoomController::class, 'create']);
+    Route::post('/rooms/join', [RoomController::class, 'join']);
+    Route::get('/rooms/{room}', [RoomController::class, 'show']);
     Route::post('/rooms/{room}/start', [RoomController::class, 'start']);
-    Route::delete('/rooms/{room}',     [RoomController::class, 'leave']);
+    Route::delete('/rooms/{room}', [RoomController::class, 'leave']);
 
     Route::get('/friends/search', [FriendController::class, 'search']);
     Route::get('/friends', [FriendController::class, 'index']);
@@ -48,14 +52,11 @@ Route::middleware('auth:web')->group(function () {
     Route::get('/guest-presets', [UserGuestPresetController::class, 'index']);
     Route::post('/guest-presets', [UserGuestPresetController::class, 'store']);
     Route::delete('/guest-presets/{id}', [UserGuestPresetController::class, 'destroy'])->whereNumber('id');
-});
 
-// ── Active game ───────────────────────────────────────────────────────────────
-Route::middleware('auth:web')->group(function () {
-    Route::get('/games/{match}/state',    [GameController::class, 'state']);
-    Route::post('/games/{match}/throw',   [GameController::class, 'submitThrow']);
-    Route::post('/games/{match}/undo',    [GameController::class, 'undo']);
-    Route::get('/games/{match}/history',  [GameController::class, 'history']);
+    Route::get('/games/{match}/state', [GameController::class, 'state']);
+    Route::post('/games/{match}/throw', [GameController::class, 'submitThrow']);
+    Route::post('/games/{match}/undo', [GameController::class, 'undo']);
+    Route::get('/games/{match}/history', [GameController::class, 'history']);
     Route::get('/games/{match}/protocol', [GameController::class, 'protocol']);
     Route::post('/games/{match}/abandon', [GameController::class, 'abandon']);
     Route::post('/games/{match}/suspend-local', [GameController::class, 'suspendLocal']);
@@ -63,17 +64,16 @@ Route::middleware('auth:web')->group(function () {
     Route::post('/games/{match}/discard-suspended', [GameController::class, 'discardSuspended']);
     Route::post('/games/{match}/turn-timeout/grant-extra', [GameController::class, 'turnTimeoutGrantExtra']);
     Route::post('/games/{match}/turn-timeout/end-no-stats', [GameController::class, 'turnTimeoutEndNoStats']);
-});
 
-// ── Statistics ────────────────────────────────────────────────────────────────
-Route::get('/stats/leaderboard', [StatsController::class, 'leaderboard'])->middleware('throttle:60,1');
-Route::middleware('auth:web')->group(function () {
     Route::get('/stats/me', [StatsController::class, 'me']);
     Route::get('/stats/recent-matches', [StatsController::class, 'recentFinishedMatches']);
 });
 
-// ── Admin ───────────────────────────────────────────────────────────────────────
-Route::middleware(['auth:web', 'admin', 'throttle:120,1'])->prefix('admin')->group(function () {
+// ── Statistics (publiski) ────────────────────────────────────────────────────
+Route::get('/stats/leaderboard', [StatsController::class, 'leaderboard'])->middleware('throttle:60,1');
+
+// ── Admin ─────────────────────────────────────────────────────────────────────
+Route::middleware(['auth:web', 'admin', 'verified.email', 'throttle:120,1'])->prefix('admin')->group(function () {
     Route::get('/overview', [AdminController::class, 'overview']);
     Route::get('/audit-log', [AdminController::class, 'auditLog']);
     Route::get('/users', [AdminController::class, 'users']);
@@ -85,13 +85,16 @@ Route::middleware(['auth:web', 'admin', 'throttle:120,1'])->prefix('admin')->gro
     Route::post('/inspect/rooms/{room}/force-close', [AdminController::class, 'forceCloseRoom']);
 });
 
-// ── Training games (solo; session-based) ──────────────────────────────────────
+// ── Training: lasīšana bez e-pasta apstiprinājuma; izmaiņas — tikai apstiprinātiem ─
 Route::prefix('training')->middleware('throttle:180,1')->group(function () {
-    Route::post('/x01/start',   [TrainingController::class, 'x01Start']);
-    Route::get('/x01/state',    [TrainingController::class, 'x01State']);
-    Route::post('/x01/throw',   [TrainingController::class, 'x01Throw']);
-    Route::post('/x01/undo',    [TrainingController::class, 'x01Undo']);
-    Route::post('/x01/abandon', [TrainingController::class, 'x01Abandon']);
+    Route::get('/x01/state', [TrainingController::class, 'x01State']);
     Route::get('/x01/finished', [TrainingController::class, 'x01FinishedList']);
     Route::get('/x01/games/{game}', [TrainingController::class, 'x01Protocol']);
+
+    Route::middleware('verified.email')->group(function () {
+        Route::post('/x01/start', [TrainingController::class, 'x01Start']);
+        Route::post('/x01/throw', [TrainingController::class, 'x01Throw']);
+        Route::post('/x01/undo', [TrainingController::class, 'x01Undo']);
+        Route::post('/x01/abandon', [TrainingController::class, 'x01Abandon']);
+    });
 });

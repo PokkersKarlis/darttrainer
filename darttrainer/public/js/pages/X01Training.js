@@ -3,6 +3,7 @@ const X01TrainingPage = {
     const route  = VueRouter.useRoute();
     const router = VueRouter.useRouter();
     const locale = useLocaleStore();
+    const auth   = useAuthStore();
     const t      = (k) => locale.t(k);
 
     const state            = Vue.ref(null);
@@ -73,6 +74,10 @@ const X01TrainingPage = {
     // ── Game lifecycle ─────────────────────────────────────────────────────────
 
     async function startGame() {
+      if (auth.needsEmailVerification) {
+        window._dartToast?.(t('auth.verifyEmailToContinue'), 'error');
+        return;
+      }
       loading.value = true;
       try {
         const { data } = await Training.x01Start({
@@ -88,6 +93,7 @@ const X01TrainingPage = {
     }
 
     async function abandon() {
+      if (auth.needsEmailVerification) return;
       await Training.x01Abandon();
       state.value            = null;
       showSetup.value        = true;
@@ -145,6 +151,7 @@ const X01TrainingPage = {
     // ── Submit ─────────────────────────────────────────────────────────────────
 
     async function submitThrow() {
+      if (auth.needsEmailVerification) return;
       if (dartInput.darts.length === 0 || submitting.value) return;
       submitting.value = true;
       const darts = dartInput.darts.map(d => ({
@@ -162,6 +169,7 @@ const X01TrainingPage = {
     }
 
     async function undo() {
+      if (auth.needsEmailVerification) return;
       const { data } = await Training.x01Undo();
       state.value     = data.state;
       dartInput.darts = [];
@@ -195,6 +203,7 @@ const X01TrainingPage = {
 
     return {
       route,
+      auth,
       t,
       state, loading, submitting, showSetup, form,
       activeMultiplier, dartInput, feedback,
@@ -237,6 +246,11 @@ const X01TrainingPage = {
       </template>
 
       <template v-else>
+
+      <div v-if="auth.needsEmailVerification"
+           class="mb-4 rounded-xl border border-amber-800/80 bg-amber-950/35 px-4 py-3 text-amber-100 text-sm leading-relaxed">
+        {{ t('auth.verifyEmailToContinue') }}
+      </div>
 
       <!-- Header -->
       <div class="flex items-center justify-between mb-4">
@@ -297,10 +311,10 @@ const X01TrainingPage = {
             </div>
           </div>
 
-          <button @click="startGame" :disabled="loading"
+          <button @click="startGame" :disabled="loading || auth.needsEmailVerification"
                   class="w-full bg-amber-500 hover:bg-amber-400 text-black font-black py-4 rounded-2xl
                          transition disabled:opacity-50 text-lg shadow-xl shadow-amber-950/40 active:scale-[0.98]">
-            {{ loading ? 'Sāk...' : 'Sākt treniņu →' }}
+            {{ auth.needsEmailVerification ? t('auth.verifyEmailShort') : (loading ? 'Sāk...' : 'Sākt treniņu →') }}
           </button>
         </div>
       </div>

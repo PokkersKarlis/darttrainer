@@ -39,7 +39,7 @@ const HomePage = {
 
     async function refreshActiveRooms() {
       activeRooms.value = [];
-      if (!auth.hydrated || !auth.user) {
+      if (!auth.hydrated || !auth.user || auth.needsEmailVerification) {
         activeRoomsLoading.value = false;
         return;
       }
@@ -82,7 +82,19 @@ const HomePage = {
 
     function continueGame(room) {
       if (!room) return;
+      if (auth.needsEmailVerification) {
+        window._dartToast?.(t('auth.verifyEmailToContinue'), 'error');
+        return;
+      }
       router.push(room.match_id ? `/game/${room.match_id}` : '/lobby');
+    }
+
+    function goExplore(path) {
+      if (auth.needsEmailVerification) {
+        window._dartToast?.(t('auth.verifyEmailToContinue'), 'error');
+        return;
+      }
+      router.push(path);
     }
 
     return {
@@ -90,6 +102,7 @@ const HomePage = {
       activeRooms,
       activeRoomsLoading,
       continueGame,
+      goExplore,
       roomSummaryLine,
       roomStatusLabel,
       playModeLabel,
@@ -173,7 +186,8 @@ const HomePage = {
 
       <div v-if="auth.user" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:20px">
 
-        <a href="#/lobby"
+        <a href="#/lobby" role="button" @click.prevent="goExplore('/lobby')"
+           :class="{ 'nav-card--locked': auth.needsEmailVerification }"
            style="background:linear-gradient(135deg,#451a03,#78350f);border:1px solid #92400e;border-radius:14px;padding:20px;text-decoration:none;display:flex;flex-direction:column;transition:all .2s;cursor:pointer"
            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(245,158,11,.2)'"
            onmouseout="this.style.transform='';this.style.boxShadow=''">
@@ -182,7 +196,8 @@ const HomePage = {
           <span style="font-size:12px;color:#92400e">{{ t('home.multiplayerSub') }}</span>
         </a>
 
-        <a href="#/training/x01"
+        <a href="#/training/x01" role="button" @click.prevent="goExplore('/training/x01')"
+           :class="{ 'nav-card--locked': auth.needsEmailVerification }"
            style="background:linear-gradient(135deg,#1e1b4b,#312e81);border:1px solid #4338ca;border-radius:14px;padding:20px;text-decoration:none;display:flex;flex-direction:column;transition:all .2s;cursor:pointer"
            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(99,102,241,.25)'"
            onmouseout="this.style.transform='';this.style.boxShadow=''">
@@ -191,7 +206,8 @@ const HomePage = {
           <span style="font-size:12px;color:#4338ca">{{ t('home.x01soloSub') }}</span>
         </a>
 
-        <a href="#/stats"
+        <a href="#/stats" role="button" @click.prevent="goExplore('/stats')"
+           :class="{ 'nav-card--locked': auth.needsEmailVerification }"
            style="background:#0f1c30;border:1px solid #162540;border-radius:14px;padding:20px;text-decoration:none;display:flex;flex-direction:column;transition:all .2s"
            onmouseover="this.style.background='#162540';this.style.transform='translateY(-2px)'"
            onmouseout="this.style.background='#0f1c30';this.style.transform=''">

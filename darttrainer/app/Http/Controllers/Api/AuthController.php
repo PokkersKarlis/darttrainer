@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -15,21 +16,34 @@ class AuthController extends Controller
     public function register(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'name'     => 'required|string|max:50',
-            'email'    => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8|confirmed',
+            'name'          => 'required|string|max:50',
+            'email'         => 'required|email|unique:users,email',
+            'password'      => 'required|string|min:8|confirmed',
+            'account_type'  => ['required', 'string', Rule::in([User::ACCOUNT_PLAYER, User::ACCOUNT_CLUB])],
+            'club_name'     => [
+                'nullable',
+                'string',
+                'max:120',
+                Rule::requiredIf(fn () => $request->input('account_type') === User::ACCOUNT_CLUB),
+            ],
         ]);
 
         $user = User::create([
-            'name'     => $data['name'],
-            'email'    => $data['email'],
-            'password' => Hash::make($data['password']),
+            'name'         => $data['name'],
+            'email'        => $data['email'],
+            'password'     => Hash::make($data['password']),
+            'account_type' => $data['account_type'],
+            'club_name'    => $data['account_type'] === User::ACCOUNT_CLUB
+                ? $data['club_name']
+                : null,
         ]);
+
+        $user->sendEmailVerificationNotification();
 
         Auth::login($user);
 
         return response()->json([
-            'user' => $this->userResource($user),
+            'user' => $this->userResource($user->fresh()),
         ], 201);
     }
 
@@ -40,7 +54,7 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        if (!Auth::attempt($data, $request->boolean('remember'))) {
+        if (! Auth::attempt($data, $request->boolean('remember'))) {
             throw ValidationException::withMessages([
                 'email' => ['Nepareizs e-pasts vai parole.'],
             ]);
@@ -52,7 +66,7 @@ class AuthController extends Controller
             $request->session()->invalidate();
             $request->session()->regenerateToken();
             throw ValidationException::withMessages([
-                'email' => ['Šis konts ir bloķēts.' . ($user->ban_reason ? ' ' . $user->ban_reason : '')],
+                'email' => ['Šis konts ir bloķēts.'.($user->ban_reason ? ' '.$user->ban_reason : '')],
             ]);
         }
 
@@ -79,16 +93,30 @@ class AuthController extends Controller
         ]);
     }
 
+    public function sendVerificationEmail(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        if ($user->hasVerifiedEmail()) {
+            return response()->json(['ok' => true, 'already_verified' => true]);
+        }
+
+        $user->sendEmailVerificationNotification();
+
+        return response()->json(['ok' => true]);
+    }
+
     private function userResource(User $user): array
     {
         return [
-            'id'          => $user->id,
-            'name'        => $user->name,
-            'email'       => $user->email,
-            'is_admin'    => (bool) $user->is_admin,
-            'is_banned'   => (bool) $user->is_banned,
-            'ban_reason'  => $user->is_banned ? $user->ban_reason : null,
+            'id'                 => $user->id,
+            'name'               => $user->name,
+            'email'              => $user->email,
+            'account_type'       => $user->account_type ?? User::ACCOUNT_PLAYER,
+            'club_name'          => $user->club_name,
+            'email_verified_at'  => $user->email_verified_at?->toIso8601String(),
+            'is_admin'           => (bool) $user->is_admin,
+            'is_banned'          => (bool) $user->is_banned,
+            'ban_reason'         => $user->is_banned ? $user->ban_reason : null,
         ];
     }
 }
-

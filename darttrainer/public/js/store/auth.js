@@ -6,6 +6,12 @@ const useAuthStore = Pinia.defineStore('auth', {
     hydrated: false,
   }),
 
+  getters: {
+    /** Ielogots, bet e-pasts vēl nav apstiprināts */
+    needsEmailVerification: (state) =>
+      !!(state.user && !state.user.email_verified_at),
+  },
+
   actions: {
     async init() {
       this.loading = true;
@@ -20,6 +26,15 @@ const useAuthStore = Pinia.defineStore('auth', {
       }
     },
 
+    async refreshMe() {
+      try {
+        const { data } = await Auth.me();
+        this.user = data.user;
+      } catch (_) {
+        this.user = null;
+      }
+    },
+
     async login(email, password) {
       this.loading = true;
       try {
@@ -31,7 +46,7 @@ const useAuthStore = Pinia.defineStore('auth', {
       }
     },
 
-    async register(name, email, password, passwordConfirmation) {
+    async register({ name, email, password, passwordConfirmation, accountType, clubName }) {
       this.loading = true;
       try {
         const { data } = await Auth.register({
@@ -39,12 +54,18 @@ const useAuthStore = Pinia.defineStore('auth', {
           email,
           password,
           password_confirmation: passwordConfirmation,
+          account_type: accountType,
+          club_name: accountType === 'club' ? clubName : null,
         });
         this.user = data.user;
         return true;
       } finally {
         this.loading = false;
       }
+    },
+
+    async resendVerificationEmail() {
+      await Auth.resendVerification();
     },
 
     async logout() {

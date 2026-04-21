@@ -1,36 +1,49 @@
+/**
+ * Ielogošanās — Composition API stilā (setup + ref/reactive), kā Vue 3 dokumentācijā.
+ * @see https://vuejs.org/guide/introduction.html
+ */
 const LoginPage = {
   setup() {
-    const auth   = useAuthStore();
+    const auth = useAuthStore();
     const locale = useLocaleStore();
-    const t      = (k) => locale.t(k);
     const router = VueRouter.useRouter();
-    const form   = Vue.reactive({ email: '', password: '', error: '' });
+
+    const form = Vue.reactive({
+      email: '',
+      password: '',
+      error: '',
+    });
+
+    const t = (key) => locale.t(key);
 
     async function submit() {
       form.error = '';
       try {
         await auth.login(form.email, form.password);
-        router.push('/');
+        await router.push('/');
       } catch (e) {
         form.error = e.response?.data?.message || t('auth.errLogin');
       }
     }
 
-    return { auth, form, submit, t };
+    return {
+      auth,
+      form,
+      submit,
+      t,
+    };
   },
 
   template: `
-    <div style="flex:1;overflow-y:auto;min-height:0;display:flex;align-items:center;justify-content:center;padding:32px 20px">
-      <div style="width:100%;max-width:380px">
+    <div style="flex:1;min-height:0;width:100%;box-sizing:border-box;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;align-items:center;padding:clamp(16px,3vh,28px) 20px max(28px, env(safe-area-inset-bottom, 0px))">
+      <div style="width:100%;max-width:380px;flex-shrink:0">
 
-        <!-- Logo -->
         <div style="text-align:center;margin-bottom:28px">
           <div style="font-size:40px;margin-bottom:8px">🎯</div>
           <h1 style="font-size:24px;font-weight:800;color:#f59e0b;margin:0 0 4px">DartTrainer</h1>
           <p style="color:#475569;font-size:14px;margin:0">{{ t('auth.loginTitle') }}</p>
         </div>
 
-        <!-- Card -->
         <div style="background:#0f1c30;border:1px solid #162540;border-radius:16px;padding:28px">
           <form @submit.prevent="submit">
             <div style="margin-bottom:16px">
@@ -59,7 +72,7 @@ const LoginPage = {
             </div>
 
             <dt-button button-type="submit" variant="primary" size="lg" block :disabled="auth.loading">
-              {{ auth.loading ? 'Ielādē...' : 'Ieiet' }}
+              {{ auth.loading ? t('auth.loading') : t('auth.submitLogin') }}
             </dt-button>
           </form>
         </div>

@@ -57,6 +57,9 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    /** E-pasta apstiprināšanas novirzīšana uz SPA (piem. https://example.com/index.html) */
+    'frontend_url' => env('FRONTEND_URL', env('APP_URL', 'http://localhost').'/index.html'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
