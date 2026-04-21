@@ -13,8 +13,8 @@ export default {
     return { auth, needsEmailVerify, t };
   },
   template: `
-    <nav v-if="auth.hydrated && auth.user" class="lg:hidden dt-shell-mobile-bnav"
-         style="flex-shrink:0;height:60px;background:#0a1120;border-top:1px solid #162540;display:flex">
+    <nav v-if="auth.hydrated && auth.user" class="dt-shell-mobile-bnav"
+         style="flex-shrink:0;height:60px;background:#0a1120;border-top:1px solid #162540;display:flex;overflow-x:auto">
       <shell-bottom-nav-item href="#/" icon="🏠" :label="t('nav.home')" />
       <shell-bottom-nav-item href="#/lobby" icon="🎮" :label="t('nav.lobby')" :disabled="needsEmailVerify" />
       <shell-bottom-nav-item href="#/friends" icon="👥" :label="t('nav.friends')" :disabled="needsEmailVerify" />

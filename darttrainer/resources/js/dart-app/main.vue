@@ -73,7 +73,7 @@ async function dartBootstrap() {
     ]);
   } catch (_) {}
   try {
-    useAuthStore().init();
+    await useAuthStore().init();
     app.mount('#app');
   } catch (e) {
     console.error('DartTrainer: app mount failed', e);
