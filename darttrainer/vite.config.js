@@ -8,6 +8,13 @@ export default defineConfig({
     // Docker: ātrāks pre-bundle kešs konteinerī (ne uz lēnā Windows bind mount)
     cacheDir: process.env.VITE_CACHE_DIR || 'node_modules/.vite',
 
+    // .js komponentes ar template: `...` — noklusējuma vue.runtime esm to neapkopo
+    resolve: {
+        alias: {
+            vue: 'vue/dist/vue.esm-bundler.js',
+        },
+    },
+
     server: {
         host: '0.0.0.0',
         port: 5173,
