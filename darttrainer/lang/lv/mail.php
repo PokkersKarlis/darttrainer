@@ -3,7 +3,7 @@
 return [
     'verify_subject' => 'Apstipriniet e-pastu — :app',
 
-    'verify_preheader' => 'Vēl viens solis, lai pabeigtu konta izveidi.',
+    'verify_preheader' => 'Nospied pogu, lai apstiprinātu — tas aizņem dažas sekundes.',
 
     'verify_title' => 'Apstipriniet e-pasta adresi',
 

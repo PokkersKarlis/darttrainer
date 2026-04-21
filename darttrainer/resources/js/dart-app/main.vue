@@ -21,19 +21,15 @@ app.use(router);
 async function dartBootstrap() {
   const el = document.getElementById('app');
   try {
-    await Promise.race([
-      api.get('/csrf-cookie', { skipErrorToast: true }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('csrf-timeout')), 8000)),
-    ]);
-  } catch (_) {}
-  try {
-    await useAuthStore().init();
     app.mount('#app');
   } catch (e) {
     console.error('DartTrainer: app mount failed', e);
   } finally {
     el?.setAttribute('data-app-mounted', '');
   }
+  /** CSRF + sesija fonā — UI redzams uzreiz (īpaši pēc e-pasta verifikācijas saites). */
+  void api.get('/csrf-cookie', { skipErrorToast: true }).catch(() => {});
+  void useAuthStore().init();
 }
 
 dartBootstrap();

@@ -3,7 +3,7 @@
 return [
     'verify_subject' => 'Confirm your email — :app',
 
-    'verify_preheader' => 'One step left to finish setting up your account.',
+    'verify_preheader' => 'Tap the button to confirm — it only takes a few seconds.',
 
     'verify_title' => 'Confirm your email address',
 
