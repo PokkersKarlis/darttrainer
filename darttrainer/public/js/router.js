@@ -28,3 +28,8 @@ router.beforeEach((to) => {
   }
   return true;
 });
+
+router.afterEach((to) => {
+  const onAuth = to.path === '/login' || to.path === '/register';
+  document.body.classList.toggle('dt-route-auth', onAuth);
+});

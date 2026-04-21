@@ -35,19 +35,19 @@ const LoginPage = {
   },
 
   template: `
-    <div style="flex:1;min-height:0;width:100%;box-sizing:border-box;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;align-items:center;padding:clamp(16px,3vh,28px) 20px max(28px, env(safe-area-inset-bottom, 0px))">
-      <div style="width:100%;max-width:380px;flex-shrink:0">
+    <div class="dt-auth-page">
+      <div class="dt-auth-page-inner">
 
-        <div style="text-align:center;margin-bottom:28px">
-          <div style="font-size:40px;margin-bottom:8px">🎯</div>
+        <div class="dt-auth-brand" style="text-align:center;margin-bottom:28px">
+          <span class="dt-auth-emoji" style="font-size:40px;margin-bottom:8px">🎯</span>
           <h1 style="font-size:24px;font-weight:800;color:#f59e0b;margin:0 0 4px">DartTrainer</h1>
-          <p style="color:#475569;font-size:14px;margin:0">{{ t('auth.loginTitle') }}</p>
+          <p class="dt-auth-sub" style="color:#475569;font-size:14px;margin:0">{{ t('auth.loginTitle') }}</p>
         </div>
 
-        <div style="background:#0f1c30;border:1px solid #162540;border-radius:16px;padding:28px">
+        <div class="dt-auth-card" style="background:#0f1c30;border:1px solid #162540;border-radius:16px;padding:28px">
           <form @submit.prevent="submit">
-            <div style="margin-bottom:16px">
-              <label style="display:block;font-size:12px;font-weight:700;color:#64748b;margin-bottom:6px;letter-spacing:.05em;text-transform:uppercase">
+            <div class="dt-auth-field" style="margin-bottom:16px">
+              <label class="dt-auth-label" style="display:block;font-size:12px;font-weight:700;color:#64748b;margin-bottom:6px;letter-spacing:.05em;text-transform:uppercase">
                 {{ t('auth.email') }}
               </label>
               <input v-model="form.email" type="email" required autocomplete="email"
@@ -56,8 +56,8 @@ const LoginPage = {
                      onblur="this.style.borderColor='#162540'" />
             </div>
 
-            <div style="margin-bottom:20px">
-              <label style="display:block;font-size:12px;font-weight:700;color:#64748b;margin-bottom:6px;letter-spacing:.05em;text-transform:uppercase">
+            <div class="dt-auth-field" style="margin-bottom:20px">
+              <label class="dt-auth-label" style="display:block;font-size:12px;font-weight:700;color:#64748b;margin-bottom:6px;letter-spacing:.05em;text-transform:uppercase">
                 {{ t('auth.password') }}
               </label>
               <input v-model="form.password" type="password" required autocomplete="current-password"
@@ -66,19 +66,21 @@ const LoginPage = {
                      onblur="this.style.borderColor='#162540'" />
             </div>
 
-            <div v-if="form.error"
+            <div v-if="form.error" class="dt-auth-err"
                  style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px 14px;font-size:13px;color:#fca5a5;margin-bottom:16px">
               {{ form.error }}
             </div>
 
-            <dt-button button-type="submit" variant="primary" size="lg" block :disabled="auth.loading">
-              {{ auth.loading ? t('auth.loading') : t('auth.submitLogin') }}
-            </dt-button>
+            <div class="dt-auth-submit-row">
+              <dt-button button-type="submit" variant="primary" size="lg" block :disabled="auth.loading">
+                {{ auth.loading ? t('auth.loading') : t('auth.submitLogin') }}
+              </dt-button>
+            </div>
           </form>
         </div>
 
-        <p style="text-align:center;color:#334155;font-size:13px;margin-top:16px">
-          {{ t('auth.noAccount') }}
+        <p class="dt-auth-footer" style="color:#334155;font-size:13px;margin-top:16px">
+          <span>{{ t('auth.noAccount') }}</span>
           <a href="#/register" style="color:#f59e0b;font-weight:600;text-decoration:none"
              onmouseover="this.style.textDecoration='underline'"
              onmouseout="this.style.textDecoration='none'">{{ t('auth.goRegister') }}</a>

@@ -228,6 +228,145 @@
       }
     }
 
+    /* ── Login / Register: mobilā bez liekas ritināšanas; centrēta iesniegšanas poga ── */
+    .dt-auth-page {
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+      box-sizing: border-box;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: clamp(16px, 3vh, 28px) 20px max(28px, env(safe-area-inset-bottom, 0px));
+    }
+    .dt-auth-page-inner {
+      width: 100%;
+      max-width: 380px;
+      flex-shrink: 0;
+    }
+    @media (max-width: 639px) {
+      .dt-auth-page:not(.dt-auth-page--scroll) {
+        overflow: hidden;
+        padding: 8px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+        justify-content: center;
+      }
+      .dt-auth-page--scroll {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        justify-content: flex-start;
+        padding-top: 8px;
+      }
+      .dt-auth-brand {
+        margin-bottom: 10px !important;
+      }
+      .dt-auth-emoji {
+        font-size: 28px !important;
+        margin-bottom: 2px !important;
+        line-height: 1;
+        display: block;
+      }
+      .dt-auth-brand h1 {
+        font-size: 17px !important;
+        line-height: 1.2;
+        margin: 0 0 2px !important;
+      }
+      .dt-auth-sub {
+        font-size: 11px !important;
+        line-height: 1.3;
+        margin: 0 !important;
+      }
+      .dt-auth-card {
+        padding: 14px 14px !important;
+        border-radius: 12px !important;
+      }
+      .dt-auth-card input {
+        padding: 9px 11px !important;
+        font-size: 14px !important;
+      }
+      .dt-auth-label {
+        font-size: 10px !important;
+        margin-bottom: 4px !important;
+      }
+      .dt-auth-field {
+        margin-bottom: 10px !important;
+      }
+      .dt-auth-field:last-child {
+        margin-bottom: 0 !important;
+      }
+      .dt-auth-account-row {
+        margin-bottom: 10px !important;
+      }
+      .dt-auth-account-row .acct-pill {
+        padding: 8px 6px !important;
+        font-size: 12px !important;
+        border-radius: 10px !important;
+      }
+      .dt-auth-club-box {
+        padding: 8px 10px !important;
+        margin-bottom: 10px !important;
+        border-radius: 10px !important;
+      }
+      .dt-auth-club-box .dt-auth-club-hint {
+        font-size: 10px !important;
+        line-height: 1.35 !important;
+        margin: 0 0 8px !important;
+      }
+      .dt-auth-fields {
+        gap: 8px !important;
+        margin-bottom: 10px !important;
+      }
+      .dt-auth-err {
+        padding: 8px 10px !important;
+        font-size: 11px !important;
+        margin-bottom: 10px !important;
+      }
+      .dt-auth-submit-row {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+      }
+      .dt-auth-submit-row button {
+        width: auto !important;
+        min-width: 11.5rem;
+      }
+      .dt-auth-footer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        margin-top: 10px !important;
+        font-size: 12px !important;
+        text-align: center;
+        line-height: 1.35;
+      }
+    }
+
+    /* Login / register: vairāk vertikālās vietas; centrētas apakšējās pogas */
+    @media (max-width: 1023px) {
+      body.dt-route-auth .dt-shell-mobile-ad {
+        display: none !important;
+      }
+    }
+    @media (max-width: 639px) {
+      body.dt-route-auth .dt-shell-mobile-bnav {
+        justify-content: center !important;
+        gap: 12px !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+      }
+      body.dt-route-auth .dt-shell-mobile-bnav .bnav-item {
+        flex: 0 1 auto !important;
+        min-width: 0;
+        max-width: 11rem;
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+    }
+
     /* ── Sidebar nav link ───────────────────────────────── */
     .nav-link {
       display: flex; align-items: center; gap: 10px;
@@ -625,15 +764,15 @@
 <script src="/js/components/MatchReport.js?v=spa-20260424-1"></script>
 <script src="/js/components/X01SoloProtocol.js?v=spa-20260424-1"></script>
 <script src="/js/pages/Home.js?v=spa-20260429-1"></script>
-<script src="/js/pages/Login.js?v=spa-20260429-1"></script>
-<script src="/js/pages/Register.js?v=spa-20260429-2"></script>
+<script src="/js/pages/Login.js?v=spa-20260429-3"></script>
+<script src="/js/pages/Register.js?v=spa-20260429-3"></script>
 <script src="/js/pages/Lobby.js?v=spa-20260425-1"></script>
 <script src="/js/pages/Friends.js?v=spa-20260422-4"></script>
 <script src="/js/pages/Game.js?v=spa-20260425-1"></script>
 <script src="/js/pages/X01Training.js?v=spa-20260429-1"></script>
 <script src="/js/pages/Statistics.js?v=spa-20260424-2"></script>
 <script src="/js/pages/Admin.js?v=spa-20260421-1"></script>
-<script src="/js/router.js?v=spa-20260427-1"></script>
+<script src="/js/router.js?v=spa-20260429-3"></script>
 <script src="/js/app.js?v=spa-20260429-1"></script>
 <script>
 (function () {
