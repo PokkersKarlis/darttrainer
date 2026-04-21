@@ -23,9 +23,12 @@ Route::middleware('throttle:8,1')->group(function () {
     Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/login', [AuthController::class, 'login']);
 });
+
+/** Sesijas stāvoklis bez pieslēgšanās — atgriež { user: null }, nevis 401 */
+Route::get('/auth/me', [AuthController::class, 'me'])->middleware('throttle:120,1');
+
 Route::middleware('auth:web')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
-    Route::get('/auth/me', [AuthController::class, 'me']);
     Route::post('/auth/email/resend', [AuthController::class, 'sendVerificationEmail'])
         ->middleware('throttle:6,1');
 });

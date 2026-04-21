@@ -4,11 +4,8 @@ use App\Http\Controllers\ClosingGameController;
 use App\Http\Controllers\TenOfTenGameController;
 use Illuminate\Support\Facades\Route;
 
-// Vue 3 SPA tiek apkalpotas no public/index.html — Nginx/Apache to atgriež tieši.
-// Šis fallback nodrošina, ka PHP apkalpotājā arī tiek novirzīts uz SPA.
-Route::get('/', function () {
-    return redirect('/index.html');
-})->name('index');
+// DartTrainer SPA (Vue 3 + Vite); statiskā public/index.html joprojām pieejama kā rezerve.
+Route::view('/', 'dart-spa')->name('index');
 
 Route::view('/cookies', 'cookies')
     ->name('cookies');

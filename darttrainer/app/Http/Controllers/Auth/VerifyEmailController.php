@@ -27,7 +27,7 @@ class VerifyEmailController extends Controller
 
     private function redirectToSpa(): RedirectResponse
     {
-        $base = rtrim(config('app.frontend_url', url('/index.html')), '/');
+        $base = rtrim(config('app.frontend_url', url('/')), '/');
 
         return redirect()->to($base.'/#/?verified=1');
     }

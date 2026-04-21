@@ -1,3 +1,32 @@
+# DartTrainer — lokālā izstrāde
+#
+# Pamata stack (Nginx + PHP + MySQL):
+#   docker compose up -d
+#
+# + Vite HMR (5173) — izstrādē liec .env: VITE_DEV_SERVER_URL=http://localhost:5173
+#   docker compose --profile dev up -d
+#   vai: make up-dev / make up-all
+#
+# npm / npx viens-off (bez lokālā Node) — profils "tools":
+#   docker compose --profile tools run --rm nodejs npm install
+#   docker compose --profile tools run --rm nodejs npm run build
+#   vai: make npm-install | make npm-build | make shell-node
+#
+x-node-service: &node-service
+  image: node:20-alpine
+  working_dir: /var/www/html
+  volumes:
+    - .:/var/www/html
+  environment:
+    CHOKIDAR_USEPOLLING: "true"
+    # Retāks polling = mazāk slodzes uz Windows bind mount (HMR joprojām strādā)
+    VITE_POLL_INTERVAL_MS: "800"
+    # Pre-bundle kešs ārpus projekta tilpuma
+    VITE_CACHE_DIR: /tmp/vite-cache
+    NODE_ENV: development
+  networks:
+    - dartnet
+
 services:
 
   nginx:
@@ -45,16 +74,19 @@ services:
     networks:
       - dartnet
 
-  node:
-    image: node:20-alpine
-    working_dir: /var/www/html
-    volumes:
-      - .:/var/www/html
-    command: sh -c "npm install && npm run dev -- --host"
+  # npm / npx / viens-off skripti — nelasa profilu "dev"; nav jāpalaiž fona režīmā
+  nodejs:
+    <<: *node-service
+    profiles:
+      - tools
+
+  # Vite izstrādes serveris (HMR)
+  vite:
+    <<: *node-service
+    # npm install tikai, ja trūkst node_modules (katru startu neinstalē no jauna)
+    command: sh -c "test -f node_modules/.bin/vite || npm install; npm run dev -- --host 0.0.0.0 --port 5173"
     ports:
       - "5173:5173"
-    networks:
-      - dartnet
     profiles:
       - dev
 

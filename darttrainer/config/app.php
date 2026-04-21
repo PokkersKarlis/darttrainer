@@ -57,8 +57,8 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
-    /** E-pasta apstiprināšanas novirzīšana uz SPA (piem. https://example.com/index.html) */
-    'frontend_url' => env('FRONTEND_URL', env('APP_URL', 'http://localhost').'/index.html'),
+    /** E-pasta apstiprināšanas novirzīšana uz SPA (hash router; bāze bez ceļa, piem. https://example.com) */
+    'frontend_url' => env('FRONTEND_URL', rtrim(env('APP_URL', 'http://localhost'), '/')),
 
     /*
     |--------------------------------------------------------------------------

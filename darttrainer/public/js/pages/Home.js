@@ -1,15 +1,32 @@
+/**
+ * Sākumlapa — Composition API pēc tā paša principa kā Vue 3 `<script setup>`:
+ * ref / computed / watch / onMounted, skaidri sakārtots stāvoklis un funkcijas.
+ * (Šajā projektā nav .vue + Vite; `import { ref } from 'vue'` aizstāts ar Vue destructor.)
+ */
 const HomePage = {
   setup() {
-    const auth   = useAuthStore();
-    const locale = useLocaleStore();
-    const t      = (k) => locale.t(k);
-    const router = VueRouter.useRouter();
-    const activeRooms        = Vue.ref([]);
-    const activeRoomsLoading = Vue.ref(false);
-    const summary         = Vue.ref(null);
-    const summaryErr      = Vue.ref(false);
-    const summaryLoading  = Vue.ref(true);
+    const { ref, computed, watch, onMounted } = Vue;
 
+    const auth = useAuthStore();
+    const locale = useLocaleStore();
+    const router = VueRouter.useRouter();
+
+    const t = (key) => locale.t(key);
+
+    /* ── reactive state (defineProps / ref analogs) ───────────────────────── */
+    const activeRooms = ref([]);
+    const activeRoomsLoading = ref(false);
+    const summary = ref(null);
+    const summaryErr = ref(false);
+    const summaryLoading = ref(true);
+
+    /* ── computed (kā dokumentācijas piemērā) ──────────────────────────────── */
+    const needsEmailVerify = computed(() => auth.needsEmailVerification);
+    const showActiveRoomsSection = computed(() => auth.hydrated && !!auth.user);
+    const showGuestCta = computed(() => auth.hydrated && !auth.user);
+    const showLoggedNavCards = computed(() => !!auth.user);
+
+    /* ── pure helpers ────────────────────────────────────────────────────── */
     function roomSummaryLine(room) {
       if (!room) return '';
       if (room.game_type === 'x01') {
@@ -37,6 +54,18 @@ const HomePage = {
       return room.play_mode === 'local' ? t('home.playModeLocalShort') : t('home.playModeOnlineShort');
     }
 
+    function fmtDate(iso) {
+      if (!iso) return '—';
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return '—';
+      return d.toLocaleDateString(locale.locale === 'lv' ? 'lv-LV' : 'en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
+    }
+
+    /* ── async / actions ───────────────────────────────────────────────────── */
     async function refreshActiveRooms() {
       activeRooms.value = [];
       if (!auth.hydrated || !auth.user || auth.needsEmailVerification) {
@@ -68,21 +97,9 @@ const HomePage = {
       }
     }
 
-    function fmtDate(iso) {
-      if (!iso) return '—';
-      const d = new Date(iso);
-      if (isNaN(d.getTime())) return '—';
-      return d.toLocaleDateString(locale.locale === 'lv' ? 'lv-LV' : 'en-GB', {
-        day: 'numeric', month: 'short', year: 'numeric',
-      });
-    }
-
-    Vue.watch(() => [auth.hydrated, auth.user?.id], refreshActiveRooms, { immediate: true });
-    Vue.onMounted(loadSummary);
-
     function continueGame(room) {
       if (!room) return;
-      if (auth.needsEmailVerification) {
+      if (needsEmailVerify.value) {
         window._dartToast?.(t('auth.verifyEmailToContinue'), 'error');
         return;
       }
@@ -90,27 +107,34 @@ const HomePage = {
     }
 
     function goExplore(path) {
-      if (auth.needsEmailVerification) {
+      if (needsEmailVerify.value) {
         window._dartToast?.(t('auth.verifyEmailToContinue'), 'error');
         return;
       }
       router.push(path);
     }
 
+    watch(() => [auth.hydrated, auth.user?.id], refreshActiveRooms, { immediate: true });
+    onMounted(loadSummary);
+
     return {
       auth,
+      t,
       activeRooms,
       activeRoomsLoading,
-      continueGame,
-      goExplore,
-      roomSummaryLine,
-      roomStatusLabel,
-      playModeLabel,
       summary,
       summaryErr,
       summaryLoading,
-      t,
+      needsEmailVerify,
+      showActiveRoomsSection,
+      showGuestCta,
+      showLoggedNavCards,
+      roomSummaryLine,
+      roomStatusLabel,
+      playModeLabel,
       fmtDate,
+      continueGame,
+      goExplore,
       loadSummary,
     };
   },
@@ -131,7 +155,6 @@ const HomePage = {
 
       <div v-if="summaryLoading" style="margin-bottom:16px;font-size:13px;color:#64748b">{{ t('home.loadSummary') }}</div>
 
-      <!-- Public stats strip -->
       <div v-else-if="summary" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:22px">
         <div style="background:#0f1c30;border:1px solid #162540;border-radius:12px;padding:12px 14px">
           <div style="font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#64748b">{{ t('home.usersTotal') }}</div>
@@ -153,7 +176,7 @@ const HomePage = {
       </div>
       <div v-else-if="summaryErr" style="margin-bottom:16px;font-size:13px;color:#94a3b8">{{ t('home.summaryError') }}</div>
 
-      <div v-if="auth.hydrated && auth.user" style="margin-bottom:20px">
+      <div v-if="showActiveRoomsSection" style="margin-bottom:20px">
         <div style="color:#64748b;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px">
           {{ t('home.activeGamesTitle') }}
         </div>
@@ -184,10 +207,10 @@ const HomePage = {
         </template>
       </div>
 
-      <div v-if="auth.user" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:20px">
+      <div v-if="showLoggedNavCards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:20px">
 
         <a href="#/lobby" role="button" @click.prevent="goExplore('/lobby')"
-           :class="{ 'nav-card--locked': auth.needsEmailVerification }"
+           :class="{ 'nav-card--locked': needsEmailVerify }"
            style="background:linear-gradient(135deg,#451a03,#78350f);border:1px solid #92400e;border-radius:14px;padding:20px;text-decoration:none;display:flex;flex-direction:column;transition:all .2s;cursor:pointer"
            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(245,158,11,.2)'"
            onmouseout="this.style.transform='';this.style.boxShadow=''">
@@ -197,7 +220,7 @@ const HomePage = {
         </a>
 
         <a href="#/training/x01" role="button" @click.prevent="goExplore('/training/x01')"
-           :class="{ 'nav-card--locked': auth.needsEmailVerification }"
+           :class="{ 'nav-card--locked': needsEmailVerify }"
            style="background:linear-gradient(135deg,#1e1b4b,#312e81);border:1px solid #4338ca;border-radius:14px;padding:20px;text-decoration:none;display:flex;flex-direction:column;transition:all .2s;cursor:pointer"
            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(99,102,241,.25)'"
            onmouseout="this.style.transform='';this.style.boxShadow=''">
@@ -207,7 +230,7 @@ const HomePage = {
         </a>
 
         <a href="#/stats" role="button" @click.prevent="goExplore('/stats')"
-           :class="{ 'nav-card--locked': auth.needsEmailVerification }"
+           :class="{ 'nav-card--locked': needsEmailVerify }"
            style="background:#0f1c30;border:1px solid #162540;border-radius:14px;padding:20px;text-decoration:none;display:flex;flex-direction:column;transition:all .2s"
            onmouseover="this.style.background='#162540';this.style.transform='translateY(-2px)'"
            onmouseout="this.style.background='#0f1c30';this.style.transform=''">
@@ -217,7 +240,7 @@ const HomePage = {
         </a>
       </div>
 
-      <div v-if="auth.hydrated && !auth.user"
+      <div v-if="showGuestCta"
            style="background:#0f1c30;border:1px solid #162540;border-radius:14px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
         <div>
           <div style="font-weight:600;font-size:14px;color:#f1f5f9;margin-bottom:3px">{{ t('home.registerHint') }}</div>
