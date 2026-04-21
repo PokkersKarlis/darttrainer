@@ -48,6 +48,6 @@ const hoverRegister = ref(false);
     @mouseenter="hoverRegister = true"
     @mouseleave="hoverRegister = false"
   >
-    {{ t('shell.registerShort') }}
+    {{ t('shell.register') }}
   </a>
 </template>

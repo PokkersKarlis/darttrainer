@@ -15,8 +15,6 @@ export const DART_I18N = {
       logout: 'Iziet no sistēmas',
       login: 'Ieiet',
       register: 'Reģistrēties',
-      /** Īsākais teksts šauram header / apakšējai nav — pilnais «Reģistrēties» sānjoslā */
-      registerShort: 'Reģistrēties',
       adminBtn: 'Admin panelis',
       authPending: 'Pārbauda sesiju…',
     },
@@ -464,7 +462,6 @@ export const DART_I18N = {
       logout: 'Log out',
       login: 'Log in',
       register: 'Sign up',
-      registerShort: 'Sign up',
       adminBtn: 'Admin panel',
       authPending: 'Checking session…',
     },
