@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Notifications\TrainDartVerifyEmail;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
@@ -24,5 +27,17 @@ class AppServiceProvider extends ServiceProvider
         if (is_string($appUrl) && str_starts_with($appUrl, 'https://')) {
             URL::forceScheme('https');
         }
+
+        /*
+         * Ja kāds ceļš joprojām izsauc framework Illuminate\Auth\Notifications\VerifyEmail
+         * (vecā User bez pārrakstījuma, rinda, OPcache), vēstule tomēr būs TrainDart HTML, ne «Laravel» Markdown.
+         */
+        VerifyEmail::toMailUsing(function (object $notifiable, string $verificationUrl) {
+            if (! $notifiable instanceof MustVerifyEmail) {
+                throw new \InvalidArgumentException('Notifiable must implement MustVerifyEmail.');
+            }
+
+            return TrainDartVerifyEmail::mailMessage($notifiable, $verificationUrl);
+        });
     }
 }

@@ -1,12 +1,21 @@
 <script setup>
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+
 defineOptions({ name: 'ShellMainScrollRegion' });
+
+const route = useRoute();
+/** Efektīvs flex/transition ietvars — class uz router-view ne vienmēr nonāk uz lapas sakni */
+const outletKey = computed(() => route.fullPath);
 </script>
 
 <template>
   <div class="shell-main-scroll">
     <div class="shell-main-scroll-inner">
       <transition name="fade" mode="out-in">
-        <router-view class="shell-router-outlet" />
+        <div :key="outletKey" class="shell-router-outlet">
+          <router-view />
+        </div>
       </transition>
     </div>
   </div>

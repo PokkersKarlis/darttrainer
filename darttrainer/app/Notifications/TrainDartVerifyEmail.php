@@ -29,8 +29,14 @@ class TrainDartVerifyEmail extends Notification
             throw new \InvalidArgumentException('Notifiable must implement MustVerifyEmail.');
         }
 
-        $url = $this->verificationUrl($notifiable);
+        return static::mailMessage($notifiable, $this->verificationUrl($notifiable));
+    }
 
+    /**
+     * Kopīga HTML / text vēstule (izmanto arī VerifyEmail::toMailUsing, ja kāds ceļš joprojām sūta framework klasi).
+     */
+    public static function mailMessage(MustVerifyEmail $notifiable, string $verifyUrl): MailMessage
+    {
         $salutationName = trim((string) ($notifiable->name ?? ''));
         $hasName = $salutationName !== '';
         $appName = (string) config('app.name');
@@ -39,14 +45,14 @@ class TrainDartVerifyEmail extends Notification
         $mail = (new MailMessage)
             ->subject(__('mail.verify_subject', ['app' => $appName]))
             ->view('mail.verify-email', [
-                'verifyUrl' => $url,
+                'verifyUrl' => $verifyUrl,
                 'salutationName' => $salutationName,
                 'hasName' => $hasName,
                 'appName' => $appName,
                 'siteHost' => $siteHost,
             ])
             ->text('mail.verify-email-text', [
-                'verifyUrl' => $url,
+                'verifyUrl' => $verifyUrl,
                 'salutationName' => $salutationName,
                 'hasName' => $hasName,
                 'appName' => $appName,
