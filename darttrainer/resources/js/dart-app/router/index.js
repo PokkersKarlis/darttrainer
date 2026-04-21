@@ -32,7 +32,7 @@ const routes = [
     path: '/game/:matchId',
     component: load(() => import('../pages/Game.js')),
     props: true,
-    meta: { titleKey: 'nav.lobby' },
+    meta: { titleKey: 'nav.lobby', gameFocus: true },
   },
   { path: '/training/x01', component: load(() => import('../pages/X01Training.js')), meta: { titleKey: 'nav.x01solo' } },
   { path: '/:pathMatch(.*)*', redirect: '/' },

@@ -3,12 +3,17 @@
 import ShellSidebar from '../ShellSidebar.vue';
 import ShellMainContent from './MainContent.vue';
 import ShellRightAds from '../ShellRightAds.vue';
+
+defineProps({
+  /** Aktīvā spēle: tikai galvenā kolonna, bez sānjoslas un reklāmām */
+  gameFocus: { type: Boolean, default: false },
+});
 </script>
 
 <template>
   <div style="flex: 1; display: flex; overflow: hidden; min-height: 0">
-    <ShellSidebar />
+    <ShellSidebar v-if="!gameFocus" />
     <ShellMainContent />
-    <ShellRightAds />
+    <ShellRightAds v-if="!gameFocus" />
   </div>
 </template>

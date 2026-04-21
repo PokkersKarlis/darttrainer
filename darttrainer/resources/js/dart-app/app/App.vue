@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { useAuthStore } from '../store/auth.js';
 import { useLocaleStore } from '../store/locale.js';
 import { useFriendsStore } from '../store/friends.js';
@@ -10,6 +11,7 @@ import AppShellFooter from '../components/shell/AppShellFooter.js';
 import EmailVerifyBanner from '../components/shell/EmailVerifyBanner.js';
 import FriendsIncomingModal from '../components/shell/FriendsIncomingModal.js';
 
+const route = useRoute();
 const auth = useAuthStore();
 const locale = useLocaleStore();
 const friends = useFriendsStore();
@@ -21,6 +23,9 @@ const t = (key) => locale.t(key);
 const needsEmailVerify = computed(
   () => auth.hydrated && !!auth.user && !auth.user.email_verified_at,
 );
+
+/** Aktīvā spēle: pilnekrāna saturs bez globālā header/footer, sānjoslas u.c. */
+const gameFocus = computed(() => !!route.meta.gameFocus);
 
 window._dartToast = (message, type = 'success') => {
   const id = Date.now();
@@ -93,11 +98,12 @@ watch(
 <template>
   <div
     v-cloak
+    :class="{ 'dt-app--game-focus': gameFocus }"
     style="height: 100dvh; display: flex; flex-direction: column; overflow: hidden"
   >
-    <AppShellHeader />
+    <AppShellHeader v-if="!gameFocus" />
     <EmailVerifyBanner
-      v-if="needsEmailVerify"
+      v-if="!gameFocus && needsEmailVerify"
       :resend-busy="resendBusy"
       @resend="resendVerification"
     />
@@ -106,23 +112,35 @@ watch(
       class="dt-app-shell-body"
       style="flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden"
     >
-      <AppShellBody />
-      <AppShellFooter />
+      <AppShellBody :game-focus="gameFocus" />
+      <AppShellFooter v-if="!gameFocus" />
     </div>
 
-    <FriendsIncomingModal />
+    <FriendsIncomingModal v-if="!gameFocus" />
 
     <div
-      style="
-        position: fixed;
-        bottom: 80px;
-        right: 16px;
-        z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
+      :style="
+        gameFocus
+          ? {
+              position: 'fixed',
+              top: 'max(12px, env(safe-area-inset-top, 0px))',
+              right: 'max(12px, env(safe-area-inset-right, 0px))',
+              zIndex: 9999,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+            }
+          : {
+              position: 'fixed',
+              bottom: '80px',
+              right: '16px',
+              zIndex: 9999,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+            }
       "
-      class="lg:bottom-4"
+      :class="gameFocus ? '' : 'lg:bottom-4'"
     >
       <transition-group name="fade">
         <div
