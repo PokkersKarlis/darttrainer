@@ -5,6 +5,7 @@ import { useLocaleStore } from '../store/locale.js';
 import { useFriendsStore } from '../store/friends.js';
 import { dartSafeDisplayMessage } from '../utils/safeDisplay.js';
 import AppShellHeader from '../components/shell/layout/AppShellHeader.vue';
+import AppShellBody from '../components/shell/layout/AppShellBody.vue';
 
 const auth = useAuthStore();
 const locale = useLocaleStore();
@@ -90,7 +91,7 @@ watch(
       class="dt-app-shell-body"
       style="flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden"
     >
-      <app-shell-body />
+      <AppShellBody />
       <app-shell-footer />
     </div>
 
