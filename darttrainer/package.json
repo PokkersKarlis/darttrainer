@@ -3,7 +3,8 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "vite build"
+        "build": "vite build",
+        "build:hosting": "env VITE_MAX_PARALLEL_FILE_OPS=1 node --max-old-space-size=1536 ./node_modules/vite/bin/vite.js build"
     },
     "dependencies": {
         "pinia": "^2.1.7",

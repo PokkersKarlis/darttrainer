@@ -59,5 +59,11 @@ export default defineConfig({
     ],
     build: {
         chunkSizeWarningLimit: 500,
+        // Kopīgā hostingā (CloudLinux LVE): mazāk paralelisma un bez gzip aprēķina — mazāks RAM/WASM spiediens
+        reportCompressedSize: false,
+        rollupOptions: {
+            // Uz kopīga hostinga iestatīt VITE_MAX_PARALLEL_FILE_OPS=1 (sk. npm run build:hosting)
+            maxParallelFileOps: Number(process.env.VITE_MAX_PARALLEL_FILE_OPS) || 20,
+        },
     },
 });
