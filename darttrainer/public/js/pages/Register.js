@@ -64,7 +64,7 @@ const RegisterPage = {
   },
 
   template: `
-    <div :class="['dt-auth-page', accountType === 'club' ? 'dt-auth-page--scroll' : '']">
+    <div class="dt-auth-page">
       <div class="dt-auth-page-inner">
 
         <div class="dt-auth-brand" style="text-align:center;margin-bottom:24px">
