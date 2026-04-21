@@ -146,13 +146,13 @@ export default {
 
   template: `
     <div style="flex:1;overflow-y:auto;min-height:0">
-    <div style="max-width:900px;margin:0 auto;padding:28px 20px">
+    <div :style="showGuestCta ? 'max-width:1200px;margin:0 auto;padding:22px 16px 32px' : 'max-width:900px;margin:0 auto;padding:28px 20px'">
 
-      <div style="margin-bottom:22px;display:flex;flex-direction:column;gap:14px">
-        <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+      <div style="margin-bottom:18px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
           <img src="/images/logo.png" alt="DartTrainer"
-               style="height:76px;width:auto;max-width:280px;object-fit:contain;display:block"/>
-          <p style="color:#64748b;font-size:14px;margin:0;max-width:340px;line-height:1.45">
+               :style="{ height: showGuestCta ? '68px' : '76px', width: 'auto', maxWidth: '260px', objectFit: 'contain', display: 'block' }"/>
+          <p style="color:#64748b;font-size:14px;margin:0;max-width:440px;line-height:1.45">
             {{ t('home.tagline') }}
           </p>
         </div>
@@ -160,23 +160,31 @@ export default {
 
       <div v-if="summaryLoading" style="margin-bottom:16px;font-size:13px;color:#64748b">{{ t('home.loadSummary') }}</div>
 
-      <div v-else-if="summary" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:22px">
-        <div style="background:#0f1c30;border:1px solid #162540;border-radius:12px;padding:12px 14px">
-          <div style="font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#64748b">{{ t('home.usersTotal') }}</div>
-          <div style="font-size:22px;font-weight:900;color:#f59e0b;margin-top:4px">{{ summary.users_total }}</div>
+      <div v-else-if="summary" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:10px;margin-bottom:20px">
+        <div style="background:#0f1c30;border:1px solid #162540;border-radius:12px;padding:11px 12px">
+          <div style="font-size:9px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#64748b;line-height:1.25">{{ t('home.usersTotal') }}</div>
+          <div style="font-size:20px;font-weight:900;color:#f59e0b;margin-top:4px">{{ summary.users_total }}</div>
         </div>
-        <div style="background:#0f1c30;border:1px solid #162540;border-radius:12px;padding:12px 14px">
-          <div style="font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#64748b">{{ t('home.activePlayers') }}</div>
-          <div style="font-size:22px;font-weight:900;color:#34d399;margin-top:4px">{{ summary.active_players }}</div>
+        <div style="background:#0f1c30;border:1px solid #162540;border-radius:12px;padding:11px 12px">
+          <div style="font-size:9px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#64748b;line-height:1.25">{{ t('home.activePlayers') }}</div>
+          <div style="font-size:20px;font-weight:900;color:#34d399;margin-top:4px">{{ summary.active_players }}</div>
         </div>
-        <div style="background:#0f1c30;border:1px solid #162540;border-radius:12px;padding:12px 14px">
-          <div style="font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#64748b">{{ t('home.gamesTotal') }}</div>
-          <div style="font-size:22px;font-weight:900;color:#e2e8f0;margin-top:4px">{{ summary.games_total }}</div>
+        <div style="background:#0f1c30;border:1px solid #162540;border-radius:12px;padding:11px 12px">
+          <div style="font-size:9px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#64748b;line-height:1.25">{{ t('home.gamesTotal') }}</div>
+          <div style="font-size:20px;font-weight:900;color:#e2e8f0;margin-top:4px">{{ summary.games_total }}</div>
         </div>
-        <div v-if="summary.last_registration_at" style="background:#0f1c30;border:1px solid #162540;border-radius:12px;padding:12px 14px;grid-column:span 2;min-width:0">
-          <div style="font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#64748b">{{ t('home.lastUser') }}</div>
-          <div style="font-size:15px;font-weight:800;color:#f1f5f9;margin-top:6px">{{ fmtDate(summary.last_registration_at) }}</div>
-          <div style="font-size:12px;color:#475569;margin-top:4px;line-height:1.35">{{ t('home.lastRegistrationPrivacy') }}</div>
+        <div style="background:#0f1c30;border:1px solid #162540;border-radius:12px;padding:11px 12px">
+          <div style="font-size:9px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#64748b;line-height:1.25">{{ t('home.matchesActive') }}</div>
+          <div style="font-size:20px;font-weight:900;color:#38bdf8;margin-top:4px">{{ summary.matches_active }}</div>
+        </div>
+        <div style="background:#0f1c30;border:1px solid #162540;border-radius:12px;padding:11px 12px">
+          <div style="font-size:9px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#64748b;line-height:1.25">{{ t('home.roomsOpen') }}</div>
+          <div style="font-size:20px;font-weight:900;color:#a78bfa;margin-top:4px">{{ summary.rooms_open }}</div>
+        </div>
+        <div v-if="summary.last_registration_at" style="background:#0f1c30;border:1px solid #162540;border-radius:12px;padding:11px 12px;grid-column:span 2;min-width:0">
+          <div style="font-size:9px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#64748b">{{ t('home.lastUser') }}</div>
+          <div style="font-size:14px;font-weight:800;color:#f1f5f9;margin-top:4px">{{ fmtDate(summary.last_registration_at) }}</div>
+          <div style="font-size:11px;color:#475569;margin-top:3px;line-height:1.35">{{ t('home.lastRegistrationPrivacy') }}</div>
         </div>
       </div>
       <div v-else-if="summaryErr" style="margin-bottom:16px;font-size:13px;color:#94a3b8">{{ t('home.summaryError') }}</div>
@@ -245,7 +253,42 @@ export default {
         </a>
       </div>
 
-      <div v-if="showGuestCta"
+      <div v-if="showGuestCta && summary" style="display:flex;flex-wrap:wrap;gap:16px;align-items:stretch;margin-bottom:8px">
+        <div style="flex:2;min-width:min(100%,280px);background:#0f1c30;border:1px solid #162540;border-radius:14px;padding:16px 18px">
+          <div style="color:#94a3b8;font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;margin-bottom:12px">
+            {{ t('home.topPlayersTitle') }}
+          </div>
+          <p v-if="!summary.top_players || !summary.top_players.length" style="margin:0;font-size:13px;color:#64748b;line-height:1.45">{{ t('home.topPlayersEmpty') }}</p>
+          <ol v-else style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px">
+            <li v-for="(row, idx) in summary.top_players" :key="row.user_id"
+                style="display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;color:#e2e8f0;padding:6px 0;border-bottom:1px solid #1e3050">
+              <span style="display:flex;align-items:center;gap:8px;min-width:0">
+                <span style="color:#64748b;font-weight:800;width:24px;flex-shrink:0">{{ idx + 1 }}.</span>
+                <span style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ row.name }}</span>
+              </span>
+              <span style="color:#f59e0b;font-weight:800;flex-shrink:0;font-variant-numeric:tabular-nums">{{ row.matches_count }} {{ t('home.topPlayersMatches') }}</span>
+            </li>
+          </ol>
+        </div>
+        <div style="flex:1;min-width:min(100%,260px);background:#0f1c30;border:1px solid #162540;border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;justify-content:center;gap:14px">
+          <div>
+            <div style="font-weight:600;font-size:14px;color:#f1f5f9;margin-bottom:3px">{{ t('home.registerHint') }}</div>
+            <div style="font-size:12px;color:#475569;line-height:1.4">{{ t('home.registerHintSub') }}</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <a href="#/login"
+               style="font-size:13px;color:#94a3b8;background:#162540;padding:9px 16px;border-radius:8px;text-decoration:none;font-weight:600;transition:background .15s"
+               onmouseover="this.style.background='#1e3050'"
+               onmouseout="this.style.background='#162540'">{{ t('shell.login') }}</a>
+            <a href="#/register"
+               style="font-size:13px;background:#f59e0b;color:#000;padding:9px 16px;border-radius:8px;text-decoration:none;font-weight:700;transition:background .15s"
+               onmouseover="this.style.background='#fbbf24'"
+               onmouseout="this.style.background='#f59e0b'">{{ t('shell.register') }}</a>
+          </div>
+        </div>
+      </div>
+
+      <div v-else-if="showGuestCta && !summary && !summaryLoading"
            style="background:#0f1c30;border:1px solid #162540;border-radius:14px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
         <div>
           <div style="font-weight:600;font-size:14px;color:#f1f5f9;margin-bottom:3px">{{ t('home.registerHint') }}</div>
