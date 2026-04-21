@@ -1,8 +1,5 @@
 <div class="xx parent-div">
     <div id="svg">
-        <!-- Your SVG content here -->
-        <? xml version = "1.0" encoding = "UTF-8" standalone = "no" ?>
-
         <svg id="dartboard1" xmlns="http://www.w3.org/2000/svg"
              xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"
              x="0px" y="0px" viewBox="0 0 802 874"

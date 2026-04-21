@@ -4,8 +4,18 @@
 /public/hot
 /public/storage
 /storage/*.key
+/storage/logs/*
+!/storage/logs/.gitignore
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
 /vendor
 .env
+.env.*
+!.env.example
 .env.backup
 .env.production
 .phpactor.json
@@ -18,4 +28,12 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+.claude/
+CURSOR_INSTRUCTIONS.md
+*.pem
+*.p12
+
+# Docker
+mysql_data/
+docker/mysql/data/
 

@@ -4,8 +4,11 @@ use App\Http\Controllers\ClosingGameController;
 use App\Http\Controllers\TenOfTenGameController;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'welcome')
-    ->name('index');
+// Vue 3 SPA tiek apkalpotas no public/index.html — Nginx/Apache to atgriež tieši.
+// Šis fallback nodrošina, ka PHP apkalpotājā arī tiek novirzīts uz SPA.
+Route::get('/', function () {
+    return redirect('/index.html');
+})->name('index');
 
 Route::view('/cookies', 'cookies')
     ->name('cookies');

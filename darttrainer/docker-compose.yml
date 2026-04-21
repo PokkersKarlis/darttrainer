@@ -1,0 +1,66 @@
+services:
+
+  nginx:
+    image: nginx:1.25-alpine
+    ports:
+      - "8088:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+    networks:
+      - dartnet
+
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - dartnet
+    environment:
+      - PHP_OPCACHE_ENABLE=0
+
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3316:3306"
+    environment:
+      MYSQL_DATABASE: darttrainer
+      MYSQL_USER: dartuser
+      MYSQL_PASSWORD: dartpass
+      MYSQL_ROOT_PASSWORD: rootpass
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpass"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - dartnet
+
+  node:
+    image: node:20-alpine
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    command: sh -c "npm install && npm run dev -- --host"
+    ports:
+      - "5173:5173"
+    networks:
+      - dartnet
+    profiles:
+      - dev
+
+volumes:
+  mysql_data:
+
+networks:
+  dartnet:
+    driver: bridge
