@@ -36,6 +36,15 @@
 
   <script src="https://cdn.jsdelivr.net/npm/vue@3.4.21/dist/vue.global.prod.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vue-router@4.3.0/dist/vue-router.global.prod.js"></script>
+  <!-- Pinia IIFE build (vue-demi) gaida globālo VueDemi; nav atkarīgs no vue-demi pakotnes -->
+  <script>
+    window.VueDemi = Object.assign(Object.create(null), Vue, {
+      default: Vue, isVue2: false, isVue3: true,
+      install: function () {}, Vue: Vue, Vue2: undefined, version: Vue.version,
+      set: function (o, k, v) { o[k] = v; return v; },
+      del: function (o, k) { delete o[k]; },
+    });
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/pinia@2.1.7/dist/pinia.iife.prod.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios@1.6.8/dist/axios.min.js"></script>
 
