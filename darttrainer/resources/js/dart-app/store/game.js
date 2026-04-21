@@ -73,8 +73,8 @@ export const useGameStore = defineStore('game', {
             })(),
             'info',
           );
-          if (typeof window !== 'undefined' && String(window.location.hash || '').includes('/game/')) {
-            window.location.hash = '#/';
+          if (typeof window !== 'undefined' && window.location.pathname.includes('/game/')) {
+            window.location.assign('/');
           }
           return;
         }

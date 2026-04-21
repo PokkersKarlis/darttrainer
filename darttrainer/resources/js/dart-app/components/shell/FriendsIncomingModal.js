@@ -1,7 +1,10 @@
 import { useLocaleStore, useFriendsStore } from '../../store/index.js';
+import DtButton from '../ui/DtButton.js';
+
 /** Global friends request modal — decoupled from index.html layout markup. */
 export default {
   name: 'FriendsIncomingModal',
+  components: { DtButton },
   setup() {
     const friends = useFriendsStore();
     const locale = useLocaleStore();

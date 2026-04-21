@@ -10,8 +10,8 @@ const hoverRegister = ref(false);
 </script>
 
 <template>
-  <a
-    href="#/login"
+  <router-link
+    to="/login"
     class="dt-header-login"
     style="
       font-size: 13px;
@@ -28,9 +28,9 @@ const hoverRegister = ref(false);
     @mouseleave="hoverLogin = false"
   >
     {{ t('shell.login') }}
-  </a>
-  <a
-    href="#/register"
+  </router-link>
+  <router-link
+    to="/register"
     class="dt-header-register"
     style="
       font-size: 13px;
@@ -49,5 +49,5 @@ const hoverRegister = ref(false);
     @mouseleave="hoverRegister = false"
   >
     {{ t('shell.register') }}
-  </a>
+  </router-link>
 </template>

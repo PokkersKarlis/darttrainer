@@ -5,7 +5,10 @@ import { useAuthStore, useLocaleStore } from '../store/index.js';
  */
 import * as Vue from 'vue';
 import { useRouter } from 'vue-router';
+import DtButton from '../components/ui/DtButton.js';
+
 export default {
+  components: { DtButton },
   setup() {
     const auth = useAuthStore();
     const locale = useLocaleStore();
@@ -166,7 +169,7 @@ export default {
 
         <p class="dt-auth-footer" style="color:#334155;font-size:13px;margin-top:16px">
           <span>{{ t('auth.hasAccount') }}</span>
-          <a href="#/login" style="color:#f59e0b;font-weight:600;text-decoration:none"
+          <a href="/login" style="color:#f59e0b;font-weight:600;text-decoration:none"
              onmouseover="this.style.textDecoration='underline'"
              onmouseout="this.style.textDecoration='none'">{{ t('auth.goLogin') }}</a>
         </p>

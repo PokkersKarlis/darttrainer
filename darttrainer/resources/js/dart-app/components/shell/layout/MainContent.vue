@@ -1,34 +1,12 @@
 <script setup>
-/** Galvenā kolonna ar router-view */
+import ShellMainColumn from './ShellMainColumn.vue';
+import ShellMainScrollRegion from './ShellMainScrollRegion.vue';
+
+defineOptions({ name: 'ShellMainContent' });
 </script>
 
 <template>
-  <main
-    style="
-      flex: 1;
-      overflow: hidden;
-      min-width: 0;
-      min-height: 0;
-      background: #060d18;
-      display: flex;
-      flex-direction: column;
-    "
-  >
-    <div
-      class="shell-main-scroll"
-      style="flex: 1; min-height: 0; min-width: 0; overflow-y: auto; overflow-x: hidden"
-    >
-      <div
-        class="shell-main-scroll-inner"
-        style="flex: 1; min-height: 0; display: flex; flex-direction: column"
-      >
-        <transition name="fade" mode="out-in">
-          <router-view
-            class="shell-router-outlet"
-            style="flex: 1; min-height: 0; display: flex; flex-direction: column; min-width: 0"
-          />
-        </transition>
-      </div>
-    </div>
-  </main>
+  <ShellMainColumn>
+    <ShellMainScrollRegion />
+  </ShellMainColumn>
 </template>

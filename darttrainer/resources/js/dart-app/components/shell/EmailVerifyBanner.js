@@ -1,8 +1,11 @@
 import { useLocaleStore } from '../../store/index.js';
 /** E-pasta apstiprinājuma josla zem header */
 import * as Vue from 'vue';
+import DtButton from '../ui/DtButton.js';
+
 export default {
   name: 'EmailVerifyBanner',
+  components: { DtButton },
   props: {
     resendBusy: { type: Boolean, default: false },
   },

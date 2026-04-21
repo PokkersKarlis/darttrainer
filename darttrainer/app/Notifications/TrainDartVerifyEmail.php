@@ -36,7 +36,7 @@ class TrainDartVerifyEmail extends Notification
         $appName = (string) config('app.name');
         $siteHost = parse_url((string) config('app.url'), PHP_URL_HOST) ?: 'traindart.com';
 
-        return (new MailMessage)
+        $mail = (new MailMessage)
             ->subject(__('mail.verify_subject', ['app' => $appName]))
             ->view('mail.verify-email', [
                 'verifyUrl' => $url,
@@ -52,6 +52,14 @@ class TrainDartVerifyEmail extends Notification
                 'appName' => $appName,
                 'siteHost' => $siteHost,
             ]);
+
+        $replyAddress = config('mail.reply_to.address');
+        if (is_string($replyAddress) && $replyAddress !== '') {
+            $replyName = config('mail.reply_to.name');
+            $mail->replyTo($replyAddress, is_string($replyName) && $replyName !== '' ? $replyName : null);
+        }
+
+        return $mail;
     }
 
     protected function verificationUrl(MustVerifyEmail $notifiable): string

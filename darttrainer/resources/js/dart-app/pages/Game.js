@@ -2,9 +2,13 @@ import * as Vue from 'vue';
 import { useRouter } from 'vue-router';
 import { useBodyShellClass } from '../composables/useBodyShellClass.js';
 import { useAuthStore, useLocaleStore, useGameStore } from '../store/index.js';
+import MatchReport from '../components/MatchReport.js';
+import CricketMarkCell from '../components/CricketMarkCell.js';
+import CricketClosedCheck from '../components/CricketClosedCheck.js';
 
 export default {
   props: ['matchId'],
+  components: { MatchReport, CricketMarkCell, CricketClosedCheck },
 
   setup(props) {
     useBodyShellClass('body--game-shell');

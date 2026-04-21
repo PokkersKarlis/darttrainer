@@ -29,6 +29,6 @@ class VerifyEmailController extends Controller
     {
         $base = rtrim(config('app.frontend_url', url('/')), '/');
 
-        return redirect()->to($base.'/#/?verified=1');
+        return redirect()->to($base.'/?verified=1');
     }
 }

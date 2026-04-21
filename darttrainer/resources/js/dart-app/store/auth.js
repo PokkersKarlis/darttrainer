@@ -91,7 +91,7 @@ export const useAuthStore = defineStore('auth', {
       } catch (_) {}
       await stopFriendsStore();
       this.user = null;
-      window.location.hash = '/login';
+      window.location.assign('/login');
     },
 
     sessionInvalidated(toastMessage) {
@@ -102,7 +102,7 @@ export const useAuthStore = defineStore('auth', {
       if (toastMessage && typeof window._dartToast === 'function') {
         window._dartToast(toastMessage, 'success');
       }
-      window.location.hash = '/login';
+      window.location.assign('/login');
     },
 
     accountBanned(title, banReason) {
@@ -115,7 +115,7 @@ export const useAuthStore = defineStore('auth', {
       if (lines.length && typeof window._dartToast === 'function') {
         window._dartToast(lines.join('\n\n'), 'error');
       }
-      window.location.hash = '/login';
+      window.location.assign('/login');
     },
   },
 });

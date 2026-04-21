@@ -2,7 +2,10 @@
  * X01 metiena ievade: lauki 1…20 pēc kārtas, bull atsevišķi; 1× / 2× / 3×.
  */
 import * as Vue from 'vue';
+import DartboardInput from './DartboardInput.js';
+
 export default {
+  components: { DartboardInput },
   props: {
     darts:        { type: Array, required: true },
     submitting:   { type: Boolean, default: false },

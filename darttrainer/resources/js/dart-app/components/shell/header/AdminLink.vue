@@ -10,9 +10,9 @@ const t = (k) => locale.t(k);
 </script>
 
 <template>
-  <a
-    href="#/admin"
-    :class="{ 'nav-link--disabled': disabled }"
+  <router-link
+    v-if="!disabled"
+    to="/admin"
     style="
       display: inline-flex;
       align-items: center;
@@ -32,5 +32,28 @@ const t = (k) => locale.t(k);
     "
   >
     <span aria-hidden="true">⚙️</span>{{ t('shell.adminBtn') }}
-  </a>
+  </router-link>
+  <span
+    v-else
+    class="nav-link--disabled"
+    style="
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 800;
+      color: #0a1120;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      padding: 8px 14px;
+      border-radius: 10px;
+      opacity: 0.45;
+      pointer-events: none;
+      white-space: nowrap;
+    "
+    aria-disabled="true"
+  >
+    <span aria-hidden="true">⚙️</span>{{ t('shell.adminBtn') }}
+  </span>
 </template>

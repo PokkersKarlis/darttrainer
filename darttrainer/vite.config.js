@@ -50,6 +50,7 @@ export default defineConfig({
             input: [
                 'resources/css/app.css',
                 'resources/js/app.js',
+                // DartTrainer SPA (Vue Router history mode); public/index.html → /
                 'resources/js/dart-app/main.vue',
             ],
             // Tikai Blade — SPA izmaiņām jāiet caur HMR, ne pilnu pārlādi (ātrāk Docker/Windows)

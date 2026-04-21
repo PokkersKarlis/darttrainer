@@ -6,6 +6,9 @@ import { useFriendsStore } from '../store/friends.js';
 import { dartSafeDisplayMessage } from '../utils/safeDisplay.js';
 import AppShellHeader from '../components/shell/layout/AppShellHeader.vue';
 import AppShellBody from '../components/shell/layout/AppShellBody.vue';
+import AppShellFooter from '../components/shell/AppShellFooter.js';
+import EmailVerifyBanner from '../components/shell/EmailVerifyBanner.js';
+import FriendsIncomingModal from '../components/shell/FriendsIncomingModal.js';
 
 const auth = useAuthStore();
 const locale = useLocaleStore();
@@ -46,23 +49,35 @@ async function resendVerification() {
   }
 }
 
-function consumeVerifiedHash() {
+/** E-pasta apstiprinājums: ?verified=1 (history) vai vecais #/?verified=1 */
+function consumeVerifiedRedirectParam() {
   try {
-    const hash = window.location.hash || '';
-    if (!hash.includes('?')) return;
-    const q = hash.split('?')[1] || '';
-    const params = new URLSearchParams(q);
-    if (params.get('verified') !== '1') return;
+    let params = new URLSearchParams(window.location.search || '');
+    if (params.get('verified') !== '1') {
+      const hash = window.location.hash || '';
+      if (!hash.includes('?')) return;
+      const q = hash.split('?')[1] || '';
+      params = new URLSearchParams(q);
+      if (params.get('verified') !== '1') return;
+      auth.refreshMe().then(() => {
+        window._dartToast?.(t('auth.emailVerifiedToast'), 'success');
+      });
+      window.location.hash = '';
+      return;
+    }
     auth.refreshMe().then(() => {
       window._dartToast?.(t('auth.emailVerifiedToast'), 'success');
     });
-    window.location.hash = '#/';
+    params.delete('verified');
+    const qs = params.toString();
+    const path = window.location.pathname + (qs ? `?${qs}` : '');
+    window.history.replaceState({}, '', path || '/');
   } catch (_) {}
 }
 
 onMounted(() => {
   locale.initFromStorage();
-  consumeVerifiedHash();
+  consumeVerifiedRedirectParam();
 });
 
 watch(
@@ -81,7 +96,7 @@ watch(
     style="height: 100dvh; display: flex; flex-direction: column; overflow: hidden"
   >
     <AppShellHeader />
-    <email-verify-banner
+    <EmailVerifyBanner
       v-if="needsEmailVerify"
       :resend-busy="resendBusy"
       @resend="resendVerification"
@@ -92,10 +107,10 @@ watch(
       style="flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden"
     >
       <AppShellBody />
-      <app-shell-footer />
+      <AppShellFooter />
     </div>
 
-    <friends-incoming-modal />
+    <FriendsIncomingModal />
 
     <div
       style="

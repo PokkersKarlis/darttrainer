@@ -1,5 +1,8 @@
 import * as Vue from 'vue';
+import CricketClosedCheck from './CricketClosedCheck.js';
+
 export default {
+  components: { CricketClosedCheck },
   props: {
     hits:   { type: Number, default: 0 },
     closed: { type: Boolean, default: false }, // segment closed by all players

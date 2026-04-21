@@ -1,6 +1,9 @@
 import * as Vue from 'vue';
 import { useLocaleStore } from '../store/index.js';
+import CricketClosedCheck from './CricketClosedCheck.js';
+
 export default {
+  components: { CricketClosedCheck },
   props: {
     players:         { type: Array,  required: true },
     currentPlayerId: { type: Number, default: null },

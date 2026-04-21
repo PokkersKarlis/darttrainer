@@ -35,7 +35,7 @@ export function installApiInterceptors(getAuthStore) {
             } else {
               const lines = [title, data.ban_reason].filter(Boolean);
               window._dartToast?.(lines.join('\n\n'), 'error');
-              window.location.hash = '/login';
+              window.location.assign('/login');
             }
           } catch (_) {}
         }

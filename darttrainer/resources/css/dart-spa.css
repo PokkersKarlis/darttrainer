@@ -377,6 +377,11 @@ body {
   pointer-events: none;
   color: #64748b !important;
 }
+
+.nav-link--active {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f1f5f9 !important;
+}
 .nav-link--soon { font-size: 9px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #475569; margin-left: auto; }
 
 .nav-card--locked {

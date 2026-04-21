@@ -54,7 +54,7 @@
                         <td class="dt-email-pad" style="background-color:#ffffff;border:1px solid #e2e8f0;border-top:0;border-radius:0 0 12px 12px;padding:28px 28px 32px;">
                             @if ($hasName)
                             <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:24px;color:#0f172a;">
-                                {{ __('mail.verify_greeting', ['name' => e($salutationName)]) }}
+                                {{ __('mail.verify_greeting', ['name' => $salutationName]) }}
                             </p>
                             @else
                             <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:24px;color:#0f172a;">

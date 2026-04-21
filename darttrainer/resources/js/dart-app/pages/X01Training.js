@@ -2,8 +2,10 @@ import { Training } from '../api/client.js';
 import * as Vue from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore, useLocaleStore } from '../store/index.js';
+import X01SoloProtocol from '../components/X01SoloProtocol.js';
 
 export default {
+  components: { X01SoloProtocol },
   setup() {
     const route  = useRoute();
     const router = useRouter();
@@ -243,7 +245,7 @@ export default {
                     class="text-sm font-black text-amber-400 hover:text-amber-300 transition">
               ← {{ t('x01Training.protocolBack') }}
             </button>
-            <a href="#/stats" class="text-xs font-semibold text-slate-500 hover:text-slate-300">{{ t('x01Training.protocolBackStats') }}</a>
+            <a href="/stats" class="text-xs font-semibold text-slate-500 hover:text-slate-300">{{ t('x01Training.protocolBackStats') }}</a>
           </div>
           <p class="text-xs text-slate-500">{{ t('x01Training.protocolReadOnlyHint') }}</p>
           <X01SoloProtocol :state="protocolOnlyState" :default-open="true" />

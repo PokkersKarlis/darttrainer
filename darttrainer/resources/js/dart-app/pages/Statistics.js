@@ -162,7 +162,7 @@ export default {
         <div v-if="!me"
              class="bg-slate-800 border border-amber-700/40 rounded-xl p-5 mb-8 text-center">
           <p class="text-slate-300 mb-2">{{ t('stats.loginHint') }}</p>
-          <a href="#/login" class="text-amber-400 hover:underline font-semibold">{{ t('stats.loginLink') }}</a>
+          <a href="/login" class="text-amber-400 hover:underline font-semibold">{{ t('stats.loginLink') }}</a>
         </div>
 
         <template v-else>
@@ -322,7 +322,7 @@ export default {
                         {{ row.winner_name || '—' }}
                       </td>
                       <td class="py-2.5 px-3 text-right">
-                        <a :href="'#/game/' + row.match_id"
+                        <a :href="'/game/' + row.match_id"
                            class="inline-flex text-amber-400 hover:text-amber-300 font-semibold text-xs sm:text-sm whitespace-nowrap">
                           {{ t('stats.protocolOpen') }}
                         </a>
@@ -367,7 +367,7 @@ export default {
                           {{ fmtProtocolEnd(row.finished_at) }}
                         </td>
                         <td class="py-2.5 px-3 text-right">
-                          <a :href="'#/training/x01?protocol=' + row.id"
+                          <a :href="'/training/x01?protocol=' + row.id"
                              class="inline-flex text-amber-400 hover:text-amber-300 font-semibold text-xs sm:text-sm whitespace-nowrap">
                             {{ t('stats.soloProtocolOpen') }}
                           </a>

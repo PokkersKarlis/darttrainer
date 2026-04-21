@@ -4,6 +4,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{{ config('app.name', 'DartTrainer') }}</title>
+    <meta name="description" content="DartTrainer — šautriņu treniņš, multiplayer (501, Cricket) un X01 solo.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ config('app.name', 'DartTrainer') }}">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:description" content="Šautriņu treniņš, multiplayer un X01 solo — trenējies un seko statistikai.">
     @vite(['resources/js/dart-app/main.vue'])
 </head>
 <body>

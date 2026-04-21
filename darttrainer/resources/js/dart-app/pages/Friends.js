@@ -131,7 +131,7 @@ export default {
 
         <template v-if="!auth.user">
           <p class="text-slate-500 text-sm text-center">{{ t('friends.loginHint') }}</p>
-          <a href="#/login" class="text-center text-amber-400 font-bold text-sm">{{ t('friends.loginLink') }}</a>
+          <a href="/login" class="text-center text-amber-400 font-bold text-sm">{{ t('friends.loginLink') }}</a>
         </template>
 
         <template v-else>

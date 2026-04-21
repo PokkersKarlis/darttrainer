@@ -5,11 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
 Route::middleware('guest')->group(function () {
-    Volt::route('register', 'pages.auth.register')
-        ->name('register');
-
-    Volt::route('login', 'pages.auth.login')
-        ->name('login');
+    // /login un /register — SPA (web.php + Route::fallback); Volt formai tikai atlikušie ceļi.
 
     Volt::route('forgot-password', 'pages.auth.forgot-password')
         ->name('password.request');

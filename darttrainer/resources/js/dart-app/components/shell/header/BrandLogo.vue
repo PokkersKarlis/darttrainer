@@ -7,8 +7,8 @@ function onLogoError(e) {
 </script>
 
 <template>
-  <a
-    href="#/"
+  <router-link
+    to="/"
     class="dt-header-logo"
     style="
       display: flex;
@@ -40,5 +40,5 @@ function onLogoError(e) {
       <span style="font-size: 22px">🎯</span>
       <span class="hidden sm:inline" style="letter-spacing: -0.3px">DartTrainer</span>
     </span>
-  </a>
+  </router-link>
 </template>

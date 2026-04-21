@@ -1,5 +1,4 @@
-# Laravel maršrutam `/` jāiet caur index.php; citādi Apache bieži dod priekšroku
-# public/index.html (vecā CDN SPA) un jaunā Vite/Blade versija serverī nav redzama.
+# Laravel maršrutam `/` jāiet caur index.php; public/index.html tikai novirza uz `/` (Vite SPA).
 DirectoryIndex index.php index.html
 
 <IfModule mod_rewrite.c>

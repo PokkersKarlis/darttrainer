@@ -34,9 +34,19 @@ export default {
     return { props, labelStyle, anchorStyle, anchorClass };
   },
   template: `
-    <a :href="props.href" :class="anchorClass" :style="anchorStyle || undefined">
+    <router-link
+      v-if="!props.disabled"
+      :to="props.href"
+      :class="anchorClass"
+      :style="anchorStyle || undefined"
+      active-class="active"
+    >
       <span class="bicon">{{ props.icon }}</span>
       <span :style="labelStyle || undefined">{{ props.label }}</span>
-    </a>
+    </router-link>
+    <span v-else :class="anchorClass" :style="anchorStyle || undefined" aria-disabled="true">
+      <span class="bicon">{{ props.icon }}</span>
+      <span :style="labelStyle || undefined">{{ props.label }}</span>
+    </span>
   `,
 };
