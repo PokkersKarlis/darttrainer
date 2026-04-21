@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -38,9 +39,10 @@ class AuthController extends Controller
                 : null,
         ]);
 
-        $user->sendEmailVerificationNotification();
-
+        // Sesija pirms apstiprinājuma vēstules — tā pati plūsma kā Livewire reģistrācijai
+        // (SendEmailVerificationNotification uz Registered); izvairās no «tikai resend sūta».
         Auth::login($user);
+        event(new Registered($user));
 
         return response()->json([
             'user' => $this->userResource($user->fresh()),
