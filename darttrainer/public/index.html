@@ -401,7 +401,8 @@
     <aside class="hidden lg:flex"
            style="width:220px;flex-shrink:0;background:#0a1120;border-right:1px solid #162540;flex-direction:column;padding:12px 10px">
 
-      <div style="flex:1;display:flex;flex-direction:column;gap:2px">
+      <!-- Pilna izvēlne tikai ielogotiem -->
+      <div v-if="auth.user" style="flex:1;display:flex;flex-direction:column;gap:2px">
         <a href="#/" class="nav-link"><span class="icon">🏠</span>{{ t('nav.home') }}</a>
 
         <div style="margin:8px 0 4px 12px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#334155">Multiplayer</div>
@@ -422,8 +423,15 @@
         </a>
       </div>
 
+      <!-- Viesiem: tikai ieeja / reģistrācija -->
+      <div v-else-if="auth.hydrated" style="flex:1;display:flex;flex-direction:column;gap:2px">
+        <a href="#/login" class="nav-link"><span class="icon">🔑</span>{{ t('shell.login') }}</a>
+        <a href="#/register" class="nav-link"><span class="icon">✨</span>{{ t('shell.register') }}</a>
+      </div>
+      <div v-else style="flex:1"></div>
+
       <!-- Discord + PayPal (kā iepriekšējā dizainā) -->
-      <div style="padding:12px 0 0;margin-top:8px;border-top:1px solid #162540;flex-shrink:0">
+      <div v-if="auth.user" style="padding:12px 0 0;margin-top:8px;border-top:1px solid #162540;flex-shrink:0">
         <a href="https://discord.gg/Hjs8wvKPPg" target="_blank" rel="noopener noreferrer"
            class="nav-link" style="margin-bottom:6px">
           <svg viewBox="0 -28.5 256 256" xmlns="http://www.w3.org/2000/svg" width="18" height="18" style="flex-shrink:0" aria-hidden="true">
@@ -442,7 +450,7 @@
       </div>
 
       <!-- Sidebar ad slot -->
-      <div style="padding:8px 0 0">
+      <div v-if="auth.user" style="padding:8px 0 0">
         <div class="ad-slot" style="height:200px;width:100%">
           <span>AD HERE</span>
           <span style="font-size:9px;opacity:.7">160 × 200</span>
@@ -487,8 +495,8 @@
     </div>
   </div>
 
-  <!-- Mobile bottom navigation -->
-  <nav class="lg:hidden dt-shell-mobile-bnav"
+  <!-- Mobile bottom navigation: viesiem tikai ieeja / reģistrācija -->
+  <nav v-if="auth.hydrated && auth.user" class="lg:hidden dt-shell-mobile-bnav"
        style="flex-shrink:0;height:60px;background:#0a1120;border-top:1px solid #162540;display:flex">
     <a href="#/" class="bnav-item">
       <span class="bicon">🏠</span><span>{{ t('nav.home') }}</span>
@@ -507,6 +515,15 @@
     </a>
     <a v-if="auth.user?.is_admin" href="#/admin" class="bnav-item" style="color:#fbbf24">
       <span class="bicon">⚙️</span><span style="font-weight:800">{{ t('nav.admin') }}</span>
+    </a>
+  </nav>
+  <nav v-else-if="auth.hydrated && !auth.user" class="lg:hidden dt-shell-mobile-bnav"
+       style="flex-shrink:0;height:60px;background:#0a1120;border-top:1px solid #162540;display:flex;justify-content:center;gap:8px;padding:0 12px">
+    <a href="#/login" class="bnav-item" style="flex:1;max-width:160px">
+      <span class="bicon">🔑</span><span>{{ t('shell.login') }}</span>
+    </a>
+    <a href="#/register" class="bnav-item" style="flex:1;max-width:160px;color:#fbbf24">
+      <span class="bicon">✨</span><span style="font-weight:800">{{ t('shell.register') }}</span>
     </a>
   </nav>
 
@@ -550,7 +567,7 @@
 <script src="/js/components/CricketMarkCell.js?v=spa-20260421-1"></script>
 <script src="/js/components/MatchReport.js?v=spa-20260424-1"></script>
 <script src="/js/components/X01SoloProtocol.js?v=spa-20260424-1"></script>
-<script src="/js/pages/Home.js?v=spa-20260426-1"></script>
+<script src="/js/pages/Home.js?v=spa-20260427-1"></script>
 <script src="/js/pages/Login.js?v=spa-20260425-1"></script>
 <script src="/js/pages/Register.js?v=spa-20260425-1"></script>
 <script src="/js/pages/Lobby.js?v=spa-20260425-1"></script>
@@ -559,7 +576,7 @@
 <script src="/js/pages/X01Training.js?v=spa-20260424-1"></script>
 <script src="/js/pages/Statistics.js?v=spa-20260424-2"></script>
 <script src="/js/pages/Admin.js?v=spa-20260421-1"></script>
-<script src="/js/router.js?v=spa-20260421-1"></script>
+<script src="/js/router.js?v=spa-20260427-1"></script>
 <script src="/js/app.js?v=spa-20260426-1"></script>
 </body>
 </html>

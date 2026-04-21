@@ -171,7 +171,7 @@ const HomePage = {
         </template>
       </div>
 
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:20px">
+      <div v-if="auth.user" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:20px">
 
         <a href="#/lobby"
            style="background:linear-gradient(135deg,#451a03,#78350f);border:1px solid #92400e;border-radius:14px;padding:20px;text-decoration:none;display:flex;flex-direction:column;transition:all .2s;cursor:pointer"
