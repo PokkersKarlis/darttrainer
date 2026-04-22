@@ -4,6 +4,8 @@ import { onMounted, onUnmounted, nextTick, watch, ref } from 'vue';
 const AUTH_FIT_BOTTOM_GAP = 5;
 const MARGIN = 0.99;
 const EPS = 0.002;
+/** Ja augstumā pietrūkst — mēģina šaurāku formu: 100% … 80% no kolonnas (līdz 20% šaurāk) */
+const WIDTH_FIT_RATIOS = [1, 0.95, 0.9, 0.85, 0.8];
 
 function authPageEl(v) {
   return v?.closest('.dt-auth-page') || null;
@@ -82,8 +84,8 @@ function getAvailableForFit(viewportEl) {
 
 /**
  * Mērogo visu zīmola + kartes + kājenes bloku starp header un footer.
- * Tikai Y ass (scale(1, f)), platums = kolonnas platumam — nav horizontāla vienotā scale.
- * Bez CSS transition. f = min(1, ah/rh) — nemet augšā f grīdu, citādi apgriež kājeni (reģ. ar klubu).
+ * Tikai Y ass (scale(1, f)). Platums: izvēlas 100%…80% no slot, kas dod vislielāko ah/rh (kājene atrodama).
+ * Bez CSS transition. f = min(1, ah/rh). Surface jābūt horizontāli centrētam (.dt-auth-fit-vp).
  */
 export function useAuthContentFit(watchSources) {
   const viewportRef = ref(null);
@@ -137,13 +139,9 @@ export function useAuthContentFit(watchSources) {
     const fromInner = inner?.clientWidth ?? 1e6;
     const fromVp = v?.clientWidth ?? 1e6;
     const slotW = Math.max(1, Math.floor(Math.min(fromInner, fromVp, visW)));
-    const rw = Math.max(1, Math.floor(slotW));
-    c.style.width = `${rw}px`;
-    c.style.minWidth = '0';
-    void c.offsetWidth;
-    const rh = Math.max(1, c.scrollHeight);
 
-    if (rw < 1 || rh < 1) {
+    const { aw, ah } = getAvailableForFit(v);
+    if (aw < 1 || ah < 1) {
       c.removeAttribute('style');
       s.removeAttribute('style');
       s.style.maxWidth = '100%';
@@ -153,8 +151,29 @@ export function useAuthContentFit(watchSources) {
       return;
     }
 
-    const { aw, ah } = getAvailableForFit(v);
-    if (aw < 1 || ah < 1) {
+    let bestRw = slotW;
+    let bestRh = 1;
+    let bestFmetric = -1;
+    const seenW = new Set();
+    for (const ratio of WIDTH_FIT_RATIOS) {
+      const wTry = Math.max(1, Math.floor(ratio * slotW));
+      if (seenW.has(wTry)) continue;
+      seenW.add(wTry);
+      c.style.width = `${wTry}px`;
+      c.style.minWidth = '0';
+      void c.offsetWidth;
+      const rhTry = Math.max(1, c.scrollHeight);
+      const fMet = Math.min(1, ah / rhTry);
+      if (fMet > bestFmetric + 1e-6 || (Math.abs(fMet - bestFmetric) <= 1e-6 && wTry > bestRw)) {
+        bestFmetric = fMet;
+        bestRw = wTry;
+        bestRh = rhTry;
+      }
+    }
+
+    const rw = bestRw;
+    const rh = bestRh;
+    if (rw < 1 || rh < 1) {
       c.removeAttribute('style');
       s.removeAttribute('style');
       s.style.maxWidth = '100%';
