@@ -1,4 +1,5 @@
-# CloudLinux / cPanel: `vite build` bieži krīt ar WASM OOM. Uzbūvē šeit un augšupielādē `public/build` uz servera.
+# CloudLinux / cPanel: jēdzīgi `npm run build` bieži krīt ar WASM/undici OOM. Uz servera
+# nebūvē: šeit uzbūvē, lejupielādē artifact un augšupielādē tikai `public/build/`.
 name: Build frontend (Vite)
 
 on:
@@ -9,6 +10,8 @@ on:
       - 'darttrainer/package.json'
       - 'darttrainer/package-lock.json'
       - 'darttrainer/vite.config.js'
+      - 'darttrainer/postcss.config.js'
+      - 'darttrainer/tailwind.config.js'
       - 'darttrainer/resources/js/**'
       - 'darttrainer/resources/css/**'
       - 'darttrainer/resources/views/**'
@@ -34,8 +37,20 @@ jobs:
           npm ci
           npm run build
 
+      - name: Augšupielādes norāde (cPanel / FTP)
+        run: |
+          {
+            echo '## Pēc build'
+            echo '1. Sadaļā **Actions** atver šo run → **Artifacts** → lejupielādē **darttrainer-public-build** (zip).'
+            echo '2. Izpako un to, kas iekš zip, ievieto servera public/build/ (aizstāj veco build/ mapi).'
+            echo '3. Pārliecinies, ka public/hot nav production vidē (dzēs, ja ir).'
+            echo ''
+            echo '*Uz kopīga CloudLinux hostinga Vite bieži nedarbojas (WASM atmiņa, LVE). Tāpēc šis workflow ir ieteicamais veids.*'
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - uses: actions/upload-artifact@v4
         with:
           name: darttrainer-public-build
           path: darttrainer/public/build
           if-no-files-found: error
+          retention-days: 14
