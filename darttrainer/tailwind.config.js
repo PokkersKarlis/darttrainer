@@ -12,6 +12,14 @@ export default {
 
     theme: {
         extend: {
+            /* Augstums pret mobilā pārlūka dīnam: h-screen joprojām = 100vh; pilnam apvalkam
+               izmanto min-h-dvh / h-dvh, nevis h-screen, ja iespējams. */
+            minHeight: {
+                dvh: '100dvh',
+            },
+            height: {
+                dvh: '100dvh',
+            },
             colors: {
                 navy: {
                     950: '#060d18',

@@ -7,8 +7,8 @@ const load = (importer) => () => importer().then((m) => m.default);
 
 const routes = [
   { path: '/', component: load(() => import('../pages/Home.vue')), meta: { titleKey: 'nav.home' } },
-  { path: '/login', component: load(() => import('../pages/Login.js')), meta: { titleKey: 'shell.login' } },
-  { path: '/register', component: load(() => import('../pages/Register.js')), meta: { titleKey: 'shell.register' } },
+  { path: '/login', component: load(() => import('../pages/Login.vue')), meta: { titleKey: 'shell.login' } },
+  { path: '/register', component: load(() => import('../pages/Register.vue')), meta: { titleKey: 'shell.register' } },
   {
     path: '/lobby',
     redirect: () => ({ path: X01_LOBBY_AND_TRAINING_ENABLED ? '/lobby/x01' : '/lobby/cricket' }),
