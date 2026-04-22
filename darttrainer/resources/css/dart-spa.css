@@ -216,15 +216,35 @@ body {
 
 html:has(body.dt-route-auth) {
   overflow: hidden;
+  overflow-x: hidden;
+  max-width: 100%;
   min-height: var(--dt-visual-vh, 100dvh);
   height: 100%;
 }
 
 body.dt-route-auth {
   overflow: hidden;
+  overflow-x: hidden;
+  max-width: 100%;
+  width: 100%;
+  position: relative;
   overscroll-behavior: none;
   min-height: var(--dt-visual-vh, 100dvh);
   touch-action: manipulation;
+}
+
+body.dt-route-auth #app,
+body.dt-route-auth .dt-app-root {
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+body.dt-route-auth .dt-app-shell-body {
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
 }
 
 /* /login, /register: min-height:0 visā flex ķēdē, bez vertikālā scroll */

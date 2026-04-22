@@ -103,10 +103,14 @@
 .dt-auth-pills {
   display: flex;
   gap: 10px;
+  min-width: 0;
+  width: 100%;
+  flex-wrap: wrap;
 }
 
 .dt-auth-pill-label {
-  flex: 1;
+  flex: 1 1 calc(50% - 5px);
+  min-width: 0;
   cursor: pointer;
 }
 
@@ -148,9 +152,11 @@
 
 .dt-auth-fields {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px;
   margin-bottom: 16px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .dt-auth-field-span {
@@ -263,7 +269,7 @@ body.dt-route-auth .dt-auth-fit-content {
   transform-origin: top left;
 }
 
-/* Ja MIN_F vēl neatrisina augstumu — pēdējā iespēja, scroll iekš mērogojamā */
+/* Rezerve: reti, ja f aprēķins iziet no sync ar augstumu (scroll pēc satura) */
 body.dt-route-auth .dt-auth-fit-content.dt-auth-fit-content--scroll {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -407,10 +413,12 @@ body.dt-route-auth .dt-auth-footer {
     display: flex;
     justify-content: center;
     width: 100%;
+    min-width: 0;
   }
   .dt-auth-submit-row :deep(button) {
-    width: auto !important;
-    min-width: 11.5rem;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0;
   }
   .dt-auth-footer {
     display: flex;

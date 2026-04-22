@@ -3,8 +3,6 @@ import { onMounted, onUnmounted, nextTick, watch, ref } from 'vue';
 /** Tukša vieta starp mērogojamo un apakšas nav pēc apmērīšanās. */
 const AUTH_FIT_BOTTOM_GAP = 5;
 const MARGIN = 0.99;
-/** Zemāk mērogs neiet (runājamā lasāmība); ja vajag — scroll iekš saturam */
-const MIN_F = 0.38;
 const EPS = 0.002;
 
 function authPageEl(v) {
@@ -85,7 +83,7 @@ function getAvailableForFit(viewportEl) {
 /**
  * Mērogo visu zīmola + kartes + kājenes bloku starp header un footer.
  * Tikai Y ass (scale(1, f)), platums = kolonnas platumam — nav horizontāla vienotā scale.
- * Bez CSS transition; f apgriež ar MIN_F, lai neiestrēgtu „bezgalīga” samazināšana.
+ * Bez CSS transition. f = min(1, ah/rh) — nemet augšā f grīdu, citādi apgriež kājeni (reģ. ar klubu).
  */
 export function useAuthContentFit(watchSources) {
   const viewportRef = ref(null);
@@ -166,8 +164,7 @@ export function useAuthContentFit(watchSources) {
       return;
     }
 
-    const rawF = roundF(Math.min(1, ah / rh));
-    const f = Math.max(MIN_F, rawF);
+    const f = roundF(Math.min(1, ah / rh));
 
     if (
       lastF != null &&
@@ -179,10 +176,6 @@ export function useAuthContentFit(watchSources) {
     ) {
       reobservePage();
       return;
-    }
-
-    if (rh * f > ah + 1) {
-      c.classList.add('dt-auth-fit-content--scroll');
     }
 
     lastF = f;
