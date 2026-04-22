@@ -1,3 +1,7 @@
+/**
+ * CloudLinux: ja `vite build` krīt ar WebAssembly/undici OOM, uzbūvē ar GitHub Actions
+ * (.github/workflows/build-frontend.yml) un publicē tikai public/build/ uz servera.
+ */
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';

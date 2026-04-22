@@ -4,8 +4,9 @@
     "scripts": {
         "dev": "vite",
         "build": "vite build",
-        "build:hosting": "env VITE_HOSTING_BUILD=1 VITE_MAX_PARALLEL_FILE_OPS=1 UV_THREADPOOL_SIZE=2 NODE_OPTIONS=--max-old-space-size=512 npx --no-install vite build",
-        "build:hosting:ram": "env VITE_HOSTING_BUILD=1 VITE_MAX_PARALLEL_FILE_OPS=1 UV_THREADPOOL_SIZE=2 NODE_OPTIONS=--max-old-space-size=1024 npx --no-install vite build"
+        "build:hosting": "env CI=1 VITE_HOSTING_BUILD=1 VITE_MAX_PARALLEL_FILE_OPS=1 UV_THREADPOOL_SIZE=1 GOMEMLIMIT=384MiB NODE_OPTIONS=--max-old-space-size=384 npx --no-install vite build",
+        "build:hosting:ram": "env CI=1 VITE_HOSTING_BUILD=1 VITE_MAX_PARALLEL_FILE_OPS=1 UV_THREADPOOL_SIZE=1 GOMEMLIMIT=512MiB NODE_OPTIONS=--max-old-space-size=512 npx --no-install vite build",
+        "build:hosting:micro": "env CI=1 VITE_HOSTING_BUILD=1 VITE_MAX_PARALLEL_FILE_OPS=1 UV_THREADPOOL_SIZE=1 GOMEMLIMIT=256MiB NODE_OPTIONS=--max-old-space-size=256 npx --no-install vite build"
     },
     "dependencies": {
         "pinia": "^2.1.7",
