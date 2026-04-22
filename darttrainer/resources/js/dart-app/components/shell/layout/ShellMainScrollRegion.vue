@@ -12,7 +12,7 @@ const isAuthPage = computed(
 </script>
 
 <template>
-  <div class="shell-main-scroll">
+  <div class="shell-main-scroll" :class="{ 'shell-main-scroll--auth': isAuthPage }">
     <div class="shell-main-scroll-inner">
       <!-- /login, /register: bez <Transition> (pat „instant” mēdz radīt 1 kadra / klases aizkavi) -->
       <router-view v-if="isAuthPage" v-slot="{ Component, route: r }">
@@ -36,6 +36,12 @@ const isAuthPage = computed(
   min-width: 0;
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+.shell-main-scroll--auth {
+  overflow: hidden !important;
+  overflow-y: hidden !important;
+  overscroll-behavior: none;
 }
 
 .shell-main-scroll-inner {

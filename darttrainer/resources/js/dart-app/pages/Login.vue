@@ -1,9 +1,8 @@
 <script setup>
-import { reactive, toRef } from 'vue';
+import { reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore, useLocaleStore } from '../store/index.js';
 import DtButton from '../components/ui/DtButton.js';
-import { useAuthContentFit } from '../composables/useAuthContentFit.js';
 
 defineOptions({ name: 'LoginPage' });
 
@@ -18,8 +17,6 @@ const form = reactive({
 });
 
 const t = (key) => locale.t(key);
-
-const { viewportRef, surfaceRef, contentRef } = useAuthContentFit([toRef(form, 'error')]);
 
 async function submit() {
   form.error = '';
@@ -42,10 +39,8 @@ function onInputBlur(e) {
 <template>
   <div class="dt-auth-page">
     <div class="dt-auth-page-inner">
-      <div ref="viewportRef" class="dt-auth-fit-vp">
-        <div ref="surfaceRef" class="dt-auth-fit-surface">
-          <div ref="contentRef" class="dt-auth-fit-content">
-            <div class="dt-auth-brand" style="text-align: center; margin-bottom: 28px">
+      <div class="dt-auth-stack">
+        <div class="dt-auth-brand" style="text-align: center; margin-bottom: 28px">
               <span class="dt-auth-emoji" style="font-size: 40px; margin-bottom: 8px">🎯</span>
               <h1 style="font-size: 24px; font-weight: 800; color: #f59e0b; margin: 0 0 4px">DartTrainer</h1>
               <p class="dt-auth-sub" style="color: #475569; font-size: 14px; margin: 0">
@@ -162,14 +157,12 @@ function onInputBlur(e) {
               </form>
             </div>
 
-            <p class="dt-auth-footer" style="color: #334155; font-size: 13px; margin-top: 16px">
-              <span>{{ t('auth.noAccount') }}</span>
-              <router-link to="/register" class="dt-auth-link-register dt-auth-foot-link">
-                {{ t('auth.goRegister') }}
-              </router-link>
-            </p>
-          </div>
-        </div>
+        <p class="dt-auth-footer" style="color: #334155; font-size: 13px; margin-top: 16px">
+          <span>{{ t('auth.noAccount') }}</span>
+          <router-link to="/register" class="dt-auth-link-register dt-auth-foot-link">
+            {{ t('auth.goRegister') }}
+          </router-link>
+        </p>
       </div>
     </div>
   </div>
