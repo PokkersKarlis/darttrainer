@@ -4,9 +4,7 @@ import { useAuthStore } from '../../../store/index.js';
 import BrandLogo from '../header/BrandLogo.vue';
 import FriendIncomingButton from '../friends/IncomingButton.vue';
 import LocaleSwitch from '../header/LocaleSwitch.vue';
-import AdminLink from '../header/AdminLink.vue';
-import UserSummary from '../user/Summary.vue';
-import LogoutButton from '../auth/LogoutButton.vue';
+import HeaderUserMenu from '../header/HeaderUserMenu.vue';
 import GuestLinks from '../header/GuestLinks.vue';
 import AuthPendingIndicator from '../auth/AuthPendingIndicator.vue';
 
@@ -48,9 +46,7 @@ const needsEmailVerify = computed(
       "
     >
       <template v-if="auth.hydrated && auth.user">
-        <AdminLink v-if="auth.user?.is_admin" :disabled="needsEmailVerify" />
-        <UserSummary />
-        <LogoutButton />
+        <HeaderUserMenu :needs-email-verify="needsEmailVerify" />
       </template>
       <GuestLinks v-else-if="auth.hydrated && !auth.user" />
       <AuthPendingIndicator v-else />

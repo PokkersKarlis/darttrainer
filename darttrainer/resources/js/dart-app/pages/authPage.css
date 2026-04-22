@@ -15,7 +15,7 @@
 
 .dt-auth-page-inner {
   width: 100%;
-  max-width: 380px;
+  max-width: min(100%, 420px);
   min-width: 0;
   min-height: 0;
   flex: 0 1 auto;
@@ -196,7 +196,8 @@ body.dt-route-auth .dt-auth-page {
   box-sizing: border-box;
   /* flex-start, lai mērogojotais bloks necentrrētu augšup zem fiksētā headera */
   justify-content: flex-start;
-  align-items: stretch;
+  /* Desktop: centē šaurāku formu, nevis izstiept uz 100% */
+  align-items: center;
   padding: max(10px, clamp(8px, 1.2dvh, 20px)) 16px max(5px, clamp(6px, 1dvh, 12px));
 }
 
@@ -208,8 +209,8 @@ body.dt-route-auth .dt-auth-page-inner {
   min-width: 0;
   max-height: 100%;
   width: 100%;
-  max-width: 100%;
-  align-self: stretch;
+  max-width: min(100%, 420px);
+  align-self: center;
   align-items: stretch;
   justify-content: flex-start;
   overflow: hidden;
@@ -400,7 +401,7 @@ body.dt-route-auth .dt-auth-page--login .dt-auth-submit-row {
     padding: clamp(6px, 1.2dvh, 16px) 16px max(10px, env(safe-area-inset-bottom, 0px)) !important;
   }
   .dt-auth-page-inner {
-    max-width: min(380px, 100%);
+    max-width: min(420px, 100%);
   }
   .dt-auth-brand {
     margin-bottom: 6px !important;

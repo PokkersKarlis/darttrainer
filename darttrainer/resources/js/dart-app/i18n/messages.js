@@ -44,6 +44,8 @@ export const DART_I18N = {
       registerShort: 'Reģistrēties',
       adminBtn: 'Admin panelis',
       authPending: 'Pārbauda sesiju…',
+      guestMenuAria: 'Pierakstīties vai reģistrēties',
+      accountMenuAria: 'Konta izvēlne',
     },
     home: {
       tagline: 'Trenējies. Spēlē. Uzvari.',
@@ -535,6 +537,8 @@ export const DART_I18N = {
       registerShort: 'Sign up',
       adminBtn: 'Admin panel',
       authPending: 'Checking session…',
+      guestMenuAria: 'Sign in or create an account',
+      accountMenuAria: 'Account menu',
     },
     home: {
       tagline: 'Train. Play. Win.',

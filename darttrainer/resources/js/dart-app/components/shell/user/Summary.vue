@@ -2,6 +2,11 @@
 import { computed } from 'vue';
 import { useAuthStore } from '../../../store/index.js';
 
+defineProps({
+  /** Mobilā konta izvēlnes poga — rāda mazu bultiņu, ka var atvērt izvēlni */
+  showChevron: { type: Boolean, default: false },
+});
+
 const auth = useAuthStore();
 
 const initial = computed(() => {
@@ -42,6 +47,16 @@ const displayName = computed(() => auth.user?.name || '—');
       "
     >
       {{ displayName }}
+    </span>
+    <span
+      v-if="showChevron"
+      class="lg:hidden"
+      style="display: flex; align-items: center; flex-shrink: 0; color: #64748b"
+      aria-hidden="true"
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
     </span>
   </div>
 </template>
