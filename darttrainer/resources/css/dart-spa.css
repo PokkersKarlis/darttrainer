@@ -411,24 +411,6 @@ body.dt-route-auth .dt-auth-fit-surface {
   box-sizing: border-box;
 }
 
-/* Mērījuma režīmā: statisks sūstījums, pilns augstums, bez scale (JS atiestata inline) */
-body.dt-route-auth .dt-auth-fit-surface--measure {
-  width: 100% !important;
-  max-width: 380px !important;
-  height: auto !important;
-  min-height: 0;
-  position: relative !important;
-  overflow: visible !important;
-}
-
-body.dt-route-auth .dt-auth-fit-surface--measure .dt-auth-fit-content {
-  position: static !important;
-  transform: none !important;
-  width: 100% !important;
-  max-width: 380px !important;
-  will-change: auto !important;
-}
-
 body.dt-route-auth .dt-auth-fit-content {
   width: 100%;
   max-width: 380px;
