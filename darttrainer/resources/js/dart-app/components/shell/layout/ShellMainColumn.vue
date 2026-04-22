@@ -9,11 +9,12 @@ defineOptions({ name: 'ShellMainColumn' });
 </template>
 
 <style scoped>
+/* Atrodas starp sāniem un apakšas nav/foot; 1:1 pilda atvēlēto stabiņu augstumu */
 .shell-main-column {
-  flex: 1;
-  overflow: hidden;
+  flex: 1 1 0%;
   min-width: 0;
   min-height: 0;
+  overflow: hidden;
   background: #060d18;
   display: flex;
   flex-direction: column;

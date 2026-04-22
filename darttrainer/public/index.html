@@ -28,13 +28,36 @@
   <p>Novirzīšana uz sākumlapu… Ja nē, <a href="/">atver šeit</a>.</p>
   <script>
     (function () {
-      var q = location.search || '';
-      var h = location.hash || '';
-      if (h.indexOf('#/') === 0) {
-        location.replace(h.slice(1) + q);
+      var origin = window.location.origin;
+      var u;
+      try {
+        u = new URL(window.location.href);
+      } catch (e) {
+        location.replace('/');
         return;
       }
-      location.replace('/' + q + h);
+      if (u.origin !== origin) {
+        location.replace('/');
+        return;
+      }
+      var h = u.hash;
+      if (h.indexOf('#/') === 0) {
+        var rel = h.slice(1);
+        try {
+          var dest = new URL(rel, origin + '/');
+          if (dest.origin === origin) {
+            location.replace(dest.pathname + dest.search + (dest.hash || ''));
+            return;
+          }
+        } catch (e2) {
+        }
+        location.replace('/');
+        return;
+      }
+      var out = new URL('/', origin);
+      out.search = u.search;
+      out.hash = u.hash;
+      location.replace(out.pathname + out.search + out.hash);
     })();
   </script>
 </body>
