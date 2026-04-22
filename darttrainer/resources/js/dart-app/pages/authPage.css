@@ -182,24 +182,7 @@
   margin-bottom: 16px;
 }
 
-.dt-auth-footer {
-  color: #334155;
-  font-size: 13px;
-  margin-top: 16px;
-  text-align: center;
-}
-
-.dt-auth-page .dt-auth-foot-link {
-  color: #f59e0b;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.dt-auth-page .dt-auth-foot-link:hover {
-  text-decoration: underline;
-}
-
-/* Maršruta shell — forma jau ir /login, /register */
+/* Maršruta shell — /login, /register: bez iekšējās kājenes (saites headerī / apakšējā nav citur) */
 body.dt-route-auth .dt-auth-page {
   flex: 1 1 0%;
   min-height: 0;
@@ -308,35 +291,6 @@ body.dt-route-auth .dt-auth-card-form {
   overflow: visible;
 }
 
-body.dt-route-auth p.dt-auth-footer,
-body.dt-route-auth .dt-auth-footer {
-  margin-top: 0.25rem;
-  margin-bottom: 0;
-  flex: 0 0 auto;
-  flex-shrink: 0;
-}
-
-@media (min-width: 640px) {
-  .dt-auth-page .dt-auth-footer {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: baseline;
-    column-gap: 0.45rem;
-    row-gap: 0.2rem;
-    text-align: center;
-    line-height: 1.5;
-  }
-  .dt-auth-page .dt-auth-footer > span {
-    display: inline;
-  }
-  .dt-auth-page .dt-auth-footer a.dt-auth-link-register,
-  .dt-auth-page .dt-auth-footer a.dt-auth-link-login {
-    margin-left: 0;
-  }
-}
-
 @media (max-width: 639px) {
   .dt-auth-page {
     padding: 8px 14px calc(10px + env(safe-area-inset-bottom, 0px));
@@ -420,17 +374,6 @@ body.dt-route-auth .dt-auth-footer {
     max-width: 100% !important;
     min-width: 0;
   }
-  .dt-auth-footer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    margin-top: 10px !important;
-    font-size: 12px !important;
-    text-align: center;
-    line-height: 1.35;
-  }
 }
 
 @media (max-width: 1023px) {
@@ -480,10 +423,6 @@ body.dt-route-auth .dt-auth-footer {
   .dt-auth-fields {
     gap: 8px 10px !important;
     margin-bottom: 10px !important;
-  }
-  .dt-auth-footer {
-    margin-top: 8px !important;
-    font-size: 12px !important;
   }
 }
 

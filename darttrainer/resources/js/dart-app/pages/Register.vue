@@ -189,13 +189,6 @@ async function submit() {
             </div>
           </form>
         </div>
-
-        <p class="dt-auth-footer">
-          <span>{{ t('auth.hasAccount') }}</span>
-          <router-link to="/login" class="dt-auth-link-login dt-auth-foot-link">
-            {{ t('auth.goLogin') }}
-          </router-link>
-        </p>
             </div>
           </div>
         </div>

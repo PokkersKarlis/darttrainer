@@ -278,7 +278,7 @@ body.dt-route-auth .shell-router-outlet button {
   transition: none !important;
 }
 
-/* Login / register mobilajā: fiksēts header + apakšējā nav; vidus bez ritināšanas */
+/* Login / register mobilajā: fiksēts header; apakšējā viesa nav šajās lapās — tikai safe-area apakšā */
 @media (max-width: 1023px) {
   body.dt-route-auth .dt-shell-mobile-ad {
     display: none !important;
@@ -296,30 +296,8 @@ body.dt-route-auth .shell-router-outlet button {
   }
   body.dt-route-auth .dt-app-shell-body {
     padding-top: calc(56px + env(safe-area-inset-top, 0px));
-    padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
-    box-sizing: border-box;
-  }
-  body.dt-route-auth .dt-shell-mobile-bnav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 50;
     padding-bottom: env(safe-area-inset-bottom, 0px);
-    min-height: 60px;
-    height: auto;
     box-sizing: border-box;
-    justify-content: center !important;
-    gap: 12px !important;
-    padding-left: 12px !important;
-    padding-right: 12px !important;
-  }
-  body.dt-route-auth .dt-shell-mobile-bnav .bnav-item {
-    flex: 0 1 auto !important;
-    min-width: 0;
-    max-width: 11rem;
-    padding-left: 10px;
-    padding-right: 10px;
   }
 }
 
