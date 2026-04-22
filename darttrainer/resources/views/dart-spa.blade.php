@@ -18,16 +18,16 @@
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:description" content="Šautriņu treniņš, multiplayer un X01 solo — trenējies un seko statistikai. Draugi un tīkla spēles.">
     <meta property="og:locale" content="{{ \Illuminate\Support\Str::startsWith(app()->getLocale(), 'en') ? 'en_US' : 'lv_LV' }}">
-    <meta property="og:image" content="{{ url('/images/og/og-image.svg') }}">
-    <meta property="og:image:secure_url" content="{{ url('/images/og/og-image.svg') }}">
-    <meta property="og:image:type" content="image/svg+xml">
+    <meta property="og:image" content="{{ url('/images/og/og-image.png') }}">
+    <meta property="og:image:secure_url" content="{{ url('/images/og/og-image.png') }}">
+    <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="DartTrainer — darts web app: Train · Play · Win">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ config('app.name', 'DartTrainer') }}">
     <meta name="twitter:description" content="Šautriņu treniņš, multiplayer un X01 solo — trenējies un seko statistikai.">
-    <meta name="twitter:image" content="{{ url('/images/og/og-image.svg') }}">
+    <meta name="twitter:image" content="{{ url('/images/og/og-image.png') }}">
     <meta name="twitter:image:alt" content="DartTrainer — darts web app">
 
     <link rel="canonical" href="{{ url()->current() }}">

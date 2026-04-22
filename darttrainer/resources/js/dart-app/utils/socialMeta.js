@@ -6,7 +6,7 @@ import { useLocaleStore } from '../store/locale.js';
 
 const APP_NAME = 'DartTrainer';
 
-const OG_IMAGE_PATH = '/images/og/og-image.svg';
+const OG_IMAGE_PATH = '/images/og/og-image.png';
 const OG_IMAGE_W = 1200;
 const OG_IMAGE_H = 630;
 
@@ -97,7 +97,7 @@ export function applySocialMeta(route) {
   setMetaProperty('og:image:width', String(OG_IMAGE_W));
   setMetaProperty('og:image:height', String(OG_IMAGE_H));
   setMetaProperty('og:image:alt', imageAlt);
-  setMetaProperty('og:image:type', 'image/svg+xml');
+  setMetaProperty('og:image:type', 'image/png');
 
   setMetaName('twitter:card', 'summary_large_image');
   setMetaName('twitter:title', title);
