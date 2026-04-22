@@ -98,8 +98,7 @@ watch(
 <template>
   <div
     v-cloak
-    :class="{ 'dt-app--game-focus': gameFocus }"
-    style="height: 100dvh; display: flex; flex-direction: column; overflow: hidden"
+    :class="['dt-app-root', { 'dt-app--game-focus': gameFocus }]"
   >
     <AppShellHeader v-if="!gameFocus" />
     <EmailVerifyBanner

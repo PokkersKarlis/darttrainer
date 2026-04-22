@@ -48,6 +48,7 @@ const isAuthPage = computed(
   flex: 1;
   min-height: 0;
   display: flex;
+  height: fit-content;
   flex-direction: column;
 }
 

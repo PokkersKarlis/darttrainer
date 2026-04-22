@@ -10,6 +10,7 @@ import router from './router/index.js';
 import { api } from './api/client.js';
 import { installApiInterceptors } from './api/interceptors.js';
 import { useAuthStore } from './store/auth.js';
+import { initVisualViewportSize } from './composables/useVisualViewportSize.js';
 
 const app = createApp(App);
 const pinia = createPinia();
@@ -21,6 +22,7 @@ app.use(router);
 async function dartBootstrap() {
   const el = document.getElementById('app');
   try {
+    initVisualViewportSize();
     app.mount('#app');
   } catch (e) {
     console.error('DartTrainer: app mount failed', e);
