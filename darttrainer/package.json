@@ -4,7 +4,8 @@
     "scripts": {
         "dev": "vite",
         "build": "vite build",
-        "build:hosting": "env VITE_MAX_PARALLEL_FILE_OPS=1 NODE_OPTIONS=--max-old-space-size=1536 npx --no-install vite build"
+        "build:hosting": "env VITE_HOSTING_BUILD=1 VITE_MAX_PARALLEL_FILE_OPS=1 UV_THREADPOOL_SIZE=2 NODE_OPTIONS=--max-old-space-size=512 npx --no-install vite build",
+        "build:hosting:ram": "env VITE_HOSTING_BUILD=1 VITE_MAX_PARALLEL_FILE_OPS=1 UV_THREADPOOL_SIZE=2 NODE_OPTIONS=--max-old-space-size=1024 npx --no-install vite build"
     },
     "dependencies": {
         "pinia": "^2.1.7",

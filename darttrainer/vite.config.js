@@ -3,6 +3,8 @@ import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
 
 const pollMs = Number(process.env.VITE_POLL_INTERVAL_MS) || 800;
+/** CloudLinux / kopīgs hosting: mazāks Rollup/CPU paralelisms, īpaši ar mazu NODE heap */
+const hostingBuild = process.env.VITE_HOSTING_BUILD === '1';
 
 export default defineConfig({
     // Docker: ātrāks pre-bundle kešs konteinerī (ne uz lēnā Windows bind mount)
@@ -70,8 +72,10 @@ export default defineConfig({
         // Kopīgā hostingā (CloudLinux LVE): mazāk paralelisma un bez gzip aprēķina — mazāks RAM/WASM spiediens
         reportCompressedSize: false,
         rollupOptions: {
-            // Uz kopīga hostinga iestatīt VITE_MAX_PARALLEL_FILE_OPS=1 (sk. npm run build:hosting)
-            maxParallelFileOps: Number(process.env.VITE_MAX_PARALLEL_FILE_OPS) || 20,
+            // Uz kopīga hostinga: 1. Arī npm run build:hosting sūta VITE_MAX_PARALLEL_FILE_OPS=1
+            maxParallelFileOps: hostingBuild
+                ? 1
+                : (Number(process.env.VITE_MAX_PARALLEL_FILE_OPS) || 20),
         },
     },
 });
