@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '../store/auth.js';
 import { useLocaleStore } from '../store/locale.js';
 import { X01_LOBBY_AND_TRAINING_ENABLED } from '../composables/useCanPlayX01.js';
+import { applySocialMeta } from '../utils/socialMeta.js';
 
 const load = (importer) => () => importer().then((m) => m.default);
 
@@ -87,6 +88,10 @@ router.afterEach((to) => {
 
   try {
     upsertCanonical(`${window.location.origin}${to.fullPath}`);
+  } catch (_) {}
+
+  try {
+    applySocialMeta(to);
   } catch (_) {}
 });
 

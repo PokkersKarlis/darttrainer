@@ -2,6 +2,24 @@
 export const DART_I18N = {
   lv: {
     lang: { lv: 'LV', en: 'EN' },
+    meta: {
+      siteName: 'DartTrainer',
+      ogImageAlt: 'DartTrainer — tīmekļa lietotne šautriņu treniņam un spēlēm',
+      descDefault:
+        'DartTrainer: šautriņu treniņš, multiplayer (501, Cricket) un X01 solo. Statistika, draugi un tīkla spēles vienuviet.',
+      descHome:
+        'Sākums: atklāj DartTrainer — trenējies, spēlē 501, Cricket un X01 solo, seko statistikai un spēlē ar draugiem.',
+      descLogin: 'Ielogojies DartTrainer — treniņi, lobi un tīkla spēles pēc pieteikšanās.',
+      descRegister:
+        'Pievienojies DartTrainer: izveido kontu, trenējies, spēlē un glabā progresu vienuviet.',
+      descFriends: 'Draugi DartTrainer: uzaicinājumi, saraksts un tīkla spēles ar paziņām.',
+      descStats: 'Statistika: Cricket multiplayer un X01 solo rezultāti, grafiki un pārskats.',
+      descAdmin: 'Administrācija: pārvaldība un rīki ar administratora tiesībām.',
+      descLobbyCricket: 'Cricket telpa: veido vai pievienojies galdam, spēlē ar tīklu un draugiem.',
+      descLobbyX01: 'X01 telpa: 501, 301 un pārējie varianti — tīkla un lokālās spēles.',
+      descTrainingX01: 'X01 solo treniņš: 501, 301, gājieni, checkout un progress.',
+      descGame: 'Aktīva DartTrainer spēle — mačs, punkti, kārta un tūlītējs protokols.',
+    },
     nav: {
       home: 'Sākums',
       lobby: 'Spēles telpa',
@@ -473,6 +491,23 @@ export const DART_I18N = {
   },
   en: {
     lang: { lv: 'LV', en: 'EN' },
+    meta: {
+      siteName: 'DartTrainer',
+      ogImageAlt: 'DartTrainer — darts web app for practice and online play',
+      descDefault:
+        'DartTrainer: darts training, online multiplayer (501, Cricket) and X01 solo. Stats, friends and matchmaking in one place.',
+      descHome:
+        'Home: train and play 501, Cricket and X01 solo, track stats and play with friends on DartTrainer.',
+      descLogin: 'Log in to DartTrainer to access lobbies, online games and your profile.',
+      descRegister: 'Create your DartTrainer account, train, play online and save your progress.',
+      descFriends: 'Friends: invites, your list and online matches on DartTrainer.',
+      descStats: 'Statistics: Cricket multiplayer and X01 solo, charts and match history.',
+      descAdmin: 'Administration: tools and settings for site administrators.',
+      descLobbyCricket: 'Cricket game room: create or join a table and play online.',
+      descLobbyX01: 'X01 game room: 501, 301 and more — local and online matches.',
+      descTrainingX01: 'X01 solo training: 501, 301, every turn, checkouts and progress.',
+      descGame: 'Active DartTrainer match — scores, turn-by-turn and live protocol.',
+    },
     nav: {
       home: 'Home',
       lobby: 'Game room',

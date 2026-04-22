@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../store/auth.js';
 import { useLocaleStore } from '../store/locale.js';
 import { useFriendsStore } from '../store/friends.js';
@@ -10,8 +10,12 @@ import AppShellBody from '../components/shell/layout/AppShellBody.vue';
 import AppShellFooter from '../components/shell/AppShellFooter.js';
 import EmailVerifyBanner from '../components/shell/EmailVerifyBanner.vue';
 import FriendsIncomingModal from '../components/shell/FriendsIncomingModal.js';
+import { applySocialMeta } from '../utils/socialMeta.js';
+
+const APP_NAME = 'DartTrainer';
 
 const route = useRoute();
+const router = useRouter();
 const auth = useAuthStore();
 const locale = useLocaleStore();
 const friends = useFriendsStore();
@@ -83,6 +87,12 @@ function consumeVerifiedRedirectParam() {
 onMounted(() => {
   locale.initFromStorage();
   consumeVerifiedRedirectParam();
+  try {
+    const key = route.meta?.titleKey;
+    document.title =
+      key && typeof key === 'string' ? `${locale.t(key)} · ${APP_NAME}` : APP_NAME;
+    applySocialMeta(router.currentRoute.value);
+  } catch (_) {}
 });
 
 watch(
@@ -92,6 +102,18 @@ watch(
     else friends.stop();
   },
   { immediate: true },
+);
+
+watch(
+  () => locale.locale,
+  () => {
+    try {
+      const key = route.meta?.titleKey;
+      document.title =
+        key && typeof key === 'string' ? `${locale.t(key)} · ${APP_NAME}` : APP_NAME;
+      applySocialMeta(router.currentRoute.value);
+    } catch (_) {}
+  },
 );
 </script>
 
