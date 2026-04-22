@@ -216,7 +216,6 @@ body {
   max-width: 380px;
   min-width: 0;
   min-height: 0;
-  /* ļauj saturu «ievilkt» stabiņa augstumā, neizplešot to zem footera ārpus scroll */
   flex: 0 1 auto;
 }
 @media (max-width: 639px) {
@@ -363,12 +362,41 @@ body.dt-route-auth .dt-auth-page {
   flex: 1 1 0%;
   min-height: 0;
   max-height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
+  /* Ārējā rāmja neizplešas; scroll viena zona — .dt-auth-page-inner (zīmols + karte + kājene) */
+  overflow: hidden;
   box-sizing: border-box;
   justify-content: flex-start;
   align-items: center;
+  padding: clamp(8px, 1.2dvh, 20px) 16px clamp(6px, 1dvh, 12px);
+}
+
+body.dt-route-auth .dt-auth-page-inner {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0%;
+  min-height: 0;
+  max-height: 100%;
+  width: 100%;
+  max-width: min(100%, 380px);
+  align-self: center;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+  gap: 0.4rem;
+}
+
+body.dt-route-auth .dt-auth-card {
+  width: 100%;
+  min-width: 0;
+  flex: 0 0 auto;
+}
+
+body.dt-route-auth p.dt-auth-footer,
+body.dt-route-auth .dt-auth-footer {
+  margin-top: 0.25rem;
+  margin-bottom: 0;
+  flex-shrink: 0;
 }
 
 /* Login / register mobilajā: fiksēts header + apakšējā nav; vidus bez ritināšanas */
