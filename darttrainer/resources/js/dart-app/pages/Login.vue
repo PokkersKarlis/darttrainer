@@ -87,7 +87,7 @@ function onInputBlur(e) {
                 color: #f1f5f9;
                 font-size: 15px;
                 outline: none;
-                transition: border 0.15s;
+                transition: none;
                 box-sizing: border-box;
               "
               @focus="onInputFocus"
@@ -124,7 +124,7 @@ function onInputBlur(e) {
                 color: #f1f5f9;
                 font-size: 15px;
                 outline: none;
-                transition: border 0.15s;
+                transition: none;
                 box-sizing: border-box;
               "
               @focus="onInputFocus"

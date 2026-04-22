@@ -5,14 +5,22 @@ import { useRoute } from 'vue-router';
 defineOptions({ name: 'ShellMainScrollRegion' });
 
 const route = useRoute();
-/** Efektīvs flex/transition ietvars — class uz router-view ne vienmēr nonāk uz lapas sakni */
 const outletKey = computed(() => route.fullPath);
+const isAuthPage = computed(
+  () => route.path === '/login' || route.path === '/register',
+);
 </script>
 
 <template>
   <div class="shell-main-scroll">
     <div class="shell-main-scroll-inner">
-      <transition name="fade" mode="out-in">
+      <!-- /login, /register: bez <Transition> (pat „instant” mēdz radīt 1 kadra / klases aizkavi) -->
+      <router-view v-if="isAuthPage" v-slot="{ Component, route: r }">
+        <div :key="r.fullPath" class="shell-router-outlet">
+          <component :is="Component" />
+        </div>
+      </router-view>
+      <transition v-else name="fade" mode="out-in">
         <div :key="outletKey" class="shell-router-outlet">
           <router-view />
         </div>

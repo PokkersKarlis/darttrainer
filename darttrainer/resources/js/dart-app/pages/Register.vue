@@ -125,7 +125,7 @@ async function submit() {
                     text-align: center;
                     font-weight: 800;
                     font-size: 14px;
-                    transition: all 0.15s;
+                    transition: none;
                   "
                 >
                   {{ t('auth.accountTypePlayer') }}
@@ -149,7 +149,7 @@ async function submit() {
                     text-align: center;
                     font-weight: 800;
                     font-size: 14px;
-                    transition: all 0.15s;
+                    transition: none;
                   "
                 >
                   {{ t('auth.accountTypeClub') }}
@@ -202,7 +202,7 @@ async function submit() {
                 color: #f1f5f9;
                 font-size: 15px;
                 outline: none;
-                transition: border 0.15s;
+                transition: none;
                 box-sizing: border-box;
               "
               @focus="onInputFocus"
@@ -242,7 +242,7 @@ async function submit() {
                   color: #f1f5f9;
                   font-size: 15px;
                   outline: none;
-                  transition: border 0.15s;
+                  transition: none;
                   box-sizing: border-box;
                 "
                 @focus="onInputFocus"
@@ -277,7 +277,7 @@ async function submit() {
                   color: #f1f5f9;
                   font-size: 15px;
                   outline: none;
-                  transition: border 0.15s;
+                  transition: none;
                   box-sizing: border-box;
                 "
                 @focus="onInputFocus"
@@ -313,7 +313,7 @@ async function submit() {
                   color: #f1f5f9;
                   font-size: 15px;
                   outline: none;
-                  transition: border 0.15s;
+                  transition: none;
                   box-sizing: border-box;
                 "
                 @focus="onInputFocus"
@@ -348,7 +348,7 @@ async function submit() {
                   color: #f1f5f9;
                   font-size: 15px;
                   outline: none;
-                  transition: border 0.15s;
+                  transition: none;
                   box-sizing: border-box;
                 "
                 @focus="onInputFocus"

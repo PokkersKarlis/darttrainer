@@ -85,84 +85,84 @@ export function useAuthContentFit(watchSources) {
       roSlot.unobserve(page);
     }
 
-    requestAnimationFrame(() => {
-      if (!inner && !page) {
-        reobservePage();
-        return;
-      }
-      c.style.removeProperty('transform');
-      c.style.removeProperty('will-change');
-      const visW =
-        typeof document !== 'undefined'
-          ? document.documentElement?.clientWidth ?? window?.innerWidth ?? 1e6
-          : 1e6;
-      const fromInner = inner?.clientWidth ?? 1e6;
-      const fromVp = v?.clientWidth ?? 1e6;
-      const slotW = Math.max(
-        1,
-        Math.floor(Math.min(fromInner, fromVp, visW)),
-      );
-      const rw = Math.max(1, Math.min(MAX_W, slotW));
-      c.style.width = `${rw}px`;
-      c.style.minWidth = '0';
-      void c.offsetWidth;
-      const rh = Math.max(1, c.scrollHeight);
-      if (rw < 1 || rh < 1) {
-        c.removeAttribute('style');
-        s.removeAttribute('style');
-        s.style.maxWidth = '380px';
-        s.style.width = '100%';
-        lastF = null;
-        reobservePage();
-        return;
-      }
-      const { aw, ah } = getAvailableForFit(v);
-      if (aw < 1 || ah < 1) {
-        c.removeAttribute('style');
-        s.removeAttribute('style');
-        s.style.maxWidth = '380px';
-        s.style.width = '100%';
-        lastF = null;
-        reobservePage();
-        return;
-      }
-      const f = roundF(Math.min(1, aw / rw, ah / rh));
-
-      if (
-        lastF != null &&
-        lastRw != null &&
-        lastRh != null &&
-        Math.abs(f - lastF) < EPS &&
-        Math.abs(rw - lastRw) < 0.5 &&
-        Math.abs(rh - lastRh) < 0.5
-      ) {
-        reobservePage();
-        return;
-      }
-
-      lastF = f;
-      lastRw = rw;
-      lastRh = rh;
-
-      s.style.position = 'relative';
-      s.style.overflow = 'hidden';
-      s.style.maxWidth = '380px';
-      s.style.width = `${Math.round(rw * f * 1000) / 1000}px`;
-      s.style.height = `${Math.round(rh * f * 1000) / 1000}px`;
-      s.style.marginLeft = 'auto';
-      s.style.marginRight = 'auto';
-      s.style.boxSizing = 'border-box';
-
-      c.style.position = 'absolute';
-      c.style.left = '0';
-      c.style.top = '0';
-      c.style.width = `${rw}px`;
-      c.style.transform = `scale(${f})`;
-      c.style.transformOrigin = 'top left';
-      c.style.boxSizing = 'border-box';
-
+    if (!inner && !page) {
       reobservePage();
-    });
+      return;
+    }
+    c.style.removeProperty('transform');
+    c.style.removeProperty('will-change');
+    const visW =
+      typeof document !== 'undefined'
+        ? document.documentElement?.clientWidth ?? window?.innerWidth ?? 1e6
+        : 1e6;
+    const fromInner = inner?.clientWidth ?? 1e6;
+    const fromVp = v?.clientWidth ?? 1e6;
+    const slotW = Math.max(
+      1,
+      Math.floor(Math.min(fromInner, fromVp, visW)),
+    );
+    const rw = Math.max(1, Math.min(MAX_W, slotW));
+    c.style.width = `${rw}px`;
+    c.style.minWidth = '0';
+    void c.offsetWidth;
+    const rh = Math.max(1, c.scrollHeight);
+    if (rw < 1 || rh < 1) {
+      c.removeAttribute('style');
+      s.removeAttribute('style');
+      s.style.maxWidth = '380px';
+      s.style.width = '100%';
+      lastF = null;
+      reobservePage();
+      return;
+    }
+    const { aw, ah } = getAvailableForFit(v);
+    if (aw < 1 || ah < 1) {
+      c.removeAttribute('style');
+      s.removeAttribute('style');
+      s.style.maxWidth = '380px';
+      s.style.width = '100%';
+      lastF = null;
+      reobservePage();
+      return;
+    }
+    const f = roundF(Math.min(1, aw / rw, ah / rh));
+
+    if (
+      lastF != null &&
+      lastRw != null &&
+      lastRh != null &&
+      Math.abs(f - lastF) < EPS &&
+      Math.abs(rw - lastRw) < 0.5 &&
+      Math.abs(rh - lastRh) < 0.5
+    ) {
+      reobservePage();
+      return;
+    }
+
+    lastF = f;
+    lastRw = rw;
+    lastRh = rh;
+
+    s.style.transition = 'none';
+    s.style.position = 'relative';
+    s.style.overflow = 'hidden';
+    s.style.maxWidth = '380px';
+    s.style.width = `${Math.round(rw * f * 1000) / 1000}px`;
+    s.style.height = `${Math.round(rh * f * 1000) / 1000}px`;
+    s.style.marginLeft = 'auto';
+    s.style.marginRight = 'auto';
+    s.style.boxSizing = 'border-box';
+
+    c.style.transition = 'none';
+    c.style.position = 'absolute';
+    c.style.left = '0';
+    c.style.top = '0';
+    c.style.width = `${rw}px`;
+    c.style.transform = `scale(${f})`;
+    c.style.transformOrigin = 'top left';
+    c.style.boxSizing = 'border-box';
+
+    reobservePage();
   }
 
   function schedule() {
@@ -227,13 +227,8 @@ export function useAuthContentFit(watchSources) {
       if (page) {
         roSlot.observe(page);
       }
-      requestAnimationFrame(() => schedule());
-      if (typeof document !== 'undefined' && document.fonts?.ready) {
-        document.fonts.ready.then(() => {
-          lastF = null;
-          schedule();
-        });
-      }
+      schedule();
+      /* fonts.ready pārradītu otru scale soli; ResizeObserver uz .dt-auth-page pietiek reflow. */
     });
   });
 
