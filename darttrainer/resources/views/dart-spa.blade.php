@@ -23,12 +23,12 @@
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="DartTrainer — darts web app: Train · Play · Win">
+    <meta property="og:image:alt" content="TrainDart.com — Train · Play · Win">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ config('app.name', 'DartTrainer') }}">
     <meta name="twitter:description" content="Šautriņu treniņš, multiplayer un X01 solo — trenējies un seko statistikai.">
     <meta name="twitter:image" content="{{ $seoImageUrl }}">
-    <meta name="twitter:image:alt" content="DartTrainer — darts web app">
+    <meta name="twitter:image:alt" content="TrainDart.com — darts web app">
 
     <link rel="canonical" href="{{ $seoPageUrl }}">
     <link rel="icon" type="image/svg+xml" href="{{ url('/images/favicon/safari-pinned-tab.svg') }}">

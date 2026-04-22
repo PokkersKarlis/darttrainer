@@ -4,7 +4,7 @@ export const DART_I18N = {
     lang: { lv: 'LV', en: 'EN' },
     meta: {
       siteName: 'DartTrainer',
-      ogImageAlt: 'DartTrainer — tīmekļa lietotne šautriņu treniņam un spēlēm',
+      ogImageAlt: 'TrainDart.com — tīmekļa lietotne šautriņu treniņam un spēlēm',
       descDefault:
         'DartTrainer: šautriņu treniņš, multiplayer (501, Cricket) un X01 solo. Statistika, draugi un tīkla spēles vienuviet.',
       descHome:
@@ -493,7 +493,7 @@ export const DART_I18N = {
     lang: { lv: 'LV', en: 'EN' },
     meta: {
       siteName: 'DartTrainer',
-      ogImageAlt: 'DartTrainer — darts web app for practice and online play',
+      ogImageAlt: 'TrainDart.com — darts web app for practice and online play',
       descDefault:
         'DartTrainer: darts training, online multiplayer (501, Cricket) and X01 solo. Stats, friends and matchmaking in one place.',
       descHome:
