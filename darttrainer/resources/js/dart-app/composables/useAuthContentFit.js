@@ -84,6 +84,7 @@ function getAvailableForFit(viewportEl) {
 
 /**
  * Mērogo visu zīmola + kartes + kājenes bloku starp header un footer.
+ * Tikai Y ass (scale(1, f)), platums = kolonnas platumam — nav horizontāla vienotā scale.
  * Bez CSS transition; f apgriež ar MIN_F, lai neiestrēgtu „bezgalīga” samazināšana.
  */
 export function useAuthContentFit(watchSources) {
@@ -165,7 +166,7 @@ export function useAuthContentFit(watchSources) {
       return;
     }
 
-    const rawF = roundF(Math.min(1, aw / rw, ah / rh));
+    const rawF = roundF(Math.min(1, ah / rh));
     const f = Math.max(MIN_F, rawF);
 
     if (
@@ -192,7 +193,7 @@ export function useAuthContentFit(watchSources) {
     s.style.position = 'relative';
     s.style.overflow = 'hidden';
     s.style.maxWidth = '100%';
-    s.style.width = `${Math.round(rw * f * 1000) / 1000}px`;
+    s.style.width = `${Math.round(rw * 1000) / 1000}px`;
     s.style.height = `${Math.round(rh * f * 1000) / 1000}px`;
     s.style.boxSizing = 'border-box';
 
@@ -201,7 +202,7 @@ export function useAuthContentFit(watchSources) {
     c.style.left = '0';
     c.style.top = '0';
     c.style.width = `${rw}px`;
-    c.style.transform = `scale(${f})`;
+    c.style.transform = `scale(1, ${f})`;
     c.style.transformOrigin = 'top left';
     c.style.boxSizing = 'border-box';
 
