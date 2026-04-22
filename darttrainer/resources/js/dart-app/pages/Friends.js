@@ -225,7 +225,12 @@ export default {
             <div v-else-if="searchQ.trim().length >= 1 && !searchHits.length" class="text-xs text-slate-600">{{ t('friends.noHits') }}</div>
             <div v-for="u in searchHits" :key="u.id"
                  class="flex items-center justify-between gap-2 py-2 border-t border-slate-700/40 first:border-t-0">
-              <span class="text-white font-semibold text-sm">{{ u.name }}</span>
+              <div class="min-w-0 flex-1 pr-1">
+                <div class="text-white font-semibold text-sm truncate">{{ u.name }}</div>
+                <div v-if="u.email" class="text-[10px] text-slate-500 truncate mt-0.5 leading-tight font-normal">
+                  {{ u.email }}
+                </div>
+              </div>
               <button v-if="u.relationship === 'none'" type="button" @click="sendRequest(u.id)"
                       class="text-xs font-black bg-amber-500 text-black px-3 py-1.5 rounded-lg shrink-0">
                 {{ t('friends.sendRequest') }}

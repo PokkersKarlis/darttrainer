@@ -40,7 +40,7 @@ class FriendController extends Controller
         $users = $usersQuery
             ->orderBy('name')
             ->limit(25)
-            ->get(['id', 'name']);
+            ->get(['id', 'name', 'email']);
 
         $pendingTo = array_map('intval', FriendRequest::where('requester_id', $me)->where('status', 'pending')->pluck('addressee_id')->all());
         $pendingFrom = array_map('intval', FriendRequest::where('addressee_id', $me)->where('status', 'pending')->pluck('requester_id')->all());
@@ -56,6 +56,7 @@ class FriendController extends Controller
                 return [
                     'id' => $uid,
                     'name' => $u->name,
+                    'email' => $u->email,
                     'relationship' => isset($pendingToFlip[$uid])
                         ? 'outgoing_pending'
                         : (isset($pendingFromFlip[$uid]) ? 'incoming_pending' : 'none'),
