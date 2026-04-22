@@ -23,7 +23,7 @@ export const DART_I18N = {
       logout: 'Iziet no sistēmas',
       login: 'Ieiet',
       register: 'Reģistrēties',
-      registerShort: 'Reģist.',
+      registerShort: 'Reģistrēties',
       adminBtn: 'Admin panelis',
       authPending: 'Pārbauda sesiju…',
     },

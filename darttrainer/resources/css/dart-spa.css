@@ -341,9 +341,11 @@ body {
 }
 
 /* /login, /register — min-height:0 visā flex ķēdē, ritinājums tikai .dt-auth-page (visi platumi) */
+/* !important: pārlūks scoped overflow-y: auto, citādi bērns varet augt gar scroll slota augstumu un scale skaitās kā 1 */
 body.dt-route-auth .shell-main-scroll {
-  overflow: hidden;
-  min-height: 0;
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
 }
 body.dt-route-auth .shell-main-scroll-inner {
   flex: 1 1 0%;
