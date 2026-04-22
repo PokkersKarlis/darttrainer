@@ -1,9 +1,11 @@
 <script>
-import { toRef } from 'vue';
+import { toRef, provide } from 'vue';
 import { useLobbyCore } from './useLobbyCore.js';
+import CricketLobbyLayout from './CricketLobbyLayout.vue';
 
 export default {
   name: 'LobbyApp',
+  components: { CricketLobbyLayout },
   props: {
     gameKind: {
       type: String,
@@ -13,16 +15,21 @@ export default {
   },
   setup(props) {
     const gameKind = toRef(props, 'gameKind');
+    const lobbyCtx = useLobbyCore(gameKind);
+    provide('lobbyCtx', lobbyCtx);
     return {
       gameKind,
-      ...useLobbyCore(gameKind),
+      ...lobbyCtx,
     };
   },
 };
 </script>
 
 <template>
-    <div class="lobby-compact lobby-root flex flex-1 min-h-0 w-full flex-col overflow-hidden bg-[#060d18] text-slate-200">
+    <div
+      class="lobby-compact lobby-root flex flex-1 min-h-0 w-full flex-col overflow-hidden text-slate-200"
+      :class="gameKind === 'cricket' ? 'lobby-v2 bg-[#0b0e14]' : 'bg-[#060d18]'"
+    >
     <div class="flex flex-1 min-h-0 w-full max-w-lg lg:max-w-4xl mx-auto px-2 sm:px-3 py-1 sm:py-1.5 flex flex-col gap-1 sm:gap-1.5 min-h-0">
 
       <div class="shrink-0 flex items-start justify-between gap-2">
@@ -155,8 +162,10 @@ export default {
           </button>
         </div>
 
-        <!-- ═══ CREATE / JOIN ═══ -->
+        <!-- ═══ CREATE / JOIN — Cricket: jaunais layout; X01: iepriekšējais ═══ -->
         <div v-else class="flex flex-1 min-h-0 min-w-0 flex-col gap-1 overflow-hidden">
+          <CricketLobbyLayout v-if="gameKind === 'cricket'" class="min-h-0 min-w-0 flex-1" />
+          <template v-else>
 
           <div class="shrink-0 flex bg-slate-900/70 border border-slate-700/70 rounded-2xl p-1 gap-1 shadow-inner shadow-black/30">
             <button type="button" @click="openCreateTab"
@@ -555,6 +564,7 @@ export default {
           </Transition>
           </div>
 
+        </template>
         </div>
 
       </template>

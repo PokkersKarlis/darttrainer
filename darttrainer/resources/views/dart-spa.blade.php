@@ -30,6 +30,10 @@
     <meta name="twitter:image" content="{{ $seoImageUrl }}">
     <meta name="twitter:image:alt" content="TrainDart.com — darts web app">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+
     <link rel="canonical" href="{{ $seoPageUrl }}">
     <link rel="icon" type="image/svg+xml" href="{{ url('/images/favicon/safari-pinned-tab.svg') }}">
     <meta name="msapplication-TileColor" content="#0a1120">

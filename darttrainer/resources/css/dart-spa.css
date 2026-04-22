@@ -321,8 +321,9 @@ body.dt-route-auth .shell-router-outlet button {
 }
 
 .nav-link--active {
-  background: rgba(255, 255, 255, 0.08);
-  color: #f1f5f9 !important;
+  background: rgba(245, 166, 35, 0.09);
+  color: #f5a623 !important;
+  box-shadow: inset 2px 0 0 #f5a623;
 }
 .nav-link--soon { font-size: 9px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #475569; margin-left: auto; }
 
@@ -408,3 +409,26 @@ body.body--game-shell .shell-router-outlet {
 
 .lobby-details-summary::-webkit-details-marker { display: none; }
 .lobby-details-summary { list-style: none; }
+
+/* Sākumlapa / Cricket lobby: pilns platums, scroll iekš Home.vue .dth-sc */
+.dt-app-body--full-bleed .shell-main-column {
+  background: #0b0e14 !important;
+}
+.dt-app-body--full-bleed .shell-router-outlet:has(> .dth-canvas) {
+  min-height: 0;
+  flex: 1 1 0%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.dt-app-body--full-bleed .shell-main-scroll:has(.dth-canvas) {
+  overflow: hidden !important;
+}
+.dt-app-body--full-bleed .shell-main-scroll-inner:has(.dth-canvas) {
+  min-height: 0;
+  flex: 1 1 0%;
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  max-height: 100%;
+}

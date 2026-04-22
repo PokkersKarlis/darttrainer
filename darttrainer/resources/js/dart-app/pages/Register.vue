@@ -1,9 +1,8 @@
 <script setup>
-import { ref, reactive, watch, toRef } from 'vue';
+import { ref, reactive, watch, onMounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore, useLocaleStore } from '../store/index.js';
 import DtButton from '../components/ui/DtButton.js';
-import { useAuthContentFit } from '../composables/useAuthContentFit.js';
 
 defineOptions({ name: 'RegisterPage' });
 
@@ -30,7 +29,27 @@ watch(accountType, (v) => {
 
 const t = (key) => locale.t(key);
 
-const { viewportRef, surfaceRef, contentRef } = useAuthContentFit([accountType, toRef(form, 'error')]);
+async function focusAndKeepInView(id) {
+  await nextTick();
+  requestAnimationFrame(() => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    try {
+      el.focus?.({ preventScroll: true });
+    } catch (_) {}
+  });
+}
+
+onMounted(() => {
+  void focusAndKeepInView('reg-name');
+});
+
+watch(accountType, async (v) => {
+  if (v === 'club') {
+    // Kluba lauks parādās – fokusējam to un pabīdam, lai poga būtu sasniedzama (ar scroll, ja vajag).
+    await focusAndKeepInView('reg-club-name');
+  }
+});
 
 async function submit() {
   form.error = '';
@@ -61,15 +80,18 @@ async function submit() {
 </script>
 
 <template>
-  <div class="dt-auth-page dt-auth-page--register">
+  <div class="dt-auth-page dt-auth-page--register" :class="{ 'dt-auth-page--club': accountType === 'club' }">
     <div class="dt-auth-page-inner">
-      <div ref="viewportRef" class="dt-auth-fit-vp">
-        <div ref="surfaceRef" class="dt-auth-fit-surface">
-          <div ref="contentRef" class="dt-auth-fit-content">
-            <div class="dt-auth-stack">
+      <div class="dt-auth-stack">
         <div class="dt-auth-brand">
-          <span class="dt-auth-emoji" aria-hidden="true">🎯</span>
-          <h1>DartTrainer</h1>
+          <router-link to="/" class="dt-auth-logo-link" aria-label="DartTrainer">
+            <img class="dt-auth-logo" src="/images/logo.png" alt="DartTrainer" width="160" height="52" />
+          </router-link>
+          <div class="dt-auth-wordline" aria-hidden="true">
+            <span class="dt-auth-wordmark">{{ t('home.brandWordmark') }}</span>
+            <span class="dt-auth-beta">{{ t('home.betaBadge') }}</span>
+          </div>
+          <h1>{{ t('shell.register') }}</h1>
           <p class="dt-auth-sub">
             {{ t('auth.registerTitle') }}
           </p>
@@ -77,120 +99,79 @@ async function submit() {
 
         <div class="dt-auth-card">
           <form class="dt-auth-card-form" @submit.prevent="submit">
-            <div class="dt-auth-account-row">
-              <div class="dt-auth-label--row">
-                {{ t('auth.accountTypeLabel') }}
-              </div>
-              <div class="dt-auth-pills">
-                <label class="dt-auth-pill-label">
-                  <input
-                    v-model="accountType"
-                    type="radio"
-                    name="account_type"
-                    value="player"
-                    class="sr-only peer"
-                  />
-                  <div class="acct-pill" :class="{ 'acct-pill--on': accountType === 'player' }">
-                    {{ t('auth.accountTypePlayer') }}
+                  <div class="dt-auth-account-row">
+                    <div class="dt-auth-label--row">
+                      {{ t('auth.accountTypeLabel') }}
+                    </div>
+                    <div class="dt-auth-pills">
+                      <label class="dt-auth-pill-label">
+                        <input v-model="accountType" type="radio" name="account_type" value="player" class="sr-only peer" />
+                        <div class="acct-pill" :class="{ 'acct-pill--on': accountType === 'player' }">
+                          {{ t('auth.accountTypePlayer') }}
+                        </div>
+                      </label>
+                      <label class="dt-auth-pill-label">
+                        <input v-model="accountType" type="radio" name="account_type" value="club" class="sr-only peer" />
+                        <div class="acct-pill" :class="{ 'acct-pill--on': accountType === 'club' }">
+                          {{ t('auth.accountTypeClub') }}
+                        </div>
+                      </label>
+                    </div>
                   </div>
-                </label>
-                <label class="dt-auth-pill-label">
-                  <input
-                    v-model="accountType"
-                    type="radio"
-                    name="account_type"
-                    value="club"
-                    class="sr-only peer"
-                  />
-                  <div class="acct-pill" :class="{ 'acct-pill--on': accountType === 'club' }">
-                    {{ t('auth.accountTypeClub') }}
+
+                  <div v-if="accountType === 'club'" class="dt-auth-club-box">
+                    <p class="dt-auth-club-hint">
+                      {{ t('auth.clubFutureHint') }}
+                    </p>
+                    <label class="dt-auth-label--block" for="reg-club-name">{{ t('auth.clubName') }}</label>
+                    <input
+                      id="reg-club-name"
+                      v-model="form.clubName"
+                      class="dt-auth-input"
+                      type="text"
+                      required
+                      maxlength="120"
+                    />
                   </div>
-                </label>
-              </div>
-            </div>
 
-            <div v-if="accountType === 'club'" class="dt-auth-club-box">
-              <p class="dt-auth-club-hint">
-                {{ t('auth.clubFutureHint') }}
-              </p>
-              <label class="dt-auth-label--block" for="reg-club-name">{{ t('auth.clubName') }}</label>
-              <input
-                id="reg-club-name"
-                v-model="form.clubName"
-                class="dt-auth-input"
-                type="text"
-                required
-                maxlength="120"
-              />
-            </div>
+                  <div class="dt-auth-fields">
+                    <div class="dt-auth-field-span">
+                      <label class="dt-auth-label--block" for="reg-name">{{ t('auth.name') }}</label>
+                      <input id="reg-name" v-model="form.name" class="dt-auth-input" type="text" required maxlength="50" />
+                    </div>
 
-            <div class="dt-auth-fields">
-              <div class="dt-auth-field-span">
-                <label class="dt-auth-label--block" for="reg-name">{{ t('auth.name') }}</label>
-                <input
-                  id="reg-name"
-                  v-model="form.name"
-                  class="dt-auth-input"
-                  type="text"
-                  required
-                  maxlength="50"
-                />
-              </div>
+                    <div class="dt-auth-field-span">
+                      <label class="dt-auth-label--block" for="reg-email">{{ t('auth.email') }}</label>
+                      <input id="reg-email" v-model="form.email" class="dt-auth-input" type="email" required />
+                    </div>
 
-              <div class="dt-auth-field-span">
-                <label class="dt-auth-label--block" for="reg-email">{{ t('auth.email') }}</label>
-                <input
-                  id="reg-email"
-                  v-model="form.email"
-                  class="dt-auth-input"
-                  type="email"
-                  required
-                />
-              </div>
+                    <div>
+                      <label class="dt-auth-label--block" for="reg-pw">{{ t('auth.password') }}</label>
+                      <input id="reg-pw" v-model="form.password" class="dt-auth-input" type="password" required minlength="8" />
+                    </div>
 
-              <div>
-                <label class="dt-auth-label--block" for="reg-pw">{{ t('auth.password') }}</label>
-                <input
-                  id="reg-pw"
-                  v-model="form.password"
-                  class="dt-auth-input"
-                  type="password"
-                  required
-                  minlength="8"
-                />
-              </div>
+                    <div>
+                      <label class="dt-auth-label--block" for="reg-confirm">{{ t('auth.repeat') }}</label>
+                      <input id="reg-confirm" v-model="form.confirm" class="dt-auth-input" type="password" required />
+                    </div>
+                  </div>
 
-              <div>
-                <label class="dt-auth-label--block" for="reg-confirm">{{ t('auth.repeat') }}</label>
-                <input
-                  id="reg-confirm"
-                  v-model="form.confirm"
-                  class="dt-auth-input"
-                  type="password"
-                  required
-                />
-              </div>
-            </div>
-
-            <div v-if="form.error" class="dt-auth-err">
-              {{ form.error }}
-            </div>
+                  <div v-if="form.error" class="dt-auth-err">
+                    {{ form.error }}
+                  </div>
 
             <div class="dt-auth-submit-row">
-              <dt-button
-                button-type="submit"
-                variant="primary"
-                size="lg"
-                block
-                :disabled="auth.loading"
-              >
+              <dt-button id="reg-submit" button-type="submit" variant="primary" size="lg" block :disabled="auth.loading">
                 {{ auth.loading ? t('auth.loading') : t('auth.submitRegister') }}
               </dt-button>
             </div>
-          </form>
-        </div>
+            <div class="dt-auth-under">
+              <span class="dt-auth-under-t">{{ t('auth.hasAccount') }}</span>
+              <router-link to="/login" class="dt-auth-under-a">
+                {{ t('auth.goLogin') }}
+              </router-link>
             </div>
-          </div>
+          </form>
         </div>
       </div>
     </div>

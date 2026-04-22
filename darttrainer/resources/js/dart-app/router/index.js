@@ -6,13 +6,27 @@ import { applySocialMeta } from '../utils/socialMeta.js';
 
 const load = (importer) => () => importer().then((m) => m.default);
 
+/** Tikai `public: true` maršruti ir pieejami bez ielogošanās; pārējiem nepieciešama sesija (sk. beforeEach). */
 const routes = [
-  { path: '/', component: load(() => import('../pages/Home.vue')), meta: { titleKey: 'nav.home' } },
-  { path: '/login', component: load(() => import('../pages/Login.vue')), meta: { titleKey: 'shell.login' } },
-  { path: '/register', component: load(() => import('../pages/Register.vue')), meta: { titleKey: 'shell.register' } },
+  {
+    path: '/',
+    component: load(() => import('../pages/Home.vue')),
+    meta: { titleKey: 'nav.home', public: true },
+  },
+  {
+    path: '/login',
+    component: load(() => import('../pages/Login.vue')),
+    meta: { titleKey: 'shell.login', public: true },
+  },
+  {
+    path: '/register',
+    component: load(() => import('../pages/Register.vue')),
+    meta: { titleKey: 'shell.register', public: true },
+  },
   {
     path: '/lobby',
     redirect: () => ({ path: X01_LOBBY_AND_TRAINING_ENABLED ? '/lobby/x01' : '/lobby/cricket' }),
+    meta: { public: true },
   },
   {
     path: '/lobby/cricket',
@@ -26,8 +40,8 @@ const routes = [
     props: { gameKind: 'x01' },
     meta: { titleKey: 'nav.lobbyX01' },
   },
-  { path: '/friends', component: load(() => import('../pages/Friends.js')), meta: { titleKey: 'nav.friends' } },
-  { path: '/stats', component: load(() => import('../pages/Statistics.js')), meta: { titleKey: 'stats.title' } },
+  { path: '/friends', component: load(() => import('../pages/Friends.vue')), meta: { titleKey: 'nav.friends' } },
+  { path: '/stats', component: load(() => import('../pages/Statistics.vue')), meta: { titleKey: 'stats.title' } },
   { path: '/admin', component: load(() => import('../pages/Admin.js')), meta: { titleKey: 'nav.admin' } },
   {
     path: '/game/:matchId',
@@ -36,7 +50,7 @@ const routes = [
     meta: { titleKey: 'nav.lobby', gameFocus: true },
   },
   { path: '/training/x01', component: load(() => import('../pages/X01Training.js')), meta: { titleKey: 'nav.x01solo' } },
-  { path: '/:pathMatch(.*)*', redirect: '/' },
+  { path: '/:pathMatch(.*)*', redirect: '/', meta: { public: true } },
 ];
 
 const router = createRouter({
@@ -44,20 +58,22 @@ const router = createRouter({
   routes,
 });
 
-const GUEST_ALLOWED_PATHS = new Set(['/', '/login', '/register']);
+function routeIsPublic(to) {
+  return to.matched.some((r) => r.meta && r.meta.public === true);
+}
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   const auth = useAuthStore();
-  if (to.path === '/admin' && auth.hydrated && !auth.user?.is_admin) {
+  if (!auth.hydrated) {
+    await auth.init();
+  }
+  if (to.path === '/admin' && !auth.user?.is_admin) {
     return '/';
   }
-  if (
-    !X01_LOBBY_AND_TRAINING_ENABLED &&
-    (to.path === '/lobby/x01' || to.path === '/training/x01')
-  ) {
+  if (!X01_LOBBY_AND_TRAINING_ENABLED && (to.path === '/lobby/x01' || to.path === '/training/x01')) {
     return '/';
   }
-  if (auth.hydrated && !auth.user && !GUEST_ALLOWED_PATHS.has(to.path)) {
+  if (!auth.user && !routeIsPublic(to)) {
     return '/login';
   }
   return true;

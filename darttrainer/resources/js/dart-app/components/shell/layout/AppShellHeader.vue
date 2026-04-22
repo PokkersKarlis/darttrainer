@@ -22,8 +22,8 @@ const needsEmailVerify = computed(
       min-height: 56px;
       height: 56px;
       flex-shrink: 0;
-      background: #0a1120;
-      border-bottom: 1px solid #162540;
+      background: #0f1520;
+      border-bottom: 1px solid #1e2738;
       display: flex;
       align-items: center;
       padding: 0 12px;

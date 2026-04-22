@@ -245,6 +245,10 @@ export function useAuthContentFit(watchSources) {
   onMounted(() => {
     if (typeof window !== 'undefined') {
       window.addEventListener('dt-visual-viewport', onVisualViewport, { passive: true });
+      // Desktop → mobile (responsive mode) un orientācijas maiņas gadījumos
+      // var nemērķtiecīgi neizšaut ResizeObserver; piespiežam pārmērīt.
+      window.addEventListener('resize', onVisualViewport, { passive: true });
+      window.addEventListener('orientationchange', onVisualViewport, { passive: true });
     }
 
     roPage = new ResizeObserver((entries) => {
@@ -303,6 +307,8 @@ export function useAuthContentFit(watchSources) {
     clearTimeout(vvTimer);
     if (typeof window !== 'undefined') {
       window.removeEventListener('dt-visual-viewport', onVisualViewport);
+      window.removeEventListener('resize', onVisualViewport);
+      window.removeEventListener('orientationchange', onVisualViewport);
     }
   });
 

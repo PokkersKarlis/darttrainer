@@ -5,12 +5,10 @@ import { useAuthStore } from '../store/auth.js';
 import { useLocaleStore } from '../store/locale.js';
 import { useFriendsStore } from '../store/friends.js';
 import { dartSafeDisplayMessage } from '../utils/safeDisplay.js';
-import AppShellHeader from '../components/shell/layout/AppShellHeader.vue';
-import AppShellBody from '../components/shell/layout/AppShellBody.vue';
-import AppShellFooter from '../components/shell/AppShellFooter.js';
 import EmailVerifyBanner from '../components/shell/EmailVerifyBanner.vue';
 import FriendsIncomingModal from '../components/shell/FriendsIncomingModal.js';
 import { applySocialMeta } from '../utils/socialMeta.js';
+import HomeCanvasLayout from '../components/layout/HomeCanvasLayout.vue';
 
 const APP_NAME = 'DartTrainer';
 
@@ -30,6 +28,9 @@ const needsEmailVerify = computed(
 
 /** Aktīvā spēle: pilnekrāna saturs bez globālā header/footer, sānjoslas u.c. */
 const gameFocus = computed(() => !!route.meta.gameFocus);
+
+/** Sākumlapa: pašai sava “canvas chrome” iekš `Home.vue`. */
+const isHome = computed(() => route.path === '/');
 
 window._dartToast = (message, type = 'success') => {
   const id = Date.now();
@@ -145,23 +146,29 @@ watch(
 <template>
   <div
     v-cloak
-    :class="['dt-app-root', { 'dt-app--game-focus': gameFocus }]"
+    :class="['dt-app-root', { 'dt-app--game-focus': gameFocus, 'dt-app--home-canvas': isHome }]"
   >
-    <AppShellHeader v-if="!gameFocus" />
-    <EmailVerifyBanner
-      v-if="!gameFocus && needsEmailVerify"
-      :resend-busy="resendBusy"
-      @resend="resendVerification"
-    />
+    <!-- `/`: Home.vue jau satur visu sidebar/header/layout. -->
+    <template v-if="isHome">
+      <router-view />
+    </template>
 
-    <div
-      class="dt-app-shell-body"
-      style="flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden"
-    >
-      <AppShellBody :game-focus="gameFocus" />
-      <AppShellFooter v-if="!gameFocus" />
-    </div>
+    <!-- `/game/*`: pilnekrāna spēles režīms -->
+    <template v-else-if="gameFocus">
+      <router-view />
+    </template>
 
+    <!-- Visas pārējās lapas: Home “canvas” layout (sidebar + header + ads) -->
+    <HomeCanvasLayout v-else :title-key="route.meta?.titleKey || ''">
+      <EmailVerifyBanner
+        v-if="needsEmailVerify"
+        :resend-busy="resendBusy"
+        @resend="resendVerification"
+      />
+      <router-view />
+    </HomeCanvasLayout>
+
+    <!-- Modālis jābūt arī uz `/`, ja uzaicinājumus atver no segvārda izvēlnes galvenē -->
     <FriendsIncomingModal v-if="!gameFocus" />
 
     <div
@@ -178,21 +185,27 @@ watch(
             }
           : {
               position: 'fixed',
-              bottom: '80px',
-              right: '16px',
+              bottom: isHome ? '16px' : '80px',
+              left: '50%',
+              transform: 'translateX(-50%)',
               zIndex: 9999,
               display: 'flex',
               flexDirection: 'column',
               gap: '8px',
+              alignItems: 'center',
             }
       "
-      :class="gameFocus ? '' : 'lg:bottom-4'"
+      :class="gameFocus ? '' : isHome ? '' : 'lg:bottom-4'"
     >
       <transition-group name="fade">
         <div
           v-for="toast in toasts"
           :key="toast.id"
-          :style="toast.type === 'error' ? 'background:#dc2626' : 'background:#059669'"
+          :style="
+            toast.type === 'error'
+              ? 'background:linear-gradient(135deg,#7f1d1d,#dc2626);border:1px solid rgba(248,113,113,.35)'
+              : 'background:linear-gradient(135deg,#065f46,#059669);border:1px solid rgba(52,211,153,.25)'
+          "
           style="
             padding: 10px 16px;
             border-radius: 10px;
@@ -200,7 +213,9 @@ watch(
             font-weight: 600;
             color: #fff;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-            max-width: 280px;
+            width: min(92vw, 360px);
+            max-width: 360px;
+            text-align: center;
           "
         >
           {{ toast.message }}

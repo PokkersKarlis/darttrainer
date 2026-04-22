@@ -47,6 +47,50 @@ class PublicStatsController extends Controller
             ->values()
             ->all();
 
+        $liveMatches = GameMatch::query()
+            ->where('status', 'active')
+            ->with([
+                'room' => function ($q) {
+                    $q->select('id', 'code', 'game_type', 'game_config');
+                },
+            ])
+            ->orderByDesc('id')
+            ->limit(12)
+            ->get()
+            ->map(function (GameMatch $match) {
+                $room = $match->room;
+                if (! $room instanceof GameRoom) {
+                    return null;
+                }
+
+                $players = $room->activePlayers()
+                    ->with('user:id,name')
+                    ->orderBy('order')
+                    ->limit(2)
+                    ->get();
+
+                $n1 = $players->get(0);
+                $n2 = $players->get(1);
+                $p1 = $n1 ? ($n1->user?->name ?? $n1->guest_name ?? 'Guest') : '—';
+                $p2 = $n2 ? ($n2->user?->name ?? $n2->guest_name ?? '—') : '—';
+                $code = (string) ($room->code ?? '');
+                $short = $code !== '' ? strtoupper(substr($code, 0, min(4, strlen($code)))) : (string) $match->id;
+
+                $kind = $this->publicGameKind($room);
+
+                return [
+                    'match_id' => (int) $match->id,
+                    'short_id' => $short,
+                    'game_kind' => $kind,
+                    'p1' => (string) $p1,
+                    'p2' => (string) $p2,
+                    'round' => (int) $match->current_leg,
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
+
         return response()->json([
             'users_total'          => User::query()->count(),
             'active_players'       => $activePlayers,
@@ -55,6 +99,27 @@ class PublicStatsController extends Controller
             'rooms_open'           => $roomsOpen,
             'top_players'          => $topPlayers,
             'last_registration_at' => $lastRegAt?->toIso8601String(),
+            'live_matches'         => $liveMatches,
         ]);
+    }
+
+    private function publicGameKind(GameRoom $room): string
+    {
+        if ($room->game_type === 'cricket') {
+            return 'cricket';
+        }
+        if ($room->game_type === 'x01') {
+            $v = $room->game_config['variant'] ?? null;
+            if ((int) $v === 301) {
+                return 'x01_301';
+            }
+            if ((int) $v === 501) {
+                return 'x01_501';
+            }
+
+            return 'x01';
+        }
+
+        return 'other';
     }
 }

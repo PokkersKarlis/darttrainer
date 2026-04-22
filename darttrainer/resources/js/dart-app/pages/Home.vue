@@ -1,96 +1,108 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore, useLocaleStore } from '../store/index.js';
 import { PublicApi, Rooms } from '../api/client.js';
 import { useCanPlayGames } from '../composables/useCanPlayGames.js';
 import { useCanPlayX01 } from '../composables/useCanPlayX01.js';
+import { useCanvasBnav } from '../composables/useCanvasBnav.js';
 import { DARTTRAINER_DISCORD_URL } from '../constants/discord.js';
-import DiscordIcon from '../components/shell/DiscordIcon.vue';
+import HomeStrokeIcon from '../components/home/HomeStrokeIcon.vue';
+import HeaderUserMenu from '../components/shell/header/HeaderUserMenu.vue';
+import EmailVerifyBanner from '../components/shell/EmailVerifyBanner.vue';
+import { HOME_PAGE_SNAPSHOT_VERSION } from './homePageMeta.js';
 
 defineOptions({ name: 'HomePage' });
 
 const auth = useAuthStore();
 const locale = useLocaleStore();
+const route = useRoute();
 const router = useRouter();
 const canPlayGames = useCanPlayGames();
 const canPlayX01 = useCanPlayX01();
+const { bnav, bnavOn, bnavClick, bnavDisabled } = useCanvasBnav();
 
 const t = (key) => locale.t(key);
 const discordUrl = DARTTRAINER_DISCORD_URL;
 
-const activeRooms = ref([]);
-const activeRoomsLoading = ref(false);
 const summary = ref(null);
 const summaryErr = ref(false);
 const summaryLoading = ref(true);
+const activeRooms = ref([]);
+const activeRoomsLoading = ref(false);
+
+const activeGame = ref('cricket');
+const startMenuOpen = ref(false);
+const showTutorial = ref(false);
+const isMobile = ref(
+  typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches,
+);
+const clock = ref('');
+const resendBusy = ref(false);
 
 const needsEmailVerify = computed(() => auth.needsEmailVerification);
-const showActiveRoomsSection = computed(() => auth.hydrated && !!auth.user);
+/** Ielogots, bet e-pasts neapstiprināts — nevar atvērt «Sākt spēli» izvēlni. */
+const startGameMenuLocked = computed(() => needsEmailVerify.value);
 const showGuestCta = computed(() => auth.hydrated && !auth.user);
-const showLoggedNavCards = computed(() => !!auth.user);
+const socialUnlocked = computed(() => canPlayGames.value);
+const showMyActiveSection = computed(() => auth.hydrated && !!auth.user && !needsEmailVerify.value);
 
-const x01OfferTitle = computed(() => {
-  if (!canPlayGames.value) return t('nav.gamesTeaserHint');
-  if (!canPlayX01.value) return t('nav.x01UnavailableHint');
-  return '';
+const liveMatches = computed(() => {
+  const raw = summary.value?.live_matches;
+  return Array.isArray(raw) ? raw : [];
 });
 
-const x01HomeActionsEnabled = computed(() => canPlayGames.value && canPlayX01.value);
+const gameModes = computed(() => [
+  { id: 'cricket', label: t('nav.gameCricket'), icon: 'target', color: '#4a9eff', desc: t('home.modeCricketDesc') },
+  { id: 'x501', label: t('nav.gameX01501'), icon: 'zap', color: '#f5a623', desc: t('home.modeX501Desc') },
+  { id: 'x301', label: t('nav.gameX01301'), icon: 'flame', color: '#3ecf8e', desc: t('home.modeX301Desc') },
+]);
 
-function roomSummaryLine(room) {
-  if (!room) return '';
-  if (room.game_type === 'x01') {
-    const v = room.game_config?.variant;
-    return v != null ? `X01 ${v}` : 'X01';
+function matchGameLabel(kind) {
+  switch (kind) {
+    case 'cricket':
+      return t('nav.gameCricket');
+    case 'x01_301':
+      return t('nav.gameX01301');
+    case 'x01_501':
+      return t('nav.gameX01501');
+    case 'x01':
+      return t('home.matchKindX01');
+    default:
+      return t('home.matchKindOther');
   }
-  if (room.game_type === 'cricket') {
-    return room.game_config?.cricket_type === 'random'
-      ? t('lobby.cricketRandomShort')
-      : t('lobby.cricketStandardShort');
+}
+
+let mq;
+let tickId;
+
+function updateClock() {
+  try {
+    clock.value = new Date().toLocaleTimeString(locale.locale === 'lv' ? 'lv-LV' : 'en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+  } catch (_) {
+    clock.value = '';
   }
-  return String(room.game_type).replace(/_/g, ' ').toUpperCase();
 }
 
-function roomStatusLabel(room) {
-  if (!room) return '';
-  if (room.match_status === 'suspended') return t('home.statusSuspended');
-  if (room.match_id && room.match_status === 'active') return t('home.statusPlaying');
-  if (room.match_id) return t('home.statusPlaying');
-  return t('home.statusLobby');
+function setMobileFlag() {
+  isMobile.value = window.matchMedia('(max-width: 767px)').matches;
 }
 
-function playModeLabel(room) {
-  if (!room) return '';
-  return room.play_mode === 'local' ? t('home.playModeLocalShort') : t('home.playModeOnlineShort');
-}
-
-function fmtDate(iso) {
+function fmtRegDay(iso) {
   if (!iso) return '—';
   const d = new Date(iso);
   if (isNaN(d.getTime())) return '—';
-  return d.toLocaleDateString(locale.locale === 'lv' ? 'lv-LV' : 'en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
+  return d.toLocaleDateString(locale.locale === 'lv' ? 'lv-LV' : 'en-GB', { day: 'numeric', month: 'short' });
 }
-
-async function refreshActiveRooms() {
-  activeRooms.value = [];
-  if (!auth.hydrated || !auth.user || auth.needsEmailVerification) {
-    activeRoomsLoading.value = false;
-    return;
-  }
-  activeRoomsLoading.value = true;
-  try {
-    const { data } = await Rooms.myActives();
-    activeRooms.value = Array.isArray(data.items) ? data.items : [];
-  } catch (_) {
-    activeRooms.value = [];
-  } finally {
-    activeRoomsLoading.value = false;
-  }
+function fmtRegYear(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  return String(d.getFullYear());
 }
 
 async function loadSummary() {
@@ -107,53 +119,75 @@ async function loadSummary() {
   }
 }
 
-function continueGame(room) {
+function roomSummaryLine(room) {
+  if (!room) return '';
+  if (room.game_type === 'x01') {
+    const v = room.game_config?.variant;
+    return v != null ? `X01 ${v}` : 'X01';
+  }
+  if (room.game_type === 'cricket') {
+    return (room.game_config?.cricket_type || 'standard') === 'random'
+      ? t('lobby.cricketRandomShort')
+      : t('lobby.cricketStandardShort');
+  }
+  return String(room.game_type || '').replace(/_/g, ' ').toUpperCase();
+}
+function roomStatusLabel(room) {
+  if (!room) return '';
+  if (room.match_status === 'suspended') return t('home.statusSuspended');
+  if (room.match_id) return t('home.statusPlaying');
+  return t('home.statusLobby');
+}
+function playModeLabel(room) {
+  if (!room) return '';
+  return room.play_mode === 'local' ? t('home.playModeLocalShort') : t('home.playModeOnlineShort');
+}
+async function refreshActiveRooms() {
+  activeRooms.value = [];
+  if (!auth.hydrated || !auth.user || needsEmailVerify.value) {
+    activeRoomsLoading.value = false;
+    return;
+  }
+  activeRoomsLoading.value = true;
+  try {
+    const { data } = await Rooms.myActives();
+    activeRooms.value = Array.isArray(data?.items) ? data.items : [];
+  } catch (_) {
+    activeRooms.value = [];
+  } finally {
+    activeRoomsLoading.value = false;
+  }
+}
+function continueActiveRoom(room) {
   if (!room) return;
   if (needsEmailVerify.value) {
     window._dartToast?.(t('auth.verifyEmailToContinue'), 'error');
     return;
   }
-  if (room.match_id) {
-    router.push(`/game/${room.match_id}`);
-    return;
-  }
-  if (room.game_type === 'x01' && !canPlayX01.value) {
-    window._dartToast?.(t('nav.x01UnavailableHint'), 'error');
-    return;
-  }
-  const path = room.game_type === 'cricket' ? '/lobby/cricket' : '/lobby/x01';
-  const v = room.game_config?.variant;
-  const query =
-    room.game_type === 'x01' && (v === 301 || v === 501) ? { variant: String(v) } : {};
-  router.push({ path, query });
+  router.push(room.match_id ? `/game/${room.match_id}` : '/lobby');
 }
 
-function goExplore(path) {
+function goLobbyCricket() {
   if (needsEmailVerify.value) {
     window._dartToast?.(t('auth.verifyEmailToContinue'), 'error');
     return;
   }
-  if (
-    (path === '/lobby/x01' || path === '/training/x01' || path.startsWith('/lobby/x01')) &&
-    !canPlayX01.value
-  ) {
-    window._dartToast?.(t('nav.x01UnavailableHint'), 'error');
+  if (!canPlayGames.value) {
+    window._dartToast?.(t('nav.gamesTeaserHint'), 'error');
     return;
   }
-  router.push(path);
-}
-
-function guestSocialTeaser() {
-  window._dartToast?.(t('nav.gamesTeaserHint'), 'error');
-}
-
-function goLobbyCricket() {
-  if (!canPlayGames.value) return;
   router.push('/lobby/cricket');
 }
 
 function goLobbyX01(variant) {
-  if (!canPlayGames.value) return;
+  if (needsEmailVerify.value) {
+    window._dartToast?.(t('auth.verifyEmailToContinue'), 'error');
+    return;
+  }
+  if (!canPlayGames.value) {
+    window._dartToast?.(t('nav.gamesTeaserHint'), 'error');
+    return;
+  }
   if (!canPlayX01.value) {
     window._dartToast?.(t('nav.x01UnavailableHint'), 'error');
     return;
@@ -161,831 +195,1156 @@ function goLobbyX01(variant) {
   router.push({ path: '/lobby/x01', query: { variant: String(variant) } });
 }
 
-watch(() => [auth.hydrated, auth.user?.id], refreshActiveRooms, { immediate: true });
-onMounted(loadSummary);
+function toggleLearn() {
+  showTutorial.value = !showTutorial.value;
+}
+
+function pickStartMode(mode) {
+  startMenuOpen.value = false;
+  if (needsEmailVerify.value) {
+    window._dartToast?.(t('auth.verifyEmailToContinue'), 'error');
+    return;
+  }
+  if (mode === 'cricket') {
+    if (!canPlayGames.value) {
+      router.push('/register');
+      return;
+    }
+    goLobbyCricket();
+    return;
+  }
+  if (!canPlayGames.value) {
+    window._dartToast?.(t('nav.gamesTeaserHint'), 'error');
+    return;
+  }
+  if (!canPlayX01.value) {
+    return;
+  }
+  goLobbyX01(mode === 'x501' ? 501 : 301);
+}
+
+async function resendVerificationFromHome() {
+  if (!auth.user || resendBusy.value) return;
+  resendBusy.value = true;
+  try {
+    await auth.resendVerificationEmail();
+    window._dartToast?.(t('auth.resendSent'), 'success');
+  } catch (_) {
+    window._dartToast?.(t('common.error'), 'error');
+  } finally {
+    resendBusy.value = false;
+  }
+}
+
+function onDocMousedownForStart(e) {
+  if (!startMenuOpen.value) return;
+  const el = e.target;
+  if (el && typeof el.closest === 'function' && el.closest('.dth-start-wrap')) {
+    return;
+  }
+  startMenuOpen.value = false;
+}
+
+function navX01Var(v) {
+  if (needsEmailVerify.value) {
+    window._dartToast?.(t('auth.verifyEmailToContinue'), 'error');
+    return;
+  }
+  if (!canPlayGames.value) {
+    window._dartToast?.(t('nav.gamesTeaserHint'), 'error');
+    return;
+  }
+  if (!canPlayX01.value) {
+    window._dartToast?.(t('nav.x01UnavailableHint'), 'error');
+    return;
+  }
+  goLobbyX01(v);
+}
+
+function sbFriends() {
+  if (showGuestCta.value) {
+    router.push('/login');
+    return;
+  }
+  if (needsEmailVerify.value) {
+    window._dartToast?.(t('auth.verifyEmailToContinue'), 'error');
+    return;
+  }
+  router.push('/friends');
+}
+function sbStats() {
+  if (showGuestCta.value) {
+    router.push('/login');
+    return;
+  }
+  if (needsEmailVerify.value) {
+    window._dartToast?.(t('auth.verifyEmailToContinue'), 'error');
+    return;
+  }
+  router.push('/stats');
+}
+function sbSolo() {
+  if (needsEmailVerify.value) {
+    window._dartToast?.(t('auth.verifyEmailToContinue'), 'error');
+    return;
+  }
+  if (!canPlayX01.value) {
+    window._dartToast?.(t('nav.x01UnavailableHint'), 'error');
+    return;
+  }
+  router.push('/training/x01');
+}
+function sbLobby() {
+  if (needsEmailVerify.value) {
+    window._dartToast?.(t('auth.verifyEmailToContinue'), 'error');
+    return;
+  }
+  if (!canPlayGames.value) {
+    window._dartToast?.(t('nav.gamesTeaserHint'), 'error');
+    return;
+  }
+  router.push('/lobby/cricket');
+}
+
+function isSbActive(id) {
+  if (id === 'home') return route.path === '/';
+  if (id === 'lobby') return route.path === '/lobby/cricket' || route.path === '/lobby/x01';
+  if (id === 'friends') return route.path.startsWith('/friends');
+  if (id === 'solo') return route.path === '/training/x01';
+  if (id === 'stats') return route.path === '/stats';
+  if (id === 'cricket') return route.path === '/lobby/cricket';
+  if (id === 'x501') {
+    return route.path === '/lobby/x01' && String(route.query.variant) === '501';
+  }
+  if (id === 'x301') {
+    return route.path === '/lobby/x01' && String(route.query.variant) === '301';
+  }
+  return false;
+}
+
+watch(
+  () => locale.locale,
+  () => {
+    updateClock();
+  },
+);
+watch(startGameMenuLocked, (locked) => {
+  if (locked) startMenuOpen.value = false;
+});
+watch(
+  () => [auth.hydrated, auth.user?.id, needsEmailVerify.value],
+  () => {
+    void refreshActiveRooms();
+  },
+  { immediate: true },
+);
+onMounted(() => {
+  setMobileFlag();
+  updateClock();
+  tickId = window.setInterval(updateClock, 30_000);
+  mq = window.matchMedia('(max-width: 767px)');
+  mq.addEventListener('change', setMobileFlag);
+  document.addEventListener('mousedown', onDocMousedownForStart, true);
+  loadSummary();
+});
+onUnmounted(() => {
+  if (tickId) clearInterval(tickId);
+  mq?.removeEventListener('change', setMobileFlag);
+  document.removeEventListener('mousedown', onDocMousedownForStart, true);
+});
 </script>
 
 <template>
-  <div style="flex: 1; overflow-y: auto; min-height: 0">
-    <div style="padding: 16px 18px 24px; box-sizing: border-box">
-      <div class="dt-home-rebuild-notice" role="status">
-        <div class="dt-home-rebuild-notice__title">
-          {{ t('home.rebuildNoticeTitle') }}
-        </div>
-        <p class="dt-home-rebuild-notice__text">
-          {{ t('home.rebuildNoticeP1') }}
-        </p>
-        <p class="dt-home-rebuild-notice__hint">
-          {{ t('home.rebuildNoticeContactHint') }}
-        </p>
-        <div class="dt-home-rebuild-notice__discord">
-          <a
-            :href="discordUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="dt-home-rebuild-notice__discord-link"
-          >
-            <DiscordIcon :size="22" />
-            <span>{{ t('nav.discord') }}</span>
-          </a>
-        </div>
-        <p class="dt-home-rebuild-notice__email">
-          <a class="dt-home-rebuild-notice__mail" href="mailto:bugs@traindart.com">bugs@traindart.com</a>
-        </p>
-      </div>
-
-      <div style="margin-bottom: 18px; display: flex; flex-direction: column; gap: 12px">
-        <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap">
+  <div
+    class="dth-canvas dth-home"
+    :data-home-page-snapshot="String(HOME_PAGE_SNAPSHOT_VERSION)"
+  >
+    <!-- Desktop (mock) -->
+    <div v-if="!isMobile" class="dth-canvas--desktop dth-show-desktop" aria-hidden="false">
+      <aside class="dth-sb" aria-label="Navigācija">
+        <div class="dth-sb-logo">
           <img
+            class="dth-sb-logo-img"
             src="/images/logo.png"
             alt="DartTrainer"
-            style="
-              height: 72px;
-              width: auto;
-              max-width: 260px;
-              object-fit: contain;
-              display: block;
-            "
+            width="160"
+            height="52"
+            loading="lazy"
+            decoding="async"
           />
-          <p style="color: #64748b; font-size: 14px; margin: 0; max-width: 440px; line-height: 1.45">
-            {{ t('home.tagline') }}
-          </p>
-        </div>
-      </div>
-
-      <div
-        v-if="auth.hydrated"
-        style="
-          margin-bottom: 20px;
-          padding: 14px 16px;
-          background: #0f1c30;
-          border: 1px solid #162540;
-          border-radius: 14px;
-        "
-      >
-        <div
-          style="
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            color: #64748b;
-            margin-bottom: 10px;
-            line-height: 1.35;
-          "
-        >
-          {{ t('nav.gamesOffered') }}
-        </div>
-        <div style="display: flex; flex-wrap: wrap; gap: 10px">
-          <button
-            type="button"
-            :disabled="!canPlayGames"
-            :title="!canPlayGames ? t('nav.gamesTeaserHint') : ''"
-            style="
-              flex: 1 1 auto;
-              min-width: 7.5rem;
-              padding: 10px 14px;
-              border-radius: 10px;
-              border: 1px solid #1e3050;
-              background: #060d18;
-              color: #e2e8f0;
-              font-size: 13px;
-              font-weight: 700;
-              cursor: pointer;
-              text-align: center;
-              transition: background 0.15s, border-color 0.15s;
-            "
-            :style="!canPlayGames ? { opacity: 0.45, cursor: 'not-allowed' } : {}"
-            @click="goLobbyCricket()"
-            @mouseenter="
-              if (canPlayGames) {
-                ($event.currentTarget).style.background = '#162540';
-                ($event.currentTarget).style.borderColor = '#334155';
-              }
-            "
-            @mouseleave="
-              if (canPlayGames) {
-                ($event.currentTarget).style.background = '#060d18';
-                ($event.currentTarget).style.borderColor = '#1e3050';
-              }
-            "
-          >
-            🏏 {{ t('nav.gameCricket') }}
-          </button>
-          <button
-            type="button"
-            :disabled="!x01HomeActionsEnabled"
-            :title="x01OfferTitle"
-            style="
-              flex: 1 1 auto;
-              min-width: 7.5rem;
-              padding: 10px 14px;
-              border-radius: 10px;
-              border: 1px solid #1e3050;
-              background: #060d18;
-              color: #e2e8f0;
-              font-size: 13px;
-              font-weight: 700;
-              cursor: pointer;
-              text-align: center;
-              transition: background 0.15s, border-color 0.15s;
-            "
-            :style="!x01HomeActionsEnabled ? { opacity: 0.45, cursor: 'not-allowed' } : {}"
-            @click="goLobbyX01(501)"
-            @mouseenter="
-              if (x01HomeActionsEnabled) {
-                ($event.currentTarget).style.background = '#162540';
-                ($event.currentTarget).style.borderColor = '#334155';
-              }
-            "
-            @mouseleave="
-              if (x01HomeActionsEnabled) {
-                ($event.currentTarget).style.background = '#060d18';
-                ($event.currentTarget).style.borderColor = '#1e3050';
-              }
-            "
-          >
-            🎯 {{ t('nav.gameX01501') }}
-          </button>
-          <button
-            type="button"
-            :disabled="!x01HomeActionsEnabled"
-            :title="x01OfferTitle"
-            style="
-              flex: 1 1 auto;
-              min-width: 7.5rem;
-              padding: 10px 14px;
-              border-radius: 10px;
-              border: 1px solid #1e3050;
-              background: #060d18;
-              color: #e2e8f0;
-              font-size: 13px;
-              font-weight: 700;
-              cursor: pointer;
-              text-align: center;
-              transition: background 0.15s, border-color 0.15s;
-            "
-            :style="!x01HomeActionsEnabled ? { opacity: 0.45, cursor: 'not-allowed' } : {}"
-            @click="goLobbyX01(301)"
-            @mouseenter="
-              if (x01HomeActionsEnabled) {
-                ($event.currentTarget).style.background = '#162540';
-                ($event.currentTarget).style.borderColor = '#334155';
-              }
-            "
-            @mouseleave="
-              if (x01HomeActionsEnabled) {
-                ($event.currentTarget).style.background = '#060d18';
-                ($event.currentTarget).style.borderColor = '#1e3050';
-              }
-            "
-          >
-            🎯 {{ t('nav.gameX01301') }}
-          </button>
-        </div>
-      </div>
-
-      <div
-        v-if="showGuestCta"
-        style="
-          margin-bottom: 20px;
-          padding: 14px 16px;
-          background: #0f1c30;
-          border: 1px solid #162540;
-          border-radius: 14px;
-        "
-      >
-        <div
-          style="
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            color: #64748b;
-            margin-bottom: 10px;
-            line-height: 1.35;
-          "
-        >
-          {{ t('home.guestNavTeasersTitle') }}
-        </div>
-        <div style="display: flex; flex-wrap: wrap; gap: 10px">
-          <a
-            href="/friends"
-            role="button"
-            class="nav-card--locked"
-            style="
-              flex: 1 1 160px;
-              min-width: 0;
-              background: #0f1c30;
-              border: 1px solid #162540;
-              border-radius: 14px;
-              padding: 18px 16px;
-              text-decoration: none;
-              display: flex;
-              flex-direction: column;
-            "
-            :title="t('nav.gamesTeaserHint')"
-            @click.prevent="guestSocialTeaser()"
-          >
-            <span style="font-size: 24px; margin-bottom: 8px">👥</span>
-            <span style="font-weight: 700; font-size: 14px; color: #f1f5f9; margin-bottom: 4px">{{
-              t('nav.friends')
-            }}</span>
-            <span style="font-size: 12px; color: #475569; line-height: 1.35">{{
-              t('home.registerHintSub')
-            }}</span>
-          </a>
-          <a
-            href="/stats"
-            role="button"
-            class="nav-card--locked"
-            style="
-              flex: 1 1 160px;
-              min-width: 0;
-              background: #0f1c30;
-              border: 1px solid #162540;
-              border-radius: 14px;
-              padding: 18px 16px;
-              text-decoration: none;
-              display: flex;
-              flex-direction: column;
-            "
-            :title="t('nav.gamesTeaserHint')"
-            @click.prevent="guestSocialTeaser()"
-          >
-            <span style="font-size: 24px; margin-bottom: 8px">📊</span>
-            <span style="font-weight: 700; font-size: 14px; color: #f1f5f9; margin-bottom: 4px">{{
-              t('home.stats')
-            }}</span>
-            <span style="font-size: 12px; color: #475569; line-height: 1.35">{{
-              t('home.registerHintSub')
-            }}</span>
-          </a>
-        </div>
-      </div>
-
-      <div v-if="summaryLoading" style="margin-bottom: 16px; font-size: 13px; color: #64748b">
-        {{ t('home.loadSummary') }}
-      </div>
-
-      <div
-        v-else-if="summary"
-        style="
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
-          gap: 10px;
-          margin-bottom: 20px;
-        "
-      >
-        <div style="background: #0f1c30; border: 1px solid #162540; border-radius: 12px; padding: 11px 12px">
-          <div
-            style="
-              font-size: 9px;
-              font-weight: 800;
-              letter-spacing: 0.07em;
-              text-transform: uppercase;
-              color: #64748b;
-              line-height: 1.25;
-            "
-          >
-            {{ t('home.usersTotal') }}
-          </div>
-          <div style="font-size: 20px; font-weight: 900; color: #f59e0b; margin-top: 4px">
-            {{ summary.users_total }}
+          <div class="dth-sb-logo-sub" aria-hidden="true">
+            <span class="dth-sb-wordmark-line">{{ t('home.brandWordmark') }}</span>
+            <span class="dth-sb-beta">{{ t('home.betaBadge') }}</span>
           </div>
         </div>
-        <div style="background: #0f1c30; border: 1px solid #162540; border-radius: 12px; padding: 11px 12px">
-          <div
-            style="
-              font-size: 9px;
-              font-weight: 800;
-              letter-spacing: 0.07em;
-              text-transform: uppercase;
-              color: #64748b;
-              line-height: 1.25;
-            "
-          >
-            {{ t('home.activePlayers') }}
-          </div>
-          <div style="font-size: 20px; font-weight: 900; color: #34d399; margin-top: 4px">
-            {{ summary.active_players }}
-          </div>
-        </div>
-        <div style="background: #0f1c30; border: 1px solid #162540; border-radius: 12px; padding: 11px 12px">
-          <div
-            style="
-              font-size: 9px;
-              font-weight: 800;
-              letter-spacing: 0.07em;
-              text-transform: uppercase;
-              color: #64748b;
-              line-height: 1.25;
-            "
-          >
-            {{ t('home.gamesTotal') }}
-          </div>
-          <div style="font-size: 20px; font-weight: 900; color: #e2e8f0; margin-top: 4px">
-            {{ summary.games_total }}
-          </div>
-        </div>
-        <div style="background: #0f1c30; border: 1px solid #162540; border-radius: 12px; padding: 11px 12px">
-          <div
-            style="
-              font-size: 9px;
-              font-weight: 800;
-              letter-spacing: 0.07em;
-              text-transform: uppercase;
-              color: #64748b;
-              line-height: 1.25;
-            "
-          >
-            {{ t('home.matchesActive') }}
-          </div>
-          <div style="font-size: 20px; font-weight: 900; color: #38bdf8; margin-top: 4px">
-            {{ summary.matches_active }}
-          </div>
-        </div>
-        <div style="background: #0f1c30; border: 1px solid #162540; border-radius: 12px; padding: 11px 12px">
-          <div
-            style="
-              font-size: 9px;
-              font-weight: 800;
-              letter-spacing: 0.07em;
-              text-transform: uppercase;
-              color: #64748b;
-              line-height: 1.25;
-            "
-          >
-            {{ t('home.roomsOpen') }}
-          </div>
-          <div style="font-size: 20px; font-weight: 900; color: #a78bfa; margin-top: 4px">
-            {{ summary.rooms_open }}
-          </div>
-        </div>
-        <div
-          v-if="summary.last_registration_at"
-          style="
-            background: #0f1c30;
-            border: 1px solid #162540;
-            border-radius: 12px;
-            padding: 11px 12px;
-            grid-column: span 2;
-            min-width: 0;
-          "
-        >
-          <div
-            style="
-              font-size: 9px;
-              font-weight: 800;
-              letter-spacing: 0.07em;
-              text-transform: uppercase;
-              color: #64748b;
-            "
-          >
-            {{ t('home.lastUser') }}
-          </div>
-          <div style="font-size: 14px; font-weight: 800; color: #f1f5f9; margin-top: 4px">
-            {{ fmtDate(summary.last_registration_at) }}
-          </div>
-          <div style="font-size: 11px; color: #475569; margin-top: 3px; line-height: 1.35">
-            {{ t('home.lastRegistrationPrivacy') }}
-          </div>
-        </div>
-      </div>
-      <div v-else-if="summaryErr" style="margin-bottom: 16px; font-size: 13px; color: #94a3b8">
-        {{ t('home.summaryError') }}
-      </div>
-
-      <div v-if="showActiveRoomsSection" style="margin-bottom: 20px">
-        <div
-          style="
-            color: #64748b;
-            font-size: 12px;
-            font-weight: 800;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-          "
-        >
-          {{ t('home.activeGamesTitle') }}
-        </div>
-        <div v-if="activeRoomsLoading" style="font-size: 13px; color: #64748b">
-          {{ t('home.activeRoomsLoading') }}
-        </div>
-        <template v-else>
-          <p
-            v-if="!activeRooms.length"
-            style="font-size: 13px; color: #64748b; margin: 0; line-height: 1.45"
-          >
-            {{ t('home.activeGamesEmpty') }}
-          </p>
-          <div v-else style="display: flex; flex-direction: column; gap: 10px">
-            <div
-              v-for="room in activeRooms"
-              :key="room.id"
-              style="
-                background: linear-gradient(135deg, #052e16, #064e3b);
-                border: 1px solid #065f46;
-                border-radius: 14px;
-                padding: 14px 18px;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 16px;
-                flex-wrap: wrap;
-              "
+        <div class="dth-sb-nav">
+          <div>
+            <button
+              type="button"
+              :class="['dth-sb-row', { 'dth-sb-row--on': isSbActive('home') }]"
+              @click="router.push('/')"
             >
-              <div style="min-width: 0; flex: 1">
-                <div style="color: #f1f5f9; font-weight: 600; font-size: 14px; line-height: 1.35">
-                  {{ roomSummaryLine(room) }}
-                  <span style="color: #475569; font-weight: 400"> · {{ t('home.roomCode') }} </span>
-                  <span style="font-family: monospace; color: #f59e0b; font-weight: 700">{{
-                    room.code
-                  }}</span>
-                  <span style="color: #475569; font-weight: 400"> · </span>
-                  <span style="color: #94a3b8; font-weight: 600">{{ playModeLabel(room) }}</span>
-                </div>
-                <div style="color: #6ee7b7; font-size: 12px; margin-top: 5px; line-height: 1.35">
-                  {{ roomStatusLabel(room) }}
-                </div>
-              </div>
+              <HomeStrokeIcon name="home" :size="16" color="currentColor" />
+              <span class="dth-sb-lbl">{{ t('nav.home') }}</span>
+              <span v-if="isSbActive('home')" class="dth-sb-dot" />
+            </button>
+            <div class="dth-sb-sec">
+              {{ t('home.sbMulti') }}
+            </div>
+            <button
+              type="button"
+              :class="['dth-sb-row', { 'dth-sb-row--on': isSbActive('lobby') }]"
+              :disabled="!canPlayGames"
+              :title="!canPlayGames ? t('nav.gamesTeaserHint') : ''"
+              @click="sbLobby"
+            >
+              <HomeStrokeIcon name="target" :size="16" color="currentColor" />
+              <span class="dth-sb-lbl">{{ t('nav.lobbyCricket') }}</span>
+            </button>
+            <button
+              type="button"
+              :class="['dth-sb-row', { 'dth-sb-row--on': isSbActive('friends') }]"
+              :disabled="!canPlayGames"
+              :title="!canPlayGames ? t('nav.gamesTeaserHint') : ''"
+              @click="sbFriends"
+            >
+              <HomeStrokeIcon name="users" :size="16" color="currentColor" />
+              <span class="dth-sb-lbl">{{ t('nav.friends') }}</span>
+            </button>
+            <div class="dth-sb-sec">
+              {{ t('home.sbTrain') }}
+            </div>
+            <button
+              type="button"
+              :class="['dth-sb-row', { 'dth-sb-row--on': isSbActive('solo') }]"
+              :disabled="!canPlayGames || !canPlayX01"
+              :title="!canPlayGames ? t('nav.gamesTeaserHint') : !canPlayX01 ? t('nav.x01UnavailableHint') : ''"
+              @click="sbSolo"
+            >
+              <HomeStrokeIcon name="zap" :size="16" color="currentColor" />
+              <span class="dth-sb-lbl">{{ t('nav.x01solo') }}</span>
+            </button>
+            <div class="dth-sb-sec">
+              {{ t('home.sbProgress') }}
+            </div>
+            <button
+              type="button"
+              :class="['dth-sb-row', { 'dth-sb-row--on': isSbActive('stats') }]"
+              :disabled="!canPlayGames"
+              :title="!canPlayGames ? t('nav.gamesTeaserHint') : ''"
+              @click="sbStats"
+            >
+              <HomeStrokeIcon name="bar" :size="16" color="currentColor" />
+              <span class="dth-sb-lbl">{{ t('nav.stats') }}</span>
+            </button>
+            <div class="dth-sb-sec">
+              {{ t('home.sbModes') }}
+            </div>
+            <button
+              type="button"
+              :class="['dth-sb-row', { 'dth-sb-row--on': isSbActive('cricket') }]"
+              :disabled="!canPlayGames"
+              @click="goLobbyCricket"
+            >
+              <HomeStrokeIcon name="cricket" :size="16" color="currentColor" />
+              <span class="dth-sb-lbl">{{ t('nav.gameCricket') }}</span>
+            </button>
+            <button
+              type="button"
+              :class="['dth-sb-row', { 'dth-sb-row--on': isSbActive('x501') }]"
+              :disabled="!canPlayGames || !canPlayX01"
+              @click="navX01Var(501)"
+            >
+              <HomeStrokeIcon name="star" :size="16" color="currentColor" />
+              <span class="dth-sb-lbl">X01 — 501</span>
+            </button>
+            <button
+              type="button"
+              :class="['dth-sb-row', { 'dth-sb-row--on': isSbActive('x301') }]"
+              :disabled="!canPlayGames || !canPlayX01"
+              @click="navX01Var(301)"
+            >
+              <HomeStrokeIcon name="star" :size="16" color="currentColor" />
+              <span class="dth-sb-lbl">X01 — 301</span>
+            </button>
+          </div>
+        </div>
+        <div class="dth-sb-foot">
+          <a :href="discordUrl" class="dth-sb-disc" target="_blank" rel="noopener noreferrer">
+            <HomeStrokeIcon name="discord" :size="16" color="#5865F2" />
+            <span>{{ t('nav.discord') }}</span>
+          </a>
+          <form
+            action="https://www.paypal.com/donate"
+            method="post"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="dth-sb-donate"
+            style="text-align: center; padding: 0"
+          >
+            <input type="hidden" name="hosted_button_id" value="A3THH5ND6F4NJ" />
+            <input
+              type="image"
+              src="https://pics.paypal.com/00/s/YTViYjhlMWYtOWZiMC00YTg0LThhYmYtZWFmMDU2NzFmNmE1/file.JPG"
+              name="submit"
+              :title="t('home.homeDonate')"
+              :alt="t('home.homeDonate')"
+              style="max-width: 100%; height: auto; max-height: 36px; border-radius: 6px; cursor: pointer"
+            />
+            <img alt="" src="https://www.paypal.com/en_LV/i/scr/pixel.gif" width="1" height="1" style="display: none" />
+          </form>
+        </div>
+      </aside>
+      <div class="dth-mid">
+        <div class="dth-tb">
+          <span class="dth-tb-t">{{ t('nav.home') }}</span>
+          <div class="dh-tb-r">
+            <div class="dth-locale" role="group" :aria-label="t('lang.lv') + ' / ' + t('lang.en')">
               <button
                 type="button"
-                style="
-                  flex-shrink: 0;
-                  background: #10b981;
-                  color: #fff;
-                  font-weight: 700;
-                  font-size: 13px;
-                  padding: 9px 18px;
-                  border-radius: 10px;
-                  border: none;
-                  cursor: pointer;
-                  white-space: nowrap;
-                  transition: background 0.15s;
-                "
-                @click="continueGame(room)"
-                @mouseenter="($event.target).style.background = '#059669'"
-                @mouseleave="($event.target).style.background = '#10b981'"
+                :class="{ 'dth-locale--on': locale.locale === 'lv' }"
+                @click="locale.setLocale('lv')"
               >
-                {{ room.match_id ? t('home.continue') : t('home.backToLobby') }}
+                {{ t('lang.lv') }}
+              </button>
+              <button
+                type="button"
+                :class="{ 'dth-locale--on': locale.locale === 'en' }"
+                @click="locale.setLocale('en')"
+              >
+                {{ t('lang.en') }}
+              </button>
+            </div>
+            <template v-if="auth.hydrated && auth.user">
+              <div class="dth-um dth-um--compact">
+                <HeaderUserMenu :needs-email-verify="!!needsEmailVerify" :force-compact="true" />
+              </div>
+            </template>
+            <template v-else-if="auth.hydrated && !auth.user">
+              <div class="dth-tb-auth">
+                <button type="button" class="dth-btn dth-btn--ghost dth-btn--sm" @click="router.push('/login')">
+                  {{ t('shell.login') }}
+                </button>
+                <button type="button" class="dth-btn dth-btn--accent dth-btn--sm" @click="router.push('/register')">
+                  {{ t('shell.register') }}
+                </button>
+              </div>
+            </template>
+            <span v-else class="dth-btn dth-btn--ghost dth-btn--sm" style="pointer-events: none; opacity: 0.5">…</span>
+          </div>
+        </div>
+        <div class="dth-sc">
+          <div v-if="needsEmailVerify" class="dh-email-verify">
+            <EmailVerifyBanner :resend-busy="resendBusy" @resend="resendVerificationFromHome" />
+          </div>
+          <div class="dth-warn" role="status">
+            <div class="dth-warn-ic" aria-hidden="true">⚠</div>
+            <div class="dh-warn-body">
+              <div class="dh-warn-h">
+                {{ t('home.rebuildNoticeTitle') }}
+              </div>
+              <p class="dh-warn-p">
+                {{ t('home.rebuildNoticeP1') }}
+              </p>
+              <div class="dth-warn-links">
+                <a :href="discordUrl" target="_blank" rel="noopener noreferrer" class="dth-warn-dc">
+                  <HomeStrokeIcon name="discord" :size="14" color="#5865F2" />
+                  {{ t('nav.discord') }}
+                </a>
+                <a class="dth-warn-mail" href="mailto:bugs@traindart.com">bugs@traindart.com</a>
+              </div>
+            </div>
+          </div>
+          <div class="dth-hero dth-hero--stack">
+            <div class="dth-hero-top">
+              <div class="dth-hero-ico" aria-hidden="true">
+                <HomeStrokeIcon name="target" :size="26" color="#0b0e14" />
+              </div>
+              <div>
+                <div class="dh-hero-b">
+                  {{ t('home.brandShort') }}
+                </div>
+                <p class="dh-hero-s">
+                  {{ t('home.tagline') }}
+                </p>
+              </div>
+              <div class="dth-hero-cta">
+                <button
+                  type="button"
+                  class="dth-btn dth-btn--outline dth-btn--sm"
+                  :aria-expanded="showTutorial"
+                  aria-controls="dt-learn"
+                  @click="toggleLearn"
+                >
+                  {{ showTutorial ? t('home.learnClose') : t('home.learnMore') }}
+                </button>
+                <div class="dth-start-wrap">
+                  <button
+                    type="button"
+                    class="dth-btn dth-btn--accent dth-btn--sm"
+                    :disabled="startGameMenuLocked"
+                    :aria-expanded="startMenuOpen"
+                    :title="startGameMenuLocked ? t('auth.verifyEmailToContinue') : ''"
+                    aria-haspopup="menu"
+                    @click="startMenuOpen = !startMenuOpen"
+                  >
+                    <HomeStrokeIcon name="play" :size="14" color="#0b0e14" />
+                    {{ t('home.startGame') }}
+                  </button>
+                  <div
+                    v-show="startMenuOpen && !startGameMenuLocked"
+                    class="dth-start-menu"
+                    role="menu"
+                    :aria-label="t('home.pickGameTitle')"
+                    @click.stop
+                  >
+                    <div class="dth-start-h">
+                      {{ t('home.pickGameTitle') }}
+                    </div>
+                    <button
+                      type="button"
+                      class="dth-start-row dth-start-row--on"
+                      role="menuitem"
+                      @click="pickStartMode('cricket')"
+                    >
+                      <span
+                        class="dth-start-row-ico"
+                        style="background: #4a9eff33"
+                      >
+                        <HomeStrokeIcon name="target" :size="18" color="#4a9eff" />
+                      </span>
+                      <span class="dth-start-row-meta">
+                        <span>{{ t('nav.gameCricket') }}</span>
+                        <span class="dth-start-row-d">{{ t('home.modeCricketDesc') }}</span>
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      class="dth-start-row"
+                      role="menuitem"
+                      :disabled="!canPlayX01"
+                      :title="!canPlayX01 ? t('nav.x01UnavailableHint') : ''"
+                      :aria-disabled="!canPlayX01"
+                      @click="pickStartMode('x501')"
+                    >
+                      <span
+                        class="dth-start-row-ico"
+                        style="background: #f5a62333"
+                      >
+                        <HomeStrokeIcon name="zap" :size="18" color="#f5a623" />
+                      </span>
+                      <span class="dth-start-row-meta">
+                        <span>{{ t('nav.gameX01501') }}</span>
+                        <span class="dth-start-row-d">{{
+                          !canPlayX01 ? t('home.x01DisabledInMenu') : t('home.modeX501Desc')
+                        }}</span>
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      class="dth-start-row"
+                      role="menuitem"
+                      :disabled="!canPlayX01"
+                      :title="!canPlayX01 ? t('nav.x01UnavailableHint') : ''"
+                      :aria-disabled="!canPlayX01"
+                      @click="pickStartMode('x301')"
+                    >
+                      <span
+                        class="dth-start-row-ico"
+                        style="background: #3ecf8e33"
+                      >
+                        <HomeStrokeIcon name="flame" :size="18" color="#3ecf8e" />
+                      </span>
+                      <span class="dth-start-row-meta">
+                        <span>{{ t('nav.gameX01301') }}</span>
+                        <span class="dth-start-row-d">{{
+                          !canPlayX01 ? t('home.x01DisabledInMenu') : t('home.modeX301Desc')
+                        }}</span>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              id="dt-learn"
+              v-show="showTutorial"
+              class="dh-learn dh-learn--in-hero"
+              role="region"
+              :aria-label="t('home.tutorialTitle')"
+              :aria-hidden="!showTutorial"
+            >
+              <div class="dh-slabel">
+                {{ t('home.tutorialTitle') }}
+              </div>
+              <p class="dh-learn-body">
+                {{ t('home.tutorialBody') }}
+              </p>
+            </div>
+          </div>
+          <div v-if="showMyActiveSection" class="dh-mine">
+            <div class="dh-slabel">
+              {{ t('home.activeGamesTitle') }}
+            </div>
+            <p v-if="activeRoomsLoading" class="dh-muted">
+              {{ t('home.activeRoomsLoading') }}
+            </p>
+            <template v-else>
+              <p v-if="!activeRooms.length" class="dh-muted">
+                {{ t('home.activeGamesEmpty') }}
+              </p>
+              <div v-else class="dh-mine-list">
+                <div
+                  v-for="r in activeRooms"
+                  :key="r.id"
+                  class="dh-mine-row"
+                >
+                  <div class="dh-mine-txt">
+                    <div class="dh-mine-t">
+                      <span class="dth-e">{{ roomSummaryLine(r) }}</span>
+                      <span class="dh-mine-mid">·</span>
+                      <span>{{ t('home.roomCode') }}</span>
+                      <span class="dh-mine-code">{{ r.code }}</span>
+                      <span class="dh-mine-mid">·</span>
+                      <span>{{ playModeLabel(r) }}</span>
+                    </div>
+                    <div class="dh-mine-s">
+                      {{ roomStatusLabel(r) }}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    class="dth-btn dth-btn--accent dth-btn--sm"
+                    @click="continueActiveRoom(r)"
+                  >
+                    {{ r.match_id ? t('home.continue') : t('home.backToLobby') }}
+                  </button>
+                </div>
+              </div>
+            </template>
+          </div>
+          <div id="dt-modes">
+            <div class="dh-slabel">
+              {{ t('nav.gamesOffered') }}
+            </div>
+            <div class="dh-modes">
+              <button
+                v-for="g in gameModes"
+                :key="g.id"
+                type="button"
+                class="dh-mode"
+                :style="{
+                  border: `1px solid ${activeGame === g.id ? g.color + '80' : '#1e2738'}`,
+                  background: activeGame === g.id ? g.color + '1f' : '#131720',
+                }"
+                @click="activeGame = g.id"
+              >
+                <div
+                  class="dh-mo-ico"
+                  :style="{ background: g.color + '33' }"
+                >
+                  <HomeStrokeIcon :name="g.icon" :size="20" :color="g.color" />
+                </div>
+                <div>
+                  <div
+                    class="dh-mo-t"
+                    :class="{ 'dh-mo-t--a': activeGame === g.id }"
+                  >
+                    {{ g.label }}
+                  </div>
+                  <div class="dh-mo-d">
+                    {{ g.desc }}
+                  </div>
+                </div>
+                <div
+                  v-if="activeGame === g.id"
+                  class="dh-mo-dot"
+                  :style="{ background: g.color }"
+                />
               </button>
             </div>
           </div>
-        </template>
-      </div>
-
-      <div
-        v-if="showLoggedNavCards"
-        style="
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-          gap: 12px;
-          margin-bottom: 20px;
-        "
-      >
-        <a
-          href="/lobby/x01"
-          role="button"
-          :class="{ 'nav-card--locked': needsEmailVerify || !canPlayX01 }"
-          :title="
-            needsEmailVerify
-              ? t('auth.verifyEmailToContinue')
-              : !canPlayX01
-                ? t('nav.x01UnavailableHint')
-                : ''
-          "
-          style="
-            background: linear-gradient(135deg, #451a03, #78350f);
-            border: 1px solid #92400e;
-            border-radius: 14px;
-            padding: 20px;
-            text-decoration: none;
-            display: flex;
-            flex-direction: column;
-            transition: all 0.2s;
-            cursor: pointer;
-          "
-          @click.prevent="goExplore('/lobby/x01')"
-          @mouseenter="
-            if (!needsEmailVerify && canPlayX01) {
-              ($event.currentTarget).style.transform = 'translateY(-2px)';
-              ($event.currentTarget).style.boxShadow = '0 8px 24px rgba(245,158,11,.2)';
-            }
-          "
-          @mouseleave="
-            ($event.currentTarget).style.transform = '';
-            ($event.currentTarget).style.boxShadow = '';
-          "
-        >
-          <span style="font-size: 28px; margin-bottom: 10px">🎮</span>
-          <span style="font-weight: 700; font-size: 15px; color: #fbbf24; margin-bottom: 4px">{{
-            t('home.multiplayer')
-          }}</span>
-          <span style="font-size: 12px; color: #92400e">{{ t('home.multiplayerSub') }}</span>
-        </a>
-
-        <a
-          href="/training/x01"
-          role="button"
-          :class="{ 'nav-card--locked': needsEmailVerify || !canPlayX01 }"
-          :title="
-            needsEmailVerify
-              ? t('auth.verifyEmailToContinue')
-              : !canPlayX01
-                ? t('nav.x01UnavailableHint')
-                : ''
-          "
-          style="
-            background: linear-gradient(135deg, #1e1b4b, #312e81);
-            border: 1px solid #4338ca;
-            border-radius: 14px;
-            padding: 20px;
-            text-decoration: none;
-            display: flex;
-            flex-direction: column;
-            transition: all 0.2s;
-            cursor: pointer;
-          "
-          @click.prevent="goExplore('/training/x01')"
-          @mouseenter="
-            if (!needsEmailVerify && canPlayX01) {
-              ($event.currentTarget).style.transform = 'translateY(-2px)';
-              ($event.currentTarget).style.boxShadow = '0 8px 24px rgba(99,102,241,.25)';
-            }
-          "
-          @mouseleave="
-            ($event.currentTarget).style.transform = '';
-            ($event.currentTarget).style.boxShadow = '';
-          "
-        >
-          <span style="font-size: 28px; margin-bottom: 10px">🎯</span>
-          <span style="font-weight: 700; font-size: 15px; color: #a5b4fc; margin-bottom: 4px">{{
-            t('home.x01solo')
-          }}</span>
-          <span style="font-size: 12px; color: #4338ca">{{ t('home.x01soloSub') }}</span>
-        </a>
-
-        <a
-          href="/stats"
-          role="button"
-          :class="{ 'nav-card--locked': needsEmailVerify }"
-          style="
-            background: #0f1c30;
-            border: 1px solid #162540;
-            border-radius: 14px;
-            padding: 20px;
-            text-decoration: none;
-            display: flex;
-            flex-direction: column;
-            transition: all 0.2s;
-          "
-          @click.prevent="goExplore('/stats')"
-          @mouseenter="
-            ($event.currentTarget).style.background = '#162540';
-            ($event.currentTarget).style.transform = 'translateY(-2px)';
-          "
-          @mouseleave="
-            ($event.currentTarget).style.background = '#0f1c30';
-            ($event.currentTarget).style.transform = '';
-          "
-        >
-          <span style="font-size: 28px; margin-bottom: 10px">📊</span>
-          <span style="font-weight: 700; font-size: 15px; color: #f1f5f9; margin-bottom: 4px">{{
-            t('home.stats')
-          }}</span>
-          <span style="font-size: 12px; color: #334155">{{ t('home.statsSub') }}</span>
-        </a>
-      </div>
-
-      <div
-        v-if="showGuestCta && summary"
-        style="display: flex; flex-wrap: wrap; gap: 16px; align-items: stretch; margin-bottom: 8px"
-      >
-        <div
-          style="
-            flex: 2;
-            min-width: min(100%, 280px);
-            background: #0f1c30;
-            border: 1px solid #162540;
-            border-radius: 14px;
-            padding: 16px 18px;
-          "
-        >
-          <div
-            style="
-              color: #94a3b8;
-              font-size: 11px;
-              font-weight: 800;
-              letter-spacing: 0.07em;
-              text-transform: uppercase;
-              margin-bottom: 12px;
-            "
-          >
-            {{ t('home.topPlayersTitle') }}
-          </div>
-          <p
-            v-if="!summary.top_players || !summary.top_players.length"
-            style="margin: 0; font-size: 13px; color: #64748b; line-height: 1.45"
-          >
-            {{ t('home.topPlayersEmpty') }}
-          </p>
-          <ol
-            v-else
-            style="
-              margin: 0;
-              padding: 0;
-              list-style: none;
-              display: flex;
-              flex-direction: column;
-              gap: 6px;
-            "
-          >
-            <li
-              v-for="(row, idx) in summary.top_players"
-              :key="row.user_id"
-              style="
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 10px;
-                font-size: 13px;
-                color: #e2e8f0;
-                padding: 6px 0;
-                border-bottom: 1px solid #1e3050;
-              "
-            >
-              <span style="display: flex; align-items: center; gap: 8px; min-width: 0">
-                <span style="color: #64748b; font-weight: 800; width: 24px; flex-shrink: 0"
-                  >{{ idx + 1 }}.</span
-                >
-                <span style="font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{
-                  row.name
-                }}</span>
-              </span>
-              <span
-                style="color: #f59e0b; font-weight: 800; flex-shrink: 0; font-variant-numeric: tabular-nums"
-                >{{ row.matches_count }} {{ t('home.topPlayersMatches') }}</span
+          <div class="dh-lockg">
+            <template v-if="!socialUnlocked || needsEmailVerify">
+              <div
+                v-for="card in [
+                  { k: 'f', i: 'users', lab: t('nav.friends'), d: t('home.friendsLockedDesc') },
+                  { k: 's', i: 'bar', lab: t('nav.stats'), d: t('home.statsLockedDesc') },
+                ]"
+                :key="card.k"
+                class="dh-lock"
               >
-            </li>
-          </ol>
-        </div>
-        <div
-          style="
-            flex: 1;
-            min-width: min(100%, 260px);
-            background: #0f1c30;
-            border: 1px solid #162540;
-            border-radius: 14px;
-            padding: 18px 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 14px;
-          "
-        >
-          <div>
-            <div style="font-weight: 600; font-size: 14px; color: #f1f5f9; margin-bottom: 3px">
-              {{ t('home.registerHint') }}
+                <div class="dh-lock-h">
+                  <div class="dh-lock-ico">
+                    <HomeStrokeIcon :name="card.i" :size="18" color="#7b8ba8" />
+                  </div>
+                  <span class="dh-lock-t">{{ card.lab }}</span>
+                  <span class="dh-bad">{{ t('home.lockedBadge') }}</span>
+                </div>
+                <p class="dh-lock-x">
+                  {{ card.d }}
+                </p>
+                <button
+                  type="button"
+                  class="dth-btn dth-btn--accent dth-btn--sm dth-btn--full"
+                  @click="router.push('/login')"
+                >
+                  {{ t('home.signInCta') }}
+                </button>
+              </div>
+            </template>
+            <template v-else>
+              <a
+                class="dh-lock"
+                href="/friends"
+                @click.prevent="router.push('/friends')"
+              >
+                <div class="dh-lock-h">
+                  <div class="dh-lock-ico dh-lock-ico--open">
+                    <HomeStrokeIcon name="users" :size="18" color="#f5a623" />
+                  </div>
+                  <span class="dh-lock-t">{{ t('nav.friends') }}</span>
+                </div>
+                <p class="dh-lock-x">
+                  {{ t('home.registerHintSub') }}
+                </p>
+                <span class="dth-btn dth-btn--accent dth-btn--sm dth-btn--full" style="text-align: center">{{
+                  t('home.openCta')
+                }}</span>
+              </a>
+              <a class="dh-lock" href="/stats" @click.prevent="router.push('/stats')">
+                <div class="dh-lock-h">
+                  <div class="dh-lock-ico dh-lock-ico--open">
+                    <HomeStrokeIcon name="bar" :size="18" color="#f5a623" />
+                  </div>
+                  <span class="dh-lock-t">{{ t('nav.stats') }}</span>
+                </div>
+                <p class="dh-lock-x">
+                  {{ t('home.statsSub') }}
+                </p>
+                <span class="dth-btn dth-btn--accent dth-btn--sm dth-btn--full" style="text-align: center">{{
+                  t('home.openCta')
+                }}</span>
+              </a>
+            </template>
+          </div>
+          <p v-if="summaryLoading" class="dh-muted">
+            {{ t('home.loadSummary') }}
+          </p>
+          <template v-else-if="summary && !summaryErr">
+            <div>
+              <div class="dh-slabel">
+                {{ t('home.platformStatsTitle') }}
+              </div>
+              <div class="dh-statg">
+                <div class="dh-stat">
+                  <div class="dh-stat-v">
+                    {{ summary.users_total }}
+                  </div>
+                  <div class="dh-stat-l">
+                    {{ t('home.usersTotal') }}
+                  </div>
+                </div>
+                <div class="dh-stat">
+                  <div class="dh-stat-v">
+                    {{ summary.active_players }}
+                  </div>
+                  <div class="dh-stat-l">
+                    {{ t('home.activePlayers') }}
+                  </div>
+                </div>
+                <div class="dh-stat">
+                  <div class="dh-stat-v">
+                    {{ summary.games_total }}
+                  </div>
+                  <div class="dh-stat-l">
+                    {{ t('home.gamesTotal') }}
+                  </div>
+                </div>
+                <div class="dh-stat">
+                  <div class="dh-stat-v">
+                    {{ summary.matches_active }}
+                  </div>
+                  <div class="dh-stat-l">
+                    {{ t('home.matchesActive') }}
+                  </div>
+                </div>
+                <div class="dh-stat">
+                  <div class="dh-stat-v">
+                    {{ summary.rooms_open }}
+                  </div>
+                  <div class="dh-stat-l">
+                    {{ t('home.roomsOpen') }}
+                  </div>
+                </div>
+                <div v-if="summary.last_registration_at" class="dh-stat">
+                  <div class="dh-stat-v">
+                    {{ fmtRegDay(summary.last_registration_at) }}
+                  </div>
+                  <div v-if="fmtRegYear(summary.last_registration_at)" class="dh-stat-s">
+                    {{ fmtRegYear(summary.last_registration_at) }}
+                  </div>
+                  <div class="dh-stat-l">
+                    {{ t('home.lastUser') }}
+                  </div>
+                </div>
+              </div>
             </div>
-            <div style="font-size: 12px; color: #475569; line-height: 1.4">
-              {{ t('home.registerHintSub') }}
+            <div>
+              <div class="dh-slabel">
+                {{ t('home.liveMatchesSection') }}
+              </div>
+              <p v-if="!liveMatches.length" class="dh-muted">
+                {{ t('home.liveMatchesEmpty') }}
+              </p>
+              <div v-else class="dh-lives">
+                <div
+                  v-for="m in liveMatches"
+                  :key="m.match_id"
+                  class="dh-lv-row"
+                >
+                  <div class="dh-pill">
+                    <span class="dh-pill-dot" />
+                    <span class="dh-pill-t">{{ t('home.liveBadge') }}</span>
+                  </div>
+                  <div class="dh-gt">
+                    {{ matchGameLabel(m.game_kind) }}
+                  </div>
+                  <div class="dh-p12">
+                    <span class="dth-e">{{ m.p1 }}</span>
+                    <span class="dh-vs">VS</span>
+                    <span class="dth-e">{{ m.p2 }}</span>
+                  </div>
+                  <div class="dh-rd">
+                    {{ t('home.roundShort') }} {{ m.round }}
+                  </div>
+                  <div class="dh-tid">
+                    #{{ m.short_id }}
+                  </div>
+                  <div class="dh-lv-watch">
+                    <button
+                      type="button"
+                      class="dth-btn dth-btn--ghost dth-btn--sm"
+                      disabled
+                      :title="t('home.watchMatchSoon')"
+                    >
+                      {{ t('home.watchMatch') }}
+                    </button>
+                    <span class="dh-lv-hint">{{ t('home.watchMatchSoon') }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+          <p v-else class="dh-muted">
+            {{ t('home.summaryError') }}
+          </p>
+        </div>
+      </div>
+      <div class="dth-ads" aria-hidden="true">
+        <div
+          v-for="j in 2"
+          :key="j"
+          class="dth-adslot"
+        >
+          AD
+          <span class="dth-adsz">60×160</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile (mock) -->
+    <div v-else class="dth-canvas--mobile dth-show-mobile">
+      <div class="dth-mi-bar">
+        <span class="dth-mi-time">{{ clock }}</span>
+        <div class="dth-mi-batt" />
+      </div>
+      <div class="dth-mi-top">
+        <div class="dth-mi-brand" aria-hidden="true">
+          <img
+            class="dth-mi-logo-img"
+            src="/images/logo.png"
+            alt=""
+            width="120"
+            height="40"
+            loading="lazy"
+            decoding="async"
+          />
+          <div class="dth-mi-logo-sub">
+            <span class="dth-mi-wm">{{ t('home.brandWordmark') }}</span>
+            <span class="dth-mi-beta">{{ t('home.betaBadge') }}</span>
+          </div>
+        </div>
+        <div class="dth-locale dth-mi-locale" role="group" :aria-label="t('lang.lv') + ' / ' + t('lang.en')">
+          <button type="button" :class="{ 'dth-locale--on': locale.locale === 'lv' }" @click="locale.setLocale('lv')">
+            {{ t('lang.lv') }}
+          </button>
+          <button type="button" :class="{ 'dth-locale--on': locale.locale === 'en' }" @click="locale.setLocale('en')">
+            {{ t('lang.en') }}
+          </button>
+        </div>
+        <div v-if="auth.hydrated" class="dth-mi-r" style="min-width: 0; flex: 0 1 auto">
+          <HeaderUserMenu :needs-email-verify="!!needsEmailVerify" />
+        </div>
+        <span v-else class="dth-mi-r" style="opacity: 0.5">…</span>
+      </div>
+      <div class="dh-mi-sc">
+        <div class="dh-mi-w">
+          <span class="dh-mi-wsp" aria-hidden="true">⚠</span>
+          <div>
+            <div class="dh-mi-wh">
+              {{ t('home.rebuildNoticeTitle') }}
+            </div>
+            <p class="dh-mi-wp">
+              {{ t('home.rebuildShort') }}
+            </p>
+            <div class="dh-mi-wx">
+              <a :href="discordUrl" class="dh-mi-wa" target="_blank" rel="noopener noreferrer">{{
+                t('nav.discord')
+              }}</a>
+              <a class="dh-mi-wb" href="mailto:bugs@traindart.com">bugs@traindart.com</a>
             </div>
           </div>
-          <a
-            :href="discordUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="dt-home-guest-discord-cta"
+        </div>
+        <div v-if="needsEmailVerify" class="dh-email-verify">
+          <EmailVerifyBanner :resend-busy="resendBusy" @resend="resendVerificationFromHome" />
+        </div>
+        <div class="dh-hero-m">
+          <div class="dh-hero-m-head">
+            <div class="dh-hero-m-ico" aria-hidden="true">
+              <HomeStrokeIcon name="target" :size="22" color="#0b0e14" />
+            </div>
+            <div class="dh-hero-m-tx">
+              <div class="dh-hero-b">
+                {{ t('home.brandShort') }}
+              </div>
+              <p class="dh-hero-s">
+                {{ t('home.tagline') }}
+              </p>
+            </div>
+          </div>
+          <div class="dh-hero-m-actions">
+            <button
+              type="button"
+              class="dth-btn dth-btn--outline dth-btn--sm"
+              :aria-expanded="showTutorial"
+              aria-controls="dt-learn"
+              @click="toggleLearn"
+            >
+              {{ showTutorial ? t('home.learnClose') : t('home.learnMore') }}
+            </button>
+            <div class="dth-start-wrap">
+              <button
+                type="button"
+                class="dth-btn dth-btn--accent dth-btn--sm"
+                :disabled="startGameMenuLocked"
+                :aria-expanded="startMenuOpen"
+                :title="startGameMenuLocked ? t('auth.verifyEmailToContinue') : ''"
+                aria-haspopup="menu"
+                @click="startMenuOpen = !startMenuOpen"
+              >
+                <HomeStrokeIcon name="play" :size="13" color="#0b0e14" />
+                {{ t('home.playShort') }}
+              </button>
+              <div
+                v-show="startMenuOpen && !startGameMenuLocked"
+                class="dth-start-menu dth-start-menu--mob"
+                role="menu"
+                :aria-label="t('home.pickGameTitle')"
+                @click.stop
+              >
+                <div class="dth-start-h">
+                  {{ t('home.pickGameTitle') }}
+                </div>
+                <button
+                  type="button"
+                  class="dth-start-row dth-start-row--on"
+                  role="menuitem"
+                  @click="pickStartMode('cricket')"
+                >
+                  <span class="dth-start-row-ico" style="background: #4a9eff33">
+                    <HomeStrokeIcon name="target" :size="18" color="#4a9eff" />
+                  </span>
+                  <span class="dth-start-row-meta">
+                    <span>{{ t('nav.gameCricket') }}</span>
+                    <span class="dth-start-row-d">{{ t('home.modeCricketDesc') }}</span>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  class="dth-start-row"
+                  role="menuitem"
+                  :disabled="!canPlayX01"
+                  :title="!canPlayX01 ? t('nav.x01UnavailableHint') : ''"
+                  @click="pickStartMode('x501')"
+                >
+                  <span class="dth-start-row-ico" style="background: #f5a62333">
+                    <HomeStrokeIcon name="zap" :size="18" color="#f5a623" />
+                  </span>
+                  <span class="dth-start-row-meta">
+                    <span>{{ t('nav.gameX01501') }}</span>
+                    <span class="dth-start-row-d">{{
+                      !canPlayX01 ? t('home.x01DisabledInMenu') : t('home.modeX501Desc')
+                    }}</span>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  class="dth-start-row"
+                  role="menuitem"
+                  :disabled="!canPlayX01"
+                  :title="!canPlayX01 ? t('nav.x01UnavailableHint') : ''"
+                  @click="pickStartMode('x301')"
+                >
+                  <span class="dth-start-row-ico" style="background: #3ecf8e33">
+                    <HomeStrokeIcon name="flame" :size="18" color="#3ecf8e" />
+                  </span>
+                  <span class="dth-start-row-meta">
+                    <span>{{ t('nav.gameX01301') }}</span>
+                    <span class="dth-start-row-d">{{
+                      !canPlayX01 ? t('home.x01DisabledInMenu') : t('home.modeX301Desc')
+                    }}</span>
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div
+            id="dt-learn"
+            v-show="showTutorial"
+            class="dh-learn dh-learn--in-hero"
+            role="region"
+            :aria-label="t('home.tutorialTitle')"
+            :aria-hidden="!showTutorial"
           >
-            <DiscordIcon :size="20" />
-            <span>{{ t('nav.discord') }}</span>
+            <div class="dh-slabel">
+              {{ t('home.tutorialTitle') }}
+            </div>
+            <p class="dh-learn-body">
+              {{ t('home.tutorialBody') }}
+            </p>
+          </div>
+        </div>
+        <div v-if="showMyActiveSection" class="dh-mine dh-mi-mine">
+          <div class="dh-slabel">
+            {{ t('home.activeGamesTitle') }}
+          </div>
+          <p v-if="activeRoomsLoading" class="dh-muted">
+            {{ t('home.activeRoomsLoading') }}
+          </p>
+          <template v-else>
+            <p v-if="!activeRooms.length" class="dh-muted">
+              {{ t('home.activeGamesEmpty') }}
+            </p>
+            <div v-else class="dh-mine-list">
+              <div
+                v-for="r in activeRooms"
+                :key="'m-ar-' + r.id"
+                class="dh-mine-row"
+              >
+                <div class="dh-mine-txt">
+                  <div class="dh-mine-t">
+                    <span class="dth-e">{{ roomSummaryLine(r) }}</span>
+                    <span class="dh-mine-mid">·</span>
+                    <span>{{ t('home.roomCode') }}</span>
+                    <span class="dh-mine-code">{{ r.code }}</span>
+                    <span class="dh-mine-mid">·</span>
+                    <span>{{ playModeLabel(r) }}</span>
+                  </div>
+                  <div class="dh-mine-s">
+                    {{ roomStatusLabel(r) }}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  class="dth-btn dth-btn--accent dth-btn--sm"
+                  @click="continueActiveRoom(r)"
+                >
+                  {{ r.match_id ? t('home.continue') : t('home.backToLobby') }}
+                </button>
+              </div>
+            </div>
+          </template>
+        </div>
+        <div class="dh-slabel">
+          {{ t('nav.gamesOffered') }}
+        </div>
+        <div class="dh-mo-grid3">
+          <button
+            v-for="g in gameModes"
+            :key="'m-' + g.id"
+            type="button"
+            class="dh-mo-b"
+            :style="{
+              border: `1px solid ${activeGame === g.id ? g.color + '80' : '#1e2738'}`,
+              background: activeGame === g.id ? g.color + '1f' : '#131720',
+            }"
+            @click="activeGame = g.id"
+          >
+            <div
+              class="dh-mo-ico2"
+              :style="{ background: g.color + '33' }"
+            >
+              <HomeStrokeIcon :name="g.icon" :size="18" :color="g.color" />
+            </div>
+            <span
+              class="dh-mo-ttl"
+              :class="{ 'dh-mo-ttl--a': activeGame === g.id }"
+            >{{ g.label }}</span>
+          </button>
+        </div>
+        <div v-if="!socialUnlocked || needsEmailVerify" class="dh-mi-lockg">
+          <div
+            v-for="c in [
+              { k: 'f', i: 'users', t: t('nav.friends') },
+              { k: 's', i: 'bar', t: t('nav.stats') },
+            ]"
+            :key="c.k"
+            class="dh-mi-lc"
+          >
+            <div class="dh-mi-lh">
+              <div class="dh-mi-ico3">
+                <HomeStrokeIcon :name="c.i" :size="15" color="#7b8ba8" />
+              </div>
+              <span class="dh-mi-lt">{{ c.t }}</span>
+            </div>
+            <p class="dh-mi-lp">
+              {{ t('home.registerHintSub') }}
+            </p>
+            <button type="button" class="dth-btn dth-btn--accent" @click="router.push('/login')">
+              {{ t('home.signInCta') }}
+            </button>
+          </div>
+        </div>
+        <div v-else class="dh-mi-lockg">
+          <a
+            class="dh-mi-lc"
+            href="/friends"
+            @click.prevent="router.push('/friends')"
+          >
+            <div class="dh-mi-lh">
+              <div class="dh-mi-ico3 dh-mi-ico3--open">
+                <HomeStrokeIcon name="users" :size="15" color="#f5a623" />
+              </div>
+              <span class="dh-mi-lt">{{ t('nav.friends') }}</span>
+            </div>
+            <p class="dh-mi-lp">
+              {{ t('home.registerHintSub') }}
+            </p>
+          </a>
+          <a class="dh-mi-lc" href="/stats" @click.prevent="router.push('/stats')">
+            <div class="dh-mi-lh">
+              <div class="dh-mi-ico3 dh-mi-ico3--open">
+                <HomeStrokeIcon name="bar" :size="15" color="#f5a623" />
+              </div>
+              <span class="dh-mi-lt">{{ t('nav.stats') }}</span>
+            </div>
+            <p class="dh-mi-lp">
+              {{ t('home.statsSub') }}
+            </p>
           </a>
         </div>
-      </div>
-
-      <div
-        v-else-if="showGuestCta && !summary && !summaryLoading"
-        style="
-          background: #0f1c30;
-          border: 1px solid #162540;
-          border-radius: 14px;
-          padding: 18px 20px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 16px;
-          flex-wrap: wrap;
-        "
-      >
-        <div>
-          <div style="font-weight: 600; font-size: 14px; color: #f1f5f9; margin-bottom: 3px">
-            {{ t('home.registerHint') }}
+        <p v-if="summaryLoading" class="dh-muted">
+          {{ t('home.loadSummary') }}
+        </p>
+        <template v-else-if="summary && !summaryErr">
+          <div class="dh-slabel">
+            {{ t('home.platformStatsTitle') }}
           </div>
-          <div style="font-size: 12px; color: #334155">{{ t('home.registerHintSub') }}</div>
-        </div>
-        <a
-          :href="discordUrl"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="dt-home-guest-discord-cta"
+          <div class="dh-mi-stg">
+            <div class="dh-mi-st">
+              <div class="dh-stat-v">{{ summary.users_total }}</div>
+              <div class="dh-stat-l">{{ t('home.usersTotal') }}</div>
+            </div>
+            <div class="dh-mi-st">
+              <div class="dh-stat-v">{{ summary.active_players }}</div>
+              <div class="dh-stat-l">{{ t('home.activePlayers') }}</div>
+            </div>
+            <div class="dh-mi-st">
+              <div class="dh-stat-v">{{ summary.games_total }}</div>
+              <div class="dh-stat-l">{{ t('home.gamesTotal') }}</div>
+            </div>
+            <div class="dh-mi-st">
+              <div class="dh-stat-v">{{ summary.matches_active }}</div>
+              <div class="dh-stat-l">{{ t('home.matchesActive') }}</div>
+            </div>
+            <div class="dh-mi-st">
+              <div class="dh-stat-v">{{ summary.rooms_open }}</div>
+              <div class="dh-stat-l">{{ t('home.roomsOpen') }}</div>
+            </div>
+            <div v-if="summary.last_registration_at" class="dh-mi-st">
+              <div class="dh-stat-v">{{ fmtRegDay(summary.last_registration_at) }}</div>
+              <div v-if="fmtRegYear(summary.last_registration_at)" class="dh-stat-s">
+                {{ fmtRegYear(summary.last_registration_at) }}
+              </div>
+              <div class="dh-stat-l">{{ t('home.lastUser') }}</div>
+            </div>
+            <div v-else class="dh-mi-st">
+              <div class="dh-stat-v">—</div>
+              <div class="dh-stat-l">{{ t('home.lastUser') }}</div>
+            </div>
+          </div>
+          <div class="dh-slabel">
+            {{ t('home.liveMatchesSection') }}
+          </div>
+          <p v-if="!liveMatches.length" class="dh-muted">
+            {{ t('home.liveMatchesEmpty') }}
+          </p>
+          <div v-else>
+            <div
+              v-for="m in liveMatches"
+              :key="'mb-' + m.match_id"
+              class="dh-mi-lv"
+              style="align-items: flex-start"
+            >
+              <div class="dh-mi-lv--hd" style="flex-shrink: 0; padding-top: 2px">
+                <div class="dh-mi-sd" />
+                <span class="dh-mi-lab">{{ t('home.liveBadge') }}</span>
+              </div>
+              <div class="dh-mi-lm" style="flex: 1; min-width: 0; margin: 0">
+                <div class="dh-mi-l1">
+                  {{ m.p1 }} <span style="color: #3a4a63">vs</span> {{ m.p2 }}
+                </div>
+                <div class="dh-mi-l2">
+                  {{ matchGameLabel(m.game_kind) }} · {{ t('home.roundShort') }} {{ m.round }}
+                </div>
+              </div>
+              <div class="dh-mi-lvWatch">
+                <button type="button" class="dh-mi-lb" disabled :title="t('home.watchMatchSoon')">
+                  {{ t('home.watchShort') }}
+                </button>
+                <span class="dh-mi-lv-hint">{{ t('home.watchMatchSoon') }}</span>
+              </div>
+            </div>
+          </div>
+        </template>
+        <p v-else class="dh-muted" style="padding-bottom: 12px">
+          {{ t('home.summaryError') }}
+        </p>
+      </div>
+      <div class="dth-bnav" role="navigation" :aria-label="t('nav.bnavAria')">
+        <button
+          v-for="b in bnav"
+          :key="b.id"
+          type="button"
+          :class="['dth-bnav-b', { 'dth-bnav-b--on': bnavOn(b) }]"
+          :aria-disabled="bnavDisabled(b)"
+          :aria-current="bnavOn(b) ? 'page' : undefined"
+          @click="bnavClick(b)"
         >
-          <DiscordIcon :size="20" />
-          <span>{{ t('nav.discord') }}</span>
-        </a>
+          <HomeStrokeIcon :name="b.icon" :size="20" color="currentColor" />
+          <span class="dh-bn-lb">{{ b.label }}</span>
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.dt-home-rebuild-notice {
-  margin-bottom: 20px;
-  padding: 14px 16px;
-  border-radius: 14px;
-  border: 1px solid rgba(245, 158, 11, 0.4);
-  background: linear-gradient(145deg, rgba(245, 158, 11, 0.1) 0%, rgba(15, 28, 48, 0.95) 100%);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
-  box-sizing: border-box;
-}
-.dt-home-rebuild-notice__title {
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #fbbf24;
-  margin-bottom: 8px;
-  line-height: 1.35;
-}
-.dt-home-rebuild-notice__text {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.55;
-  color: #e2e8f0;
-}
-.dt-home-rebuild-notice__hint {
-  margin: 10px 0 0;
-  font-size: 13px;
-  line-height: 1.5;
-  color: #94a3b8;
-}
-.dt-home-rebuild-notice__discord {
-  margin-top: 10px;
-}
-.dt-home-rebuild-notice__discord-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  color: #cbd5e1;
-  font-size: 14px;
-  font-weight: 600;
-}
-.dt-home-rebuild-notice__discord-link:hover {
-  color: #e2e8f0;
-}
-.dt-home-rebuild-notice__discord-link :deep(.dt-discord-icon) {
-  color: #5865f2;
-}
-.dt-home-rebuild-notice__email {
-  margin: 12px 0 0;
-  padding-top: 10px;
-  border-top: 1px solid rgba(245, 158, 11, 0.25);
-  font-size: 14px;
-  line-height: 1.4;
-  word-break: break-all;
-}
-.dt-home-rebuild-notice__mail {
-  color: #fbbf24;
-  font-weight: 700;
-  text-decoration: none;
-}
-.dt-home-rebuild-notice__mail:hover {
-  text-decoration: underline;
-  color: #fde68a;
-}
-
-.dt-home-guest-discord-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  color: #e2e8f0;
-  font-size: 13px;
-  font-weight: 700;
-  padding: 10px 16px;
-  border-radius: 10px;
-  border: 1px solid rgba(88, 101, 242, 0.45);
-  background: rgba(88, 101, 242, 0.12);
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-  flex-shrink: 0;
-}
-.dt-home-guest-discord-cta:hover {
-  background: rgba(88, 101, 242, 0.2);
-  border-color: rgba(88, 101, 242, 0.65);
-  color: #f8fafc;
-}
-.dt-home-guest-discord-cta :deep(.dt-discord-icon) {
-  color: #5865f2;
+.dth-e {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 </style>

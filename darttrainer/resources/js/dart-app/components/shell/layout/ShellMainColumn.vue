@@ -15,7 +15,7 @@ defineOptions({ name: 'ShellMainColumn' });
   min-width: 0;
   min-height: 0;
   overflow: hidden;
-  background: #060d18;
+  background: #0b0e14;
   display: flex;
   flex-direction: column;
 }

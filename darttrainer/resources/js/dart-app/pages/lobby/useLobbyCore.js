@@ -219,6 +219,26 @@ export function useLobbyCore(gameKindRef) {
   /** Izveides vīzards: 1 = spēles iestatījumi, 2 = spēlētāji. */
   const createWizardStep = Vue.ref(1);
 
+  /** Cricket redesign: apakšcilne starp «Lokālie spēlētāji» un «AI spēlētāji» (tikai UI). */
+  const lobbyPlayerMainTab = Vue.ref('local');
+  /** Mobilais pilnekrāns: AI iestatījumi. */
+  const mobileAiComposerOpen = Vue.ref(false);
+  /** Divi AI bota sloti (viesa vārdi; backend bot API vēlāk). */
+  const aiBots = Vue.ref([
+    {
+      id: 1,
+      name: 'AI Spēlētājs 1',
+      difficulty: 'medium',
+      playStyle: 'balance',
+    },
+    {
+      id: 2,
+      name: 'AI Spēlētājs 2',
+      difficulty: 'hard',
+      playStyle: 'aggressive',
+    },
+  ]);
+
   function goWizardNext() {
     error.value = '';
     if (blockedRoomForType.value || checkingSetupMatch.value) return;
@@ -403,6 +423,12 @@ export function useLobbyCore(gameKindRef) {
     }
   });
 
+  Vue.watch(lobbyPlayerMainTab, (m) => {
+    if (m === 'ai' && createForm.game_type === 'cricket' && createForm.play_mode === 'local') {
+      applyAiTabGuestsIfNeeded();
+    }
+  });
+
   Vue.watch(
     () => [
       createForm.play_mode,
@@ -440,8 +466,11 @@ export function useLobbyCore(gameKindRef) {
   function applyLobbyQueryFromRoute() {
     syncGameKindToForm();
     if (gameKindRef.value === 'cricket') {
-      const ct = String(route.query.cricket_type || 'standard').toLowerCase();
-      createForm.cricket_type = ct === 'random' ? 'random' : 'standard';
+      const raw = route.query.cricket_type;
+      if (raw !== undefined && raw !== null && String(raw).trim() !== '') {
+        const ct = String(raw).toLowerCase();
+        createForm.cricket_type = ct === 'random' ? 'random' : 'standard';
+      }
       tab.value = 'create';
       return;
     }
@@ -463,12 +492,28 @@ export function useLobbyCore(gameKindRef) {
     checkingActive.value = false;
   });
 
+  function applyAiTabGuestsIfNeeded() {
+    if (createForm.game_type !== 'cricket' || createForm.play_mode !== 'local') return;
+    if (lobbyPlayerMainTab.value !== 'ai') return;
+    const names = aiBots.value
+      .map((b) => String(b.name || '').trim() || `AI ${b.id}`)
+      .slice(0, 2);
+    adHocGuests.value = names;
+  }
+
+  function setAiBotField(botId, patch) {
+    const i = aiBots.value.findIndex((b) => b.id === botId);
+    if (i < 0) return;
+    aiBots.value = aiBots.value.map((b, j) => (j === i ? { ...b, ...patch } : b));
+  }
+
   async function createRoom() {
     if (checkingSetupMatch.value) return;
     syncGameKindToForm();
     error.value = '';
     loading.value = true;
     try {
+      applyAiTabGuestsIfNeeded();
       if (createForm.play_mode === 'local') {
         if (localRosterCount.value < 1) {
           error.value = t('lobby.localRosterEmpty');
@@ -671,5 +716,10 @@ export function useLobbyCore(gameKindRef) {
     checkingSetupMatch,
     lobbyShellLocked,
     showLobbyTip,
+    lobbyPlayerMainTab,
+    mobileAiComposerOpen,
+    aiBots,
+    setAiBotField,
+    applyAiTabGuestsIfNeeded,
   };
 }

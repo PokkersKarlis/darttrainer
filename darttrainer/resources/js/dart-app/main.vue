@@ -1,6 +1,8 @@
 <script>
 import '../../css/app.css';
 import '../../css/dart-spa.css';
+import '../../css/home-design.css';
+import '../../css/lobby-design-tokens.css';
 import './i18n/messages.js';
 
 import { createApp } from 'vue';

@@ -31,15 +31,15 @@ const discordUrl = DARTTRAINER_DISCORD_URL;
   <aside
     class="hidden lg:flex"
     style="
-      width: 220px;
+      width: 200px;
       flex-shrink: 0;
-      background: #0a1120;
-      border-right: 1px solid #162540;
+      background: #0f1520;
+      border-right: 1px solid #1e2738;
       flex-direction: column;
-      padding: 12px 10px;
+      padding: 8px 0;
     "
   >
-    <div v-if="auth.user" style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+    <div v-if="auth.user" style="flex: 1; display: flex; flex-direction: column; gap: 2px; padding: 0 10px">
       <ShellNavLink href="/" icon="🏠" :label="t('nav.home')" />
 
       <ShellSidebarSectionLabel text="Multiplayer" />
@@ -111,7 +111,7 @@ const discordUrl = DARTTRAINER_DISCORD_URL;
 
     <div
       v-if="auth.hydrated"
-      style="padding: 12px 0 0; margin-top: 8px; border-top: 1px solid #162540; flex-shrink: 0"
+      style="padding: 12px 10px 0; margin-top: 8px; border-top: 1px solid #1e2738; flex-shrink: 0"
     >
       <a
         :href="discordUrl"

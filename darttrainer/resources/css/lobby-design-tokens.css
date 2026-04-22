@@ -1,0 +1,93 @@
+/* DartTrainer — Cricket lobby redesign (Handoff 2026). Izmanto ar <body> vai .lobby-v2. */
+
+.lobby-v2 {
+  --ld-bg: #0b0e14;
+  --ld-surface: #131720;
+  --ld-card: #1a2030;
+  --ld-border: #252d3d;
+  --ld-muted: #2e3a50;
+  --ld-text: #e8eaf0;
+  --ld-subtext: #7b8ba8;
+  --ld-accent: #f5a623;
+  --ld-accent2: #f5c842;
+  --ld-green: #3ecf8e;
+  --ld-red: #ff5252;
+  --ld-blue: #4a9eff;
+  --ld-purple: #a855f7;
+  --ld-discord: #5865f2;
+  --ld-nav-bg: #0f1520;
+  --ld-nav-border: #1e2738;
+  --ld-grad-cta: linear-gradient(135deg, #f5a623, #f5c842);
+  --ld-font: 'DM Sans', system-ui, sans-serif;
+  --ld-mono: 'DM Mono', ui-monospace, monospace;
+
+  background: var(--ld-bg);
+  color: var(--ld-text);
+  font-family: var(--ld-font);
+  font-size: 13px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+.lobby-v2 *,
+.lobby-v2 *::before,
+.lobby-v2 *::after {
+  box-sizing: border-box;
+}
+
+.lobby-v2 .ld-mono {
+  font-family: var(--ld-mono);
+}
+
+.lobby-v2-grad-btn {
+  background: var(--ld-grad-cta);
+  color: #0b0e14;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.lobby-v2-grad-btn:hover {
+  filter: brightness(1.05);
+}
+
+.lobby-v2-grad-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: none;
+}
+
+.lobby-v2-section-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: #3a4a63;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 10px 14px 4px;
+}
+
+.lobby-v2-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 14px;
+  color: var(--ld-subtext);
+  border-left: 2px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 13px;
+  border-radius: 0 8px 8px 0;
+  transition: background 0.12s, color 0.12s;
+}
+
+.lobby-v2-nav-item:hover {
+  background: rgba(245, 166, 35, 0.06);
+}
+
+.lobby-v2-nav-item--active {
+  background: rgba(245, 166, 35, 0.08);
+  border-left-color: var(--ld-accent);
+  color: var(--ld-accent);
+  font-weight: 600;
+}

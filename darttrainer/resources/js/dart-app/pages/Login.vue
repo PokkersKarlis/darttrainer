@@ -1,9 +1,8 @@
 <script setup>
-import { reactive, toRef } from 'vue';
+import { reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore, useLocaleStore } from '../store/index.js';
 import DtButton from '../components/ui/DtButton.js';
-import { useAuthContentFit } from '../composables/useAuthContentFit.js';
 
 defineOptions({ name: 'LoginPage' });
 
@@ -19,7 +18,12 @@ const form = reactive({
 
 const t = (key) => locale.t(key);
 
-const { viewportRef, surfaceRef, contentRef } = useAuthContentFit([toRef(form, 'error')]);
+onMounted(() => {
+  requestAnimationFrame(() => {
+    const el = document.getElementById('login-email');
+    if (el && typeof el.focus === 'function') el.focus({ preventScroll: true });
+  });
+});
 
 async function submit() {
   form.error = '';
@@ -35,13 +39,16 @@ async function submit() {
 <template>
   <div class="dt-auth-page dt-auth-page--login">
     <div class="dt-auth-page-inner">
-      <div ref="viewportRef" class="dt-auth-fit-vp">
-        <div ref="surfaceRef" class="dt-auth-fit-surface">
-          <div ref="contentRef" class="dt-auth-fit-content">
-            <div class="dt-auth-stack">
+      <div class="dt-auth-stack">
         <div class="dt-auth-brand">
-          <span class="dt-auth-emoji" aria-hidden="true">🎯</span>
-          <h1>DartTrainer</h1>
+          <router-link to="/" class="dt-auth-logo-link" aria-label="DartTrainer">
+            <img class="dt-auth-logo" src="/images/logo.png" alt="DartTrainer" width="160" height="52" />
+          </router-link>
+          <div class="dt-auth-wordline" aria-hidden="true">
+            <span class="dt-auth-wordmark">{{ t('home.brandWordmark') }}</span>
+            <span class="dt-auth-beta">{{ t('home.betaBadge') }}</span>
+          </div>
+          <h1>{{ t('shell.login') }}</h1>
           <p class="dt-auth-sub">
             {{ t('auth.loginTitle') }}
           </p>
@@ -78,20 +85,17 @@ async function submit() {
             </div>
 
             <div class="dt-auth-submit-row">
-              <dt-button
-                button-type="submit"
-                variant="primary"
-                size="lg"
-                block
-                :disabled="auth.loading"
-              >
+              <dt-button button-type="submit" variant="primary" size="lg" block :disabled="auth.loading">
                 {{ auth.loading ? t('auth.loading') : t('auth.submitLogin') }}
               </dt-button>
             </div>
-          </form>
-        </div>
+            <div class="dt-auth-under">
+              <span class="dt-auth-under-t">{{ t('auth.noAccount') }}</span>
+              <router-link to="/register" class="dt-auth-under-a">
+                {{ t('auth.goRegister') }}
+              </router-link>
             </div>
-          </div>
+          </form>
         </div>
       </div>
     </div>
