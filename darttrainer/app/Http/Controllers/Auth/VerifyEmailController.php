@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class VerifyEmailController extends Controller
 {
@@ -27,20 +28,31 @@ class VerifyEmailController extends Controller
         }
 
         if ($user->hasVerifiedEmail()) {
-            return $this->redirectToSpa();
+            return $this->redirectToSpa('login?already_verified=1');
         }
 
-        if ($user->markEmailAsVerified()) {
-            event(new Verified($user));
+        if (! $user->markEmailAsVerified()) {
+            return $this->redirectToSpa('login');
         }
 
-        return $this->redirectToSpa();
+        event(new Verified($user));
+        $this->logoutSession($request);
+
+        return $this->redirectToSpa('login?verified=1');
     }
 
-    private function redirectToSpa(): RedirectResponse
+    private function redirectToSpa(string $pathAndQuery): RedirectResponse
     {
         $base = rtrim(config('app.frontend_url', url('/')), '/');
+        $path = ltrim($pathAndQuery, '/');
 
-        return redirect()->to($base.'/?verified=1');
+        return redirect()->to($base.'/'.$path);
+    }
+
+    private function logoutSession(Request $request): void
+    {
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
     }
 }

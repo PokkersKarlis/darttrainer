@@ -266,6 +266,9 @@ export const DART_I18N = {
       verifyEmailShort: 'Gaida e-pasta apstiprinājumu',
       registerCheckEmail: 'Konts izveidots. Atver saiti vēstulē, lai apstiprinātu e-pastu.',
       emailVerifiedToast: 'E-pasts apstiprināts. Laipni lūdzam!',
+      emailVerifiedPleaseLogin:
+        'E-pasts apstiprināts. Drošības nolūkos esi izrakstīts — lūdzu, ielogojies vēlreiz.',
+      emailAlreadyVerified: 'E-pasts jau ir apstiprināts.',
     },
     lobby: {
       title: 'Spēles telpa',
@@ -754,6 +757,9 @@ export const DART_I18N = {
       verifyEmailShort: 'Awaiting email verification',
       registerCheckEmail: 'Account created. Open the link in your email to verify.',
       emailVerifiedToast: 'Email verified. Welcome!',
+      emailVerifiedPleaseLogin:
+        'Email verified. For security, you have been signed out — please sign in again.',
+      emailAlreadyVerified: 'This email is already verified.',
     },
     lobby: {
       title: 'Game room',

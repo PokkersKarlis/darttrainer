@@ -58,35 +58,60 @@ async function resendVerification() {
   }
 }
 
-/** E-pasta apstiprinājums: ?verified=1 (history) vai vecais #/?verified=1 */
-function consumeVerifiedRedirectParam() {
+/** E-pasta apstiprinājums: ?verified=1, ?already_verified=1 (ceļa query) vai vecais #/?verified=1 */
+async function consumeVerifiedRedirectParam() {
   try {
-    let params = new URLSearchParams(window.location.search || '');
+    const searchParams = new URLSearchParams(window.location.search || '');
+
+    if (searchParams.get('already_verified') === '1') {
+      await auth.refreshMe();
+      window._dartToast?.(t('auth.emailAlreadyVerified'), 'success');
+      searchParams.delete('already_verified');
+      const qs = searchParams.toString();
+      const nextPath = window.location.pathname + (qs ? `?${qs}` : '');
+      window.history.replaceState({}, '', nextPath || '/');
+      const p = window.location.pathname;
+      if (auth.user && (p === '/login' || p.endsWith('/login'))) {
+        await router.replace('/');
+      }
+      return;
+    }
+
+    let params = searchParams;
+    let fromHash = false;
     if (params.get('verified') !== '1') {
       const hash = window.location.hash || '';
       if (!hash.includes('?')) return;
       const q = hash.split('?')[1] || '';
       params = new URLSearchParams(q);
       if (params.get('verified') !== '1') return;
-      auth.refreshMe().then(() => {
-        window._dartToast?.(t('auth.emailVerifiedToast'), 'success');
-      });
+      fromHash = true;
+    }
+    const pathName = window.location.pathname;
+    const isLoginPath = pathName === '/login' || pathName.endsWith('/login');
+    await auth.refreshMe();
+    const msg = isLoginPath
+      ? t('auth.emailVerifiedPleaseLogin')
+      : auth.user
+        ? t('auth.emailVerifiedToast')
+        : t('auth.emailVerifiedPleaseLogin');
+    window._dartToast?.(msg, 'success');
+    if (fromHash) {
       window.location.hash = '';
       return;
     }
-    auth.refreshMe().then(() => {
-      window._dartToast?.(t('auth.emailVerifiedToast'), 'success');
-    });
     params.delete('verified');
     const qs = params.toString();
-    const path = window.location.pathname + (qs ? `?${qs}` : '');
+    const path = pathName + (qs ? `?${qs}` : '');
     window.history.replaceState({}, '', path || '/');
   } catch (_) {}
 }
 
-onMounted(() => {
+onMounted(async () => {
   locale.initFromStorage();
-  consumeVerifiedRedirectParam();
+  /* init() no main — mutex; šeit gaidām, pēc tam ?verified=1 apstrāde ar svaigiem /auth/me datiem, lai bānera vairs nav */
+  await auth.init();
+  await consumeVerifiedRedirectParam();
   try {
     const key = route.meta?.titleKey;
     document.title =

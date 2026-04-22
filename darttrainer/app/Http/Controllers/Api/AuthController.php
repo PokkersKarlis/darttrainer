@@ -90,8 +90,13 @@ class AuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
+        $u = $request->user();
+        if ($u !== null) {
+            $u->refresh();
+        }
+
         return response()->json([
-            'user' => $request->user() ? $this->userResource($request->user()) : null,
+            'user' => $u ? $this->userResource($u) : null,
         ]);
     }
 

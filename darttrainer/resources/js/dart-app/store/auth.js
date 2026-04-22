@@ -1,6 +1,9 @@
 import { defineStore } from 'pinia';
 import { Auth } from '../api/client.js';
 
+/** Ļauj vienlaikus tikai vienu /auth/me (no sacensības starp main.vue un App onMounted) */
+let initInFlight = null;
+
 async function stopFriendsStore() {
   try {
     const { useFriendsStore } = await import('./friends.js');
@@ -31,15 +34,29 @@ export const useAuthStore = defineStore('auth', {
 
   actions: {
     async init() {
+      if (this.hydrated) {
+        return;
+      }
+      if (initInFlight) {
+        await initInFlight;
+        return;
+      }
       this.loading = true;
+      initInFlight = (async () => {
+        try {
+          const { data } = await Auth.me();
+          this.user = data.user;
+        } catch (_) {
+          this.user = null;
+        } finally {
+          this.loading = false;
+          this.hydrated = true;
+        }
+      })();
       try {
-        const { data } = await Auth.me();
-        this.user = data.user;
-      } catch (_) {
-        this.user = null;
+        await initInFlight;
       } finally {
-        this.loading = false;
-        this.hydrated = true;
+        initInFlight = null;
       }
     },
 
