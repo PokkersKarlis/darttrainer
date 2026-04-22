@@ -194,9 +194,10 @@ body.dt-route-auth .dt-auth-page {
   overflow-y: hidden;
   overflow-x: hidden;
   box-sizing: border-box;
-  justify-content: center;
+  /* flex-start, lai mērogojotais bloks necentrrētu augšup zem fiksētā headera */
+  justify-content: flex-start;
   align-items: stretch;
-  padding: clamp(8px, 1.2dvh, 20px) 16px max(5px, clamp(6px, 1dvh, 12px));
+  padding: max(10px, clamp(8px, 1.2dvh, 20px)) 16px max(5px, clamp(6px, 1dvh, 12px));
 }
 
 body.dt-route-auth .dt-auth-page-inner {
@@ -210,7 +211,7 @@ body.dt-route-auth .dt-auth-page-inner {
   max-width: 100%;
   align-self: stretch;
   align-items: stretch;
-  justify-content: center;
+  justify-content: flex-start;
   overflow: hidden;
   box-sizing: border-box;
   gap: 0;
@@ -226,7 +227,7 @@ body.dt-route-auth .dt-auth-fit-vp {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -289,6 +290,18 @@ body.dt-route-auth .dt-auth-card-form {
   display: flex;
   flex-direction: column;
   overflow: visible;
+}
+
+/* Login: skaidra atstarpe starp pēdējo lauku un iesniegšanas pogu */
+body.dt-route-auth .dt-auth-page--login .dt-auth-field-pass {
+  margin-bottom: 0;
+}
+body.dt-route-auth .dt-auth-page--login .dt-auth-err {
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+body.dt-route-auth .dt-auth-page--login .dt-auth-submit-row {
+  margin-top: 1.25rem;
 }
 
 @media (max-width: 639px) {

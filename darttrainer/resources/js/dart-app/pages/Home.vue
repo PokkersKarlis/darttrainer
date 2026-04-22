@@ -5,6 +5,8 @@ import { useAuthStore, useLocaleStore } from '../store/index.js';
 import { PublicApi, Rooms } from '../api/client.js';
 import { useCanPlayGames } from '../composables/useCanPlayGames.js';
 import { useCanPlayX01 } from '../composables/useCanPlayX01.js';
+import { DARTTRAINER_DISCORD_URL } from '../constants/discord.js';
+import DiscordIcon from '../components/shell/DiscordIcon.vue';
 
 defineOptions({ name: 'HomePage' });
 
@@ -15,6 +17,7 @@ const canPlayGames = useCanPlayGames();
 const canPlayX01 = useCanPlayX01();
 
 const t = (key) => locale.t(key);
+const discordUrl = DARTTRAINER_DISCORD_URL;
 
 const activeRooms = ref([]);
 const activeRoomsLoading = ref(false);
@@ -165,6 +168,32 @@ onMounted(loadSummary);
 <template>
   <div style="flex: 1; overflow-y: auto; min-height: 0">
     <div style="padding: 16px 18px 24px; box-sizing: border-box">
+      <div class="dt-home-rebuild-notice" role="status">
+        <div class="dt-home-rebuild-notice__title">
+          {{ t('home.rebuildNoticeTitle') }}
+        </div>
+        <p class="dt-home-rebuild-notice__text">
+          {{ t('home.rebuildNoticeP1') }}
+        </p>
+        <p class="dt-home-rebuild-notice__hint">
+          {{ t('home.rebuildNoticeContactHint') }}
+        </p>
+        <div class="dt-home-rebuild-notice__discord">
+          <a
+            :href="discordUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="dt-home-rebuild-notice__discord-link"
+          >
+            <DiscordIcon :size="22" />
+            <span>{{ t('nav.discord') }}</span>
+          </a>
+        </div>
+        <p class="dt-home-rebuild-notice__email">
+          <a class="dt-home-rebuild-notice__mail" href="mailto:bugs@traindart.com">bugs@traindart.com</a>
+        </p>
+      </div>
+
       <div style="margin-bottom: 18px; display: flex; flex-direction: column; gap: 12px">
         <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap">
           <img
@@ -823,40 +852,15 @@ onMounted(loadSummary);
               {{ t('home.registerHintSub') }}
             </div>
           </div>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap">
-            <a
-              href="/login"
-              style="
-                font-size: 13px;
-                color: #94a3b8;
-                background: #162540;
-                padding: 9px 16px;
-                border-radius: 8px;
-                text-decoration: none;
-                font-weight: 600;
-                transition: background 0.15s;
-              "
-              @mouseenter="($event.currentTarget).style.background = '#1e3050'"
-              @mouseleave="($event.currentTarget).style.background = '#162540'"
-              >{{ t('shell.login') }}</a
-            >
-            <a
-              href="/register"
-              style="
-                font-size: 13px;
-                background: #f59e0b;
-                color: #000;
-                padding: 9px 16px;
-                border-radius: 8px;
-                text-decoration: none;
-                font-weight: 700;
-                transition: background 0.15s;
-              "
-              @mouseenter="($event.currentTarget).style.background = '#fbbf24'"
-              @mouseleave="($event.currentTarget).style.background = '#f59e0b'"
-              >{{ t('shell.register') }}</a
-            >
-          </div>
+          <a
+            :href="discordUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="dt-home-guest-discord-cta"
+          >
+            <DiscordIcon :size="20" />
+            <span>{{ t('nav.discord') }}</span>
+          </a>
         </div>
       </div>
 
@@ -880,41 +884,108 @@ onMounted(loadSummary);
           </div>
           <div style="font-size: 12px; color: #334155">{{ t('home.registerHintSub') }}</div>
         </div>
-        <div style="display: flex; gap: 8px; flex-shrink: 0">
-          <a
-            href="/login"
-            style="
-              font-size: 13px;
-              color: #94a3b8;
-              background: #162540;
-              padding: 8px 14px;
-              border-radius: 8px;
-              text-decoration: none;
-              font-weight: 600;
-              transition: background 0.15s;
-            "
-            @mouseenter="($event.currentTarget).style.background = '#1e3050'"
-            @mouseleave="($event.currentTarget).style.background = '#162540'"
-            >{{ t('shell.login') }}</a
-          >
-          <a
-            href="/register"
-            style="
-              font-size: 13px;
-              background: #f59e0b;
-              color: #000;
-              padding: 8px 14px;
-              border-radius: 8px;
-              text-decoration: none;
-              font-weight: 700;
-              transition: background 0.15s;
-            "
-            @mouseenter="($event.currentTarget).style.background = '#fbbf24'"
-            @mouseleave="($event.currentTarget).style.background = '#f59e0b'"
-            >{{ t('shell.register') }}</a
-          >
-        </div>
+        <a
+          :href="discordUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="dt-home-guest-discord-cta"
+        >
+          <DiscordIcon :size="20" />
+          <span>{{ t('nav.discord') }}</span>
+        </a>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.dt-home-rebuild-notice {
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  background: linear-gradient(145deg, rgba(245, 158, 11, 0.1) 0%, rgba(15, 28, 48, 0.95) 100%);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;
+}
+.dt-home-rebuild-notice__title {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fbbf24;
+  margin-bottom: 8px;
+  line-height: 1.35;
+}
+.dt-home-rebuild-notice__text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #e2e8f0;
+}
+.dt-home-rebuild-notice__hint {
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #94a3b8;
+}
+.dt-home-rebuild-notice__discord {
+  margin-top: 10px;
+}
+.dt-home-rebuild-notice__discord-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: #cbd5e1;
+  font-size: 14px;
+  font-weight: 600;
+}
+.dt-home-rebuild-notice__discord-link:hover {
+  color: #e2e8f0;
+}
+.dt-home-rebuild-notice__discord-link :deep(.dt-discord-icon) {
+  color: #5865f2;
+}
+.dt-home-rebuild-notice__email {
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid rgba(245, 158, 11, 0.25);
+  font-size: 14px;
+  line-height: 1.4;
+  word-break: break-all;
+}
+.dt-home-rebuild-notice__mail {
+  color: #fbbf24;
+  font-weight: 700;
+  text-decoration: none;
+}
+.dt-home-rebuild-notice__mail:hover {
+  text-decoration: underline;
+  color: #fde68a;
+}
+
+.dt-home-guest-discord-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: #e2e8f0;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(88, 101, 242, 0.45);
+  background: rgba(88, 101, 242, 0.12);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.dt-home-guest-discord-cta:hover {
+  background: rgba(88, 101, 242, 0.2);
+  border-color: rgba(88, 101, 242, 0.65);
+  color: #f8fafc;
+}
+.dt-home-guest-discord-cta :deep(.dt-discord-icon) {
+  color: #5865f2;
+}
+</style>

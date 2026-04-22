@@ -28,7 +28,11 @@ export const DART_I18N = {
       authPending: 'Pārbauda sesiju…',
     },
     home: {
-      tagline: 'Trenējies. Spēlē. Uzvar.',
+      tagline: 'Trenējies. Spēlē. Uzvari.',
+      rebuildNoticeTitle: 'Pārbūve un testēšana',
+      rebuildNoticeP1:
+        'Lapa atrodas pārbūves procesā. Pašlaik pieejamā funkcionalitāte ir testa režīmā, pastāv datu zaudējumu risks.',
+      rebuildNoticeContactHint: 'Kļūdu pieteikšanai — Discord vai e-pasts (atsevišķi zemāk).',
       activeGame: 'Aktīva spēle',
       roomCode: 'Kods',
       continue: 'Turpināt →',
@@ -236,6 +240,7 @@ export const DART_I18N = {
       clubName: 'Kluba nosaukums',
       clubFutureHint: 'Klubu kontiem nākotnē plānota iespēja veidot un pārvaldīt turnīrus DartTrainer vidē.',
       errClubName: 'Ievadi kluba nosaukumu.',
+      verifyBannerTitle: 'E-pasta apstiprinājums',
       verifyBanner: 'Apstiprini e-pasta adresi, lai ieslēgtu visas funkcijas. Pārbaudi pastkasti (arī mēstules).',
       resendVerification: 'Sūtīt vēstuli atkārtoti',
       resendSent: 'Apstiprinājuma saite nosūtīta.',
@@ -495,6 +500,10 @@ export const DART_I18N = {
     },
     home: {
       tagline: 'Train. Play. Win.',
+      rebuildNoticeTitle: 'Under reconstruction and testing',
+      rebuildNoticeP1:
+        'This site is under reconstruction. The functionality available right now is in test mode, and there is a risk of data loss.',
+      rebuildNoticeContactHint: 'Report bugs via Discord or email (address on the line below).',
       activeGame: 'Active game',
       roomCode: 'Code',
       continue: 'Continue →',
@@ -702,6 +711,7 @@ export const DART_I18N = {
       clubName: 'Club name',
       clubFutureHint: 'Club accounts will soon be able to create and run tournaments in DartTrainer.',
       errClubName: 'Please enter the club name.',
+      verifyBannerTitle: 'Email verification',
       verifyBanner: 'Verify your email to unlock all features. Check your inbox (and spam).',
       resendVerification: 'Resend verification email',
       resendSent: 'Verification link sent.',

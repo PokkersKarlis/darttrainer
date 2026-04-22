@@ -1,8 +1,8 @@
 import ShellMobileAdBanner from './ShellMobileAdBanner.js';
 import ShellBottomNavLoggedIn from './ShellBottomNavLoggedIn.js';
-import ShellBottomNavGuest from './ShellBottomNavGuest.js';
+import ShellBottomNavGuest from './ShellBottomNavGuest.vue';
 
-/** Apakšā: mobilā reklāma + apakšējā navigācija */
+/** Apakšā: reklāma + apakšējā navigācija (viesim — tikai Discord) */
 export default {
   name: 'AppShellFooter',
   components: { ShellMobileAdBanner, ShellBottomNavLoggedIn, ShellBottomNavGuest },

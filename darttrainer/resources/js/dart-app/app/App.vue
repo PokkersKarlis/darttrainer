@@ -8,7 +8,7 @@ import { dartSafeDisplayMessage } from '../utils/safeDisplay.js';
 import AppShellHeader from '../components/shell/layout/AppShellHeader.vue';
 import AppShellBody from '../components/shell/layout/AppShellBody.vue';
 import AppShellFooter from '../components/shell/AppShellFooter.js';
-import EmailVerifyBanner from '../components/shell/EmailVerifyBanner.js';
+import EmailVerifyBanner from '../components/shell/EmailVerifyBanner.vue';
 import FriendsIncomingModal from '../components/shell/FriendsIncomingModal.js';
 
 const route = useRoute();
