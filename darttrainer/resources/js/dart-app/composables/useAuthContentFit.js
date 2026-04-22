@@ -12,8 +12,8 @@ function authInnerEl(v) {
 }
 
 /**
- * aw: no .dt-auth-page-inner (īstā kolonna starp apmalēm), ne no .dt-auth-page (padding dublējas platumā).
- * ah: no .dt-auth-page (router / flex slota augstums) — inner augstums var sašaurināties līdz f·rh.
+ * Platumu aw neņemam no .dt-auth-page (tā bieži = pilnam viewport) — rw “uzpūšas” pēc pārrēķina.
+ * aw: min(inner, .dt-auth-fit-vp, document); ah: .dt-auth-page (augstumā nestāv f·rh).
  */
 function getAvailableForFit(v) {
   const inner = authInnerEl(v);
@@ -22,10 +22,11 @@ function getAvailableForFit(v) {
     typeof document !== 'undefined'
       ? document.documentElement?.clientWidth ?? window?.innerWidth ?? 0
       : 0;
+  const vpW = v?.clientWidth ?? 1e6;
   const awRaw = Math.min(
     visW > 0 ? visW : 1e6,
     inner?.clientWidth ?? 1e6,
-    page?.clientWidth ?? 1e6,
+    vpW,
   );
   const ah = page?.clientHeight ?? inner?.clientHeight ?? 0;
   if (awRaw < 1 || ah < 1) {
@@ -61,6 +62,8 @@ export function useAuthContentFit(watchSources) {
   let lastRh;
   let lastRoW;
   let lastRoH;
+  let contentWatchTimer;
+  let roSlotTimer;
 
   function reobservePage() {
     const v = viewportRef.value;
@@ -87,16 +90,17 @@ export function useAuthContentFit(watchSources) {
         reobservePage();
         return;
       }
+      c.style.removeProperty('transform');
+      c.style.removeProperty('will-change');
       const visW =
         typeof document !== 'undefined'
           ? document.documentElement?.clientWidth ?? window?.innerWidth ?? 1e6
           : 1e6;
       const fromInner = inner?.clientWidth ?? 1e6;
       const fromVp = v?.clientWidth ?? 1e6;
-      const fromPage = page?.clientWidth ?? 1e6;
       const slotW = Math.max(
         1,
-        Math.floor(Math.min(fromInner, fromVp, fromPage, visW)),
+        Math.floor(Math.min(fromInner, fromVp, visW)),
       );
       const rw = Math.max(1, Math.min(MAX_W, slotW));
       c.style.width = `${rw}px`;
@@ -210,7 +214,11 @@ export function useAuthContentFit(watchSources) {
       lastRoW = width;
       lastRoH = height;
       lastF = null;
-      schedule();
+      clearTimeout(roSlotTimer);
+      roSlotTimer = setTimeout(() => {
+        roSlotTimer = 0;
+        schedule();
+      }, 32);
     });
 
     nextTick(() => {
@@ -233,6 +241,8 @@ export function useAuthContentFit(watchSources) {
     roSlot?.disconnect();
     cancelAnimationFrame(raf);
     clearTimeout(debounceTimer);
+    clearTimeout(contentWatchTimer);
+    clearTimeout(roSlotTimer);
     if (typeof window !== 'undefined' && window.visualViewport) {
       window.visualViewport.removeEventListener('resize', onVv);
     }
@@ -246,10 +256,21 @@ export function useAuthContentFit(watchSources) {
       watchSources,
       () => {
         lastF = null;
+        lastRoW = null;
+        lastRoH = null;
         nextTick(() => {
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => schedule());
-          });
+          clearTimeout(contentWatchTimer);
+          contentWatchTimer = setTimeout(() => {
+            contentWatchTimer = 0;
+            requestAnimationFrame(() => {
+              const c0 = contentRef.value;
+              if (c0) {
+                c0.style.removeProperty('transform');
+                c0.style.removeProperty('will-change');
+              }
+              schedule();
+            });
+          }, 48);
         });
       },
       { deep: true, flush: 'post' }
