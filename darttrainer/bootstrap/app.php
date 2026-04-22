@@ -12,6 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Aiz starpproksa (nginx, Cloudflare, ALB): pareizs https + Host, lai OG/URL nav http:// iekšējais.
+        $middleware->trustProxies(at: '*');
+
         // API: session + encrypted cookies + CSRF (SPA primes token via GET /api/csrf-cookie; axios sends X-XSRF-TOKEN)
         $middleware->api(prepend: [
             \Illuminate\Cookie\Middleware\EncryptCookies::class,

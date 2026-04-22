@@ -3,9 +3,11 @@
 namespace App\Providers;
 
 use App\Notifications\TrainDartVerifyEmail;
+use App\View\SeoViewData;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -38,6 +40,10 @@ class AppServiceProvider extends ServiceProvider
             }
 
             return TrainDartVerifyEmail::mailMessage($notifiable, $verificationUrl);
+        });
+
+        View::composer('dart-spa', function ($view) {
+            $view->with(SeoViewData::forDartSpa());
         });
     }
 }

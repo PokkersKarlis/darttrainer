@@ -15,11 +15,11 @@
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="{{ config('app.name', 'DartTrainer') }}">
     <meta property="og:title" content="{{ config('app.name', 'DartTrainer') }}">
-    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:url" content="{{ $seoPageUrl }}">
     <meta property="og:description" content="Šautriņu treniņš, multiplayer un X01 solo — trenējies un seko statistikai. Draugi un tīkla spēles.">
     <meta property="og:locale" content="{{ \Illuminate\Support\Str::startsWith(app()->getLocale(), 'en') ? 'en_US' : 'lv_LV' }}">
-    <meta property="og:image" content="{{ url('/images/og/og-image.png') }}">
-    <meta property="og:image:secure_url" content="{{ url('/images/og/og-image.png') }}">
+    <meta property="og:image" content="{{ $seoImageUrl }}">
+    <meta property="og:image:secure_url" content="{{ $seoImageUrl }}">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -27,10 +27,10 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ config('app.name', 'DartTrainer') }}">
     <meta name="twitter:description" content="Šautriņu treniņš, multiplayer un X01 solo — trenējies un seko statistikai.">
-    <meta name="twitter:image" content="{{ url('/images/og/og-image.png') }}">
+    <meta name="twitter:image" content="{{ $seoImageUrl }}">
     <meta name="twitter:image:alt" content="DartTrainer — darts web app">
 
-    <link rel="canonical" href="{{ url()->current() }}">
+    <link rel="canonical" href="{{ $seoPageUrl }}">
     <link rel="icon" type="image/svg+xml" href="{{ url('/images/favicon/safari-pinned-tab.svg') }}">
     <meta name="msapplication-TileColor" content="#0a1120">
 
