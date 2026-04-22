@@ -18,13 +18,21 @@ function authInnerEl(v) {
 function getAvailableForFit(v) {
   const inner = authInnerEl(v);
   const page = authPageEl(v);
-  const aw = inner?.clientWidth ?? page?.clientWidth ?? 0;
+  const visW =
+    typeof document !== 'undefined'
+      ? document.documentElement?.clientWidth ?? window?.innerWidth ?? 0
+      : 0;
+  const awRaw = Math.min(
+    visW > 0 ? visW : 1e6,
+    inner?.clientWidth ?? 1e6,
+    page?.clientWidth ?? 1e6,
+  );
   const ah = page?.clientHeight ?? inner?.clientHeight ?? 0;
-  if (aw < 1 || ah < 1) {
+  if (awRaw < 1 || ah < 1) {
     return { aw: 0, ah: 0 };
   }
   return {
-    aw: Math.max(1, aw * MARGIN),
+    aw: Math.max(1, awRaw * MARGIN),
     ah: Math.max(1, ah * MARGIN),
   };
 }
@@ -79,7 +87,17 @@ export function useAuthContentFit(watchSources) {
         reobservePage();
         return;
       }
-      const slotW = Math.max(1, Math.floor((inner ?? page).clientWidth));
+      const visW =
+        typeof document !== 'undefined'
+          ? document.documentElement?.clientWidth ?? window?.innerWidth ?? 1e6
+          : 1e6;
+      const fromInner = inner?.clientWidth ?? 1e6;
+      const fromVp = v?.clientWidth ?? 1e6;
+      const fromPage = page?.clientWidth ?? 1e6;
+      const slotW = Math.max(
+        1,
+        Math.floor(Math.min(fromInner, fromVp, fromPage, visW)),
+      );
       const rw = Math.max(1, Math.min(MAX_W, slotW));
       c.style.width = `${rw}px`;
       c.style.minWidth = '0';
