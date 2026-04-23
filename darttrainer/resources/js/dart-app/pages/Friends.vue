@@ -138,7 +138,7 @@ function friendInitial(f) {
         <p v-if="!auth.user" class="dh-fr-sub">{{ t('friends.subtitle') }}</p>
       </div>
 
-      <template v-if="!auth.user">
+      <template v-if="!auth.user"> 
         <p class="dh-fr-muted">{{ t('friends.loginHint') }}</p>
         <button type="button" class="dth-btn dth-btn--accent dth-btn--md dth-btn--full" @click="router.push('/login')">
           {{ t('friends.loginLink') }}
