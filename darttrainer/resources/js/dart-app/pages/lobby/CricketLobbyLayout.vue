@@ -9,7 +9,7 @@ if (!l) {
   throw new Error('CricketLobbyLayout: missing lobbyCtx');
 }
 
-const auth = useAuthStore();
+const auth = useAuthStore(); 
 const route = useRoute();
 const router = useRouter();
 
