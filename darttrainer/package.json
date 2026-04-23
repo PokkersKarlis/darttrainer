@@ -3,7 +3,7 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "vite build",
+        "build": "vite build && node --input-type=module -e \"import fs from 'node:fs'; try { fs.unlinkSync('public/hot'); } catch {}\"",
         "build:hosting": "env CI=1 VITE_HOSTING_BUILD=1 VITE_MAX_PARALLEL_FILE_OPS=1 UV_THREADPOOL_SIZE=1 GOMEMLIMIT=384MiB NODE_OPTIONS=--max-old-space-size=384 npx --no-install vite build",
         "build:hosting:ram": "env CI=1 VITE_HOSTING_BUILD=1 VITE_MAX_PARALLEL_FILE_OPS=1 UV_THREADPOOL_SIZE=1 GOMEMLIMIT=512MiB NODE_OPTIONS=--max-old-space-size=512 npx --no-install vite build",
         "build:hosting:micro": "env CI=1 VITE_HOSTING_BUILD=1 VITE_MAX_PARALLEL_FILE_OPS=1 UV_THREADPOOL_SIZE=1 GOMEMLIMIT=256MiB NODE_OPTIONS=--max-old-space-size=256 npx --no-install vite build"

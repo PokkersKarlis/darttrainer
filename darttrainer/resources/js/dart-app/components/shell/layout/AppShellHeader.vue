@@ -34,7 +34,10 @@ const needsEmailVerify = computed(
     <BrandLogo />
     <div style="flex: 1" />
     <FriendIncomingButton />
-    <LocaleSwitch />
+    <LocaleSwitch
+      :class="{ 'hidden lg:flex': auth.hydrated && !!auth.user }"
+      style="flex-shrink: 0; margin-right: 2px"
+    />
     <div
       class="dt-header-auth"
       style="

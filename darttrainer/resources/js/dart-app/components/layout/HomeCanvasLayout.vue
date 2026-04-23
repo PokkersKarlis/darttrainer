@@ -330,7 +330,12 @@ function isSbActive(id) {
             <span class="dth-mi-beta">{{ t('home.betaBadge') }}</span>
           </div>
         </div>
-        <div class="dth-locale dth-mi-locale" role="group" :aria-label="t('lang.lv') + ' / ' + t('lang.en')">
+        <div
+          v-if="!(auth.hydrated && auth.user)"
+          class="dth-locale dth-mi-locale"
+          role="group"
+          :aria-label="t('lang.lv') + ' / ' + t('lang.en')"
+        >
           <button type="button" :class="{ 'dth-locale--on': locale.locale === 'lv' }" @click="locale.setLocale('lv')">
             {{ t('lang.lv') }}
           </button>

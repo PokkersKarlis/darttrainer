@@ -152,18 +152,30 @@ export function useLobbyCore(gameKindRef) {
     const i = selectedFriendIds.value.indexOf(id);
     if (i >= 0) selectedFriendIds.value.splice(i, 1);
     else if (!rosterAtCap()) selectedFriendIds.value.push(id);
+    else window._dartToast?.(t('lobby.localRosterAtCap'), 'error');
   }
 
   function togglePresetId(id) {
     const i = selectedPresetIds.value.indexOf(id);
     if (i >= 0) selectedPresetIds.value.splice(i, 1);
     else if (!rosterAtCap()) selectedPresetIds.value.push(id);
+    else window._dartToast?.(t('lobby.localRosterAtCap'), 'error');
   }
 
   function addAdHocGuest() {
     const n = newAdHocGuest.value.trim();
-    if (!n || n.length > 50) return;
-    if (rosterAtCap()) return;
+    if (!n) {
+      window._dartToast?.(t('lobby.localGuestNameRequired'), 'error');
+      return;
+    }
+    if (n.length > 50) {
+      window._dartToast?.(t('lobby.localGuestNameTooLong'), 'error');
+      return;
+    }
+    if (rosterAtCap()) {
+      window._dartToast?.(t('lobby.localRosterAtCap'), 'error');
+      return;
+    }
     adHocGuests.value = [...adHocGuests.value, n];
     newAdHocGuest.value = '';
   }
@@ -174,8 +186,18 @@ export function useLobbyCore(gameKindRef) {
 
   async function submitAddGuestFromPicker() {
     const n = newAdHocGuest.value.trim();
-    if (!n || n.length > 50) return;
-    if (rosterAtCap()) return;
+    if (!n) {
+      window._dartToast?.(t('lobby.localGuestNameRequired'), 'error');
+      return;
+    }
+    if (n.length > 50) {
+      window._dartToast?.(t('lobby.localGuestNameTooLong'), 'error');
+      return;
+    }
+    if (rosterAtCap()) {
+      window._dartToast?.(t('lobby.localRosterAtCap'), 'error');
+      return;
+    }
     if (saveGuestToLibrary.value) {
       guestPickerBusy.value = true;
       try {
@@ -218,26 +240,6 @@ export function useLobbyCore(gameKindRef) {
 
   /** Izveides vīzards: 1 = spēles iestatījumi, 2 = spēlētāji. */
   const createWizardStep = Vue.ref(1);
-
-  /** Cricket redesign: apakšcilne starp «Lokālie spēlētāji» un «AI spēlētāji» (tikai UI). */
-  const lobbyPlayerMainTab = Vue.ref('local');
-  /** Mobilais pilnekrāns: AI iestatījumi. */
-  const mobileAiComposerOpen = Vue.ref(false);
-  /** Divi AI bota sloti (viesa vārdi; backend bot API vēlāk). */
-  const aiBots = Vue.ref([
-    {
-      id: 1,
-      name: 'AI Spēlētājs 1',
-      difficulty: 'medium',
-      playStyle: 'balance',
-    },
-    {
-      id: 2,
-      name: 'AI Spēlētājs 2',
-      difficulty: 'hard',
-      playStyle: 'aggressive',
-    },
-  ]);
 
   function goWizardNext() {
     error.value = '';
@@ -347,7 +349,10 @@ export function useLobbyCore(gameKindRef) {
     }
     if (br.game_type === 'cricket') {
       const rnd = br.game_config?.cricket_type === 'random';
-      return rnd ? `${t('lobby.cricketRandomShort')}` : `${t('lobby.cricketStandardShort')}`;
+      const ct = rnd ? t('lobby.cricketRandomShort') : t('lobby.cricketStandardShort');
+      const local = (br.play_mode ?? 'online') === 'local';
+      const pm = local ? t('lobby.playLocal') : t('lobby.playOnline');
+      return `${pm} · ${ct}`;
     }
     return String(br.game_type).replace(/_/g, ' ').toUpperCase();
   }
@@ -367,6 +372,23 @@ export function useLobbyCore(gameKindRef) {
         return;
       }
       startRoomPoll();
+    } catch (e) {
+      error.value = e.response?.data?.error || 'Kļūda.';
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  /** Atstāj telpu, kas bloķē konkrēto setupu (my-active), un pārbauda vēlreiz. */
+  async function resetExistingTypeRoom() {
+    const br = blockedRoomForType.value;
+    if (!br || checkingSetupMatch.value) return;
+    loading.value = true;
+    error.value = '';
+    try {
+      await Rooms.leave(br.id);
+      blockedRoomForType.value = null;
+      await refreshBlockedRoomForType({ immediate: true });
     } catch (e) {
       error.value = e.response?.data?.error || 'Kļūda.';
     } finally {
@@ -423,12 +445,6 @@ export function useLobbyCore(gameKindRef) {
     }
   });
 
-  Vue.watch(lobbyPlayerMainTab, (m) => {
-    if (m === 'ai' && createForm.game_type === 'cricket' && createForm.play_mode === 'local') {
-      applyAiTabGuestsIfNeeded();
-    }
-  });
-
   Vue.watch(
     () => [
       createForm.play_mode,
@@ -440,7 +456,8 @@ export function useLobbyCore(gameKindRef) {
     ],
     () => {
       syncGameKindToForm();
-      refreshBlockedRoomForType();
+      /** Cricket: standarts un nejauši ir atšķirīgi setupi — pārbaudīt uzreiz pēc pārslēgšanas. */
+      refreshBlockedRoomForType(gameKindRef.value === 'cricket' ? { immediate: true } : {});
     },
   );
 
@@ -460,16 +477,35 @@ export function useLobbyCore(gameKindRef) {
 
   Vue.watch(() => room.value, (r) => {
     if (r) blockedRoomForType.value = null;
-    else refreshBlockedRoomForType({ immediate: true });
+    else {
+      refreshBlockedRoomForType({ immediate: true });
+      if (gameKindRef.value === 'cricket') createWizardStep.value = 1;
+    }
   });
+
+  /** Atgriežoties uz Cricket lobiju no citas lapas — vienmēr sākt ar 1. soli (četru režīmu izvēle). */
+  Vue.watch(
+    () => route.path,
+    (path, prevPath) => {
+      if (gameKindRef.value !== 'cricket' || path !== '/lobby/cricket' || room.value) return;
+      if (prevPath != null && prevPath !== '' && prevPath !== path) {
+        createWizardStep.value = 1;
+      }
+    },
+  );
 
   function applyLobbyQueryFromRoute() {
     syncGameKindToForm();
     if (gameKindRef.value === 'cricket') {
-      const raw = route.query.cricket_type;
-      if (raw !== undefined && raw !== null && String(raw).trim() !== '') {
-        const ct = String(raw).toLowerCase();
+      const rawCt = route.query.cricket_type;
+      if (rawCt !== undefined && rawCt !== null && String(rawCt).trim() !== '') {
+        const ct = String(rawCt).toLowerCase();
         createForm.cricket_type = ct === 'random' ? 'random' : 'standard';
+      }
+      const rawPm = route.query.play_mode;
+      if (rawPm === 'local' || rawPm === 'online') {
+        createForm.play_mode = rawPm;
+        if (rawPm === 'local') void loadFriendsAndPresets();
       }
       tab.value = 'create';
       return;
@@ -492,28 +528,12 @@ export function useLobbyCore(gameKindRef) {
     checkingActive.value = false;
   });
 
-  function applyAiTabGuestsIfNeeded() {
-    if (createForm.game_type !== 'cricket' || createForm.play_mode !== 'local') return;
-    if (lobbyPlayerMainTab.value !== 'ai') return;
-    const names = aiBots.value
-      .map((b) => String(b.name || '').trim() || `AI ${b.id}`)
-      .slice(0, 2);
-    adHocGuests.value = names;
-  }
-
-  function setAiBotField(botId, patch) {
-    const i = aiBots.value.findIndex((b) => b.id === botId);
-    if (i < 0) return;
-    aiBots.value = aiBots.value.map((b, j) => (j === i ? { ...b, ...patch } : b));
-  }
-
   async function createRoom() {
     if (checkingSetupMatch.value) return;
     syncGameKindToForm();
     error.value = '';
     loading.value = true;
     try {
-      applyAiTabGuestsIfNeeded();
       if (createForm.play_mode === 'local') {
         if (localRosterCount.value < 1) {
           error.value = t('lobby.localRosterEmpty');
@@ -712,14 +732,10 @@ export function useLobbyCore(gameKindRef) {
     blockedRoomForType,
     refreshBlockedRoomForType,
     continueExistingTypeRoom,
+    resetExistingTypeRoom,
     blockedRoomSummaryLine,
     checkingSetupMatch,
     lobbyShellLocked,
     showLobbyTip,
-    lobbyPlayerMainTab,
-    mobileAiComposerOpen,
-    aiBots,
-    setAiBotField,
-    applyAiTabGuestsIfNeeded,
   };
 }

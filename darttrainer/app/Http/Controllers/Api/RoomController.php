@@ -287,6 +287,9 @@ class RoomController extends Controller
         if ($players < 1) {
             return response()->json(['error' => 'Nav spēlētāju.'], 422);
         }
+        if (!$room->isLocalPlay() && $players < 2) {
+            return response()->json(['error' => 'Tiešsaistes spēlei vajag vismaz 2 spēlētājus.'], 422);
+        }
 
         $data = $request->validate([
             'legs'           => 'integer|min:1|max:21',
@@ -307,6 +310,7 @@ class RoomController extends Controller
 
         $match = GameMatch::create([
             'room_id'           => $room->id,
+            'local_session_id'  => $room->isLocalPlay() ? session()->getId() : null,
             'current_player_id' => $firstPlayer->id,
             'current_leg'       => 1,
             'current_set'       => 1,

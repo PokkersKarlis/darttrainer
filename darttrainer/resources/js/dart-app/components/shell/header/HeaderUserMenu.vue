@@ -62,6 +62,11 @@ function onLogout() {
   auth.logout();
 }
 
+function setLocale(code) {
+  locale.setLocale(code);
+  close();
+}
+
 function openFriendsModal() {
   if (props.needsEmailVerify) {
     window._dartToast?.(t('auth.verifyEmailToContinue'), 'error');
@@ -138,6 +143,28 @@ onUnmounted(() => {
               >
                 {{ t('shell.accountMenuFriendsLink') }}
               </button>
+              <div
+                class="dth-locale dth-locale--flyout lg:hidden"
+                role="group"
+                :aria-label="t('lang.lv') + ' / ' + t('lang.en')"
+              >
+                <button
+                  type="button"
+                  role="menuitem"
+                  :class="{ 'dth-locale--on': locale.locale === 'lv' }"
+                  @click="setLocale('lv')"
+                >
+                  {{ t('lang.lv') }}
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  :class="{ 'dth-locale--on': locale.locale === 'en' }"
+                  @click="setLocale('en')"
+                >
+                  {{ t('lang.en') }}
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -32,6 +32,9 @@ const gameFocus = computed(() => !!route.meta.gameFocus);
 /** Sākumlapa: pašai sava “canvas chrome” iekš `Home.vue`. */
 const isHome = computed(() => route.path === '/');
 
+/** Cricket lobby: pilnekrāna telpa bez HomeCanvasLayout (nav globālā header/sidebar/bnav). */
+const isCricketLobby = computed(() => route.path === '/lobby/cricket');
+
 window._dartToast = (message, type = 'success') => {
   const id = Date.now();
   let text =
@@ -146,7 +149,14 @@ watch(
 <template>
   <div
     v-cloak
-    :class="['dt-app-root', { 'dt-app--game-focus': gameFocus, 'dt-app--home-canvas': isHome }]"
+    :class="[
+      'dt-app-root',
+      {
+        'dt-app--game-focus': gameFocus,
+        'dt-app--home-canvas': isHome,
+        'dt-app--cricket-lobby': isCricketLobby,
+      },
+    ]"
   >
     <!-- `/`: Home.vue jau satur visu sidebar/header/layout. -->
     <template v-if="isHome">
@@ -157,6 +167,19 @@ watch(
     <template v-else-if="gameFocus">
       <router-view />
     </template>
+
+    <!-- Cricket lobby: tikai saturs (+ e-pasta bāners), bez canvas apvalka -->
+    <div
+      v-else-if="isCricketLobby"
+      class="dt-cricket-lobby-shell flex min-h-0 flex-1 flex-col overflow-hidden bg-[#0b0e14]"
+    >
+      <EmailVerifyBanner
+        v-if="needsEmailVerify"
+        :resend-busy="resendBusy"
+        @resend="resendVerification"
+      />
+      <router-view class="flex min-h-0 flex-1 flex-col" />
+    </div>
 
     <!-- Visas pārējās lapas: Home “canvas” layout (sidebar + header + ads) -->
     <HomeCanvasLayout v-else :title-key="route.meta?.titleKey || ''">

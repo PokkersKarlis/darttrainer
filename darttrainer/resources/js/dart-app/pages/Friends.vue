@@ -168,7 +168,10 @@ function friendInitial(f) {
             <button type="button" class="dh-fr-link" @click="loadLists()">{{ t('friends.refreshList') }}</button>
           </div>
           <div v-for="f in friendList" :key="f.id" class="dh-fr-row">
-            <div class="dh-fr-av">{{ friendInitial(f) }}</div>
+            <div class="dh-fr-av">
+              {{ friendInitial(f) }}
+              <span v-if="f.is_online" class="dh-fr-online" aria-hidden="true"></span>
+            </div>
             <span class="dh-fr-name">{{ f.name }}</span>
             <div class="dh-fr-actions">
               <button type="button" class="dth-btn dth-btn--sm dth-btn--ghost" :disabled="removingId === f.id" @click="openRemoveModal(f)">
@@ -324,6 +327,16 @@ function friendInitial(f) {
 }
 .dh-fr-row--wrap {
   flex-wrap: wrap;
+}
+.dh-fr-online {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #3ecf8e;
+  border: 2px solid #0a1120;
 }
 .dh-fr-incoming-txt {
   min-width: 0;

@@ -12,6 +12,7 @@ export const useGameStore = defineStore('game', {
     lastUpdated: null,
     lastEtag: null,
     error: null,
+    matchGoneHandled: false,
   }),
 
   getters: {
@@ -37,6 +38,7 @@ export const useGameStore = defineStore('game', {
     async loadState(matchId) {
       this.matchId = matchId;
       this.lastEtag = null;
+      this.matchGoneHandled = false;
       await this.fetchState();
     },
 
@@ -45,10 +47,21 @@ export const useGameStore = defineStore('game', {
       try {
         const response = await Game.state(this.matchId, {
           headers: this.lastEtag ? { 'If-None-Match': this.lastEtag } : {},
-          validateStatus: (status) => status === 200 || status === 304,
+          validateStatus: (status) => status === 200 || status === 304 || status === 404,
+          skipErrorToast: true,
         });
 
         if (response.status === 304) return;
+        if (response.status === 404) {
+          if (this.matchGoneHandled) return;
+          this.matchGoneHandled = true;
+          this.stopPolling();
+          this.reset();
+          if (typeof window !== 'undefined' && window.location.pathname.includes('/game/')) {
+            window.location.assign('/404');
+          }
+          return;
+        }
 
         const { data } = response;
         const etag = response.headers?.etag;
@@ -59,25 +72,6 @@ export const useGameStore = defineStore('game', {
         }
         if (etag) this.lastEtag = etag;
       } catch (e) {
-        if (e.response?.status === 404 && this.state) {
-          this.stopPolling();
-          this.reset();
-          window._dartToast?.(
-            (() => {
-              try {
-                const loc = localStorage.getItem('dt_locale') || 'lv';
-                return DART_I18N?.[loc]?.game?.matchGoneToast || DART_I18N?.en?.game?.matchGoneToast || 'Spēle vairs nav pieejama.';
-              } catch (_) {
-                return 'Spēle vairs nav pieejama.';
-              }
-            })(),
-            'info',
-          );
-          if (typeof window !== 'undefined' && window.location.pathname.includes('/game/')) {
-            window.location.assign('/');
-          }
-          return;
-        }
         this.error = 'Nevar ielādēt spēles stāvokli.';
       }
     },
@@ -118,10 +112,20 @@ export const useGameStore = defineStore('game', {
     },
 
     async abandonMatch() {
-      const { data } = await Game.abandon(this.matchId, {}, { skipErrorToast: true });
-      this.lastEtag = null;
-      this.reset();
-      return data;
+      try {
+        const { data } = await Game.abandon(this.matchId, {}, { skipErrorToast: true });
+        this.lastEtag = null;
+        this.reset();
+        return data;
+      } catch (e) {
+        // Ja mačs jau ir dzēsts / vairs neeksistē (route-model binding 404), neatgriežam kļūdu lietotājam.
+        if (e?.response?.status === 404) {
+          this.lastEtag = null;
+          this.reset();
+          return { message: DART_I18N?.lv?.game?.matchGoneToast || 'Spēle vairs nav pieejama.' };
+        }
+        throw e;
+      }
     },
 
     async suspendLocalMatch() {
@@ -168,6 +172,7 @@ export const useGameStore = defineStore('game', {
       this.lastEtag = null;
       this.roomCode = null;
       this.error = null;
+      this.matchGoneHandled = false;
     },
   },
 });

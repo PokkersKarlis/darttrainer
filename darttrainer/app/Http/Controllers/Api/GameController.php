@@ -600,8 +600,22 @@ class GameController extends Controller
         }
 
         $allowed = $room->players()->where('user_id', (int) $userId)->exists();
+        // Neatklājam spēles eksistenci: ja nav dalībnieks, izliekamies ka nav atrasts.
         if (!$allowed) {
-            abort(403, 'Nav piekļuves šai spēlei.');
+            abort(404);
+        }
+
+        // Lokālā spēle: atļauta tikai no tās pašas ierīces/sesijas, kas sāka maču.
+        if ($room->isLocalPlay()) {
+            $sid = session()->getId();
+            if ($match->local_session_id && $match->local_session_id !== $sid) {
+                abort(404);
+            }
+            // Backfill veciem mačiem (ja kolonna ir NULL) — piesienam pirmajai ierīcei, kas ielādē.
+            if (!$match->local_session_id) {
+                $match->local_session_id = $sid;
+                $match->save();
+            }
         }
     }
 

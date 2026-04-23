@@ -75,6 +75,20 @@ class FriendController extends Controller
             return response()->json(['items' => []]);
         }
 
+        // "Online" = pēdējās 15 min (tāpat kā PublicStatsController).
+        $since = now()->subMinutes(15)->getTimestamp();
+        $onlineIds = array_fill_keys(
+            DB::table('sessions')
+                ->whereNotNull('user_id')
+                ->where('last_activity', '>=', $since)
+                ->whereIn('user_id', $ids)
+                ->selectRaw('DISTINCT user_id')
+                ->pluck('user_id')
+                ->map(fn ($v) => (int) $v)
+                ->all(),
+            true
+        );
+
         $usersQuery = User::query()
             ->whereIn('id', $ids);
 
@@ -88,6 +102,7 @@ class FriendController extends Controller
             'items' => $users->map(fn ($u) => [
                 'id' => $u->id,
                 'name' => $u->name,
+                'is_online' => isset($onlineIds[(int) $u->id]),
             ])->values(),
         ]);
     }

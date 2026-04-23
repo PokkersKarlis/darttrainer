@@ -37,3 +37,6 @@ CURSOR_INSTRUCTIONS.md
 mysql_data/
 docker/mysql/data/
 
+# Local SQLite (migrate:fresh --seed)
+/database/database.sqlite
+

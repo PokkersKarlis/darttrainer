@@ -37,7 +37,6 @@ const showTutorial = ref(false);
 const isMobile = ref(
   typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches,
 );
-const clock = ref('');
 const resendBusy = ref(false);
 
 const needsEmailVerify = computed(() => auth.needsEmailVerification);
@@ -74,19 +73,6 @@ function matchGameLabel(kind) {
 }
 
 let mq;
-let tickId;
-
-function updateClock() {
-  try {
-    clock.value = new Date().toLocaleTimeString(locale.locale === 'lv' ? 'lv-LV' : 'en-GB', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    });
-  } catch (_) {
-    clock.value = '';
-  }
-}
 
 function setMobileFlag() {
   isMobile.value = window.matchMedia('(max-width: 767px)').matches;
@@ -322,12 +308,6 @@ function isSbActive(id) {
   return false;
 }
 
-watch(
-  () => locale.locale,
-  () => {
-    updateClock();
-  },
-);
 watch(startGameMenuLocked, (locked) => {
   if (locked) startMenuOpen.value = false;
 });
@@ -340,15 +320,12 @@ watch(
 );
 onMounted(() => {
   setMobileFlag();
-  updateClock();
-  tickId = window.setInterval(updateClock, 30_000);
   mq = window.matchMedia('(max-width: 767px)');
   mq.addEventListener('change', setMobileFlag);
   document.addEventListener('mousedown', onDocMousedownForStart, true);
   loadSummary();
 });
 onUnmounted(() => {
-  if (tickId) clearInterval(tickId);
   mq?.removeEventListener('change', setMobileFlag);
   document.removeEventListener('mousedown', onDocMousedownForStart, true);
 });
@@ -838,7 +815,7 @@ onUnmounted(() => {
               </div>
               <div class="dh-statg">
                 <div class="dh-stat">
-                  <div class="dh-stat-v">
+                  <div class="dh-stat-v dh-stat-v--amber">
                     {{ summary.users_total }}
                   </div>
                   <div class="dh-stat-l">
@@ -846,7 +823,7 @@ onUnmounted(() => {
                   </div>
                 </div>
                 <div class="dh-stat">
-                  <div class="dh-stat-v">
+                  <div class="dh-stat-v dh-stat-v--emerald">
                     {{ summary.active_players }}
                   </div>
                   <div class="dh-stat-l">
@@ -854,7 +831,7 @@ onUnmounted(() => {
                   </div>
                 </div>
                 <div class="dh-stat">
-                  <div class="dh-stat-v">
+                  <div class="dh-stat-v dh-stat-v--amber">
                     {{ summary.games_total }}
                   </div>
                   <div class="dh-stat-l">
@@ -862,7 +839,7 @@ onUnmounted(() => {
                   </div>
                 </div>
                 <div class="dh-stat">
-                  <div class="dh-stat-v">
+                  <div class="dh-stat-v dh-stat-v--red">
                     {{ summary.matches_active }}
                   </div>
                   <div class="dh-stat-l">
@@ -870,7 +847,7 @@ onUnmounted(() => {
                   </div>
                 </div>
                 <div class="dh-stat">
-                  <div class="dh-stat-v">
+                  <div class="dh-stat-v dh-stat-v--emerald">
                     {{ summary.rooms_open }}
                   </div>
                   <div class="dh-stat-l">
@@ -878,7 +855,7 @@ onUnmounted(() => {
                   </div>
                 </div>
                 <div v-if="summary.last_registration_at" class="dh-stat">
-                  <div class="dh-stat-v">
+                  <div class="dh-stat-v dh-stat-v--amber">
                     {{ fmtRegDay(summary.last_registration_at) }}
                   </div>
                   <div v-if="fmtRegYear(summary.last_registration_at)" class="dh-stat-s">
@@ -955,10 +932,6 @@ onUnmounted(() => {
 
     <!-- Mobile (mock) -->
     <div v-else class="dth-canvas--mobile dth-show-mobile">
-      <div class="dth-mi-bar">
-        <span class="dth-mi-time">{{ clock }}</span>
-        <div class="dth-mi-batt" />
-      </div>
       <div class="dth-mi-top">
         <div class="dth-mi-brand" aria-hidden="true">
           <img
@@ -975,7 +948,12 @@ onUnmounted(() => {
             <span class="dth-mi-beta">{{ t('home.betaBadge') }}</span>
           </div>
         </div>
-        <div class="dth-locale dth-mi-locale" role="group" :aria-label="t('lang.lv') + ' / ' + t('lang.en')">
+        <div
+          v-if="!(auth.hydrated && auth.user)"
+          class="dth-locale dth-mi-locale"
+          role="group"
+          :aria-label="t('lang.lv') + ' / ' + t('lang.en')"
+        >
           <button type="button" :class="{ 'dth-locale--on': locale.locale === 'lv' }" @click="locale.setLocale('lv')">
             {{ t('lang.lv') }}
           </button>

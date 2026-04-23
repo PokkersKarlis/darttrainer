@@ -16,6 +16,7 @@ class GameMatch extends Model
     protected $fillable = [
         'room_id', 'current_player_id', 'current_leg', 'current_set',
         'legs_config', 'status', 'winner_player_id', 'started_at', 'finished_at',
+        'local_session_id',
         'turn_deadline_at', 'turn_timeout_pending', 'turn_timer_window_seconds', 'exclude_from_stats',
     ];
 

@@ -30,21 +30,30 @@ export default {
       class="lobby-compact lobby-root flex flex-1 min-h-0 w-full flex-col overflow-hidden text-slate-200"
       :class="gameKind === 'cricket' ? 'lobby-v2 bg-[#0b0e14]' : 'bg-[#060d18]'"
     >
-    <div class="flex flex-1 min-h-0 w-full max-w-lg lg:max-w-4xl mx-auto px-2 sm:px-3 py-1 sm:py-1.5 flex flex-col gap-1 sm:gap-1.5 min-h-0">
+    <div
+      class="flex min-h-0 w-full flex-1 flex-col"
+      :class="
+        gameKind === 'cricket'
+          ? 'max-w-full mx-0 gap-0 px-0 py-0'
+          : 'mx-auto max-w-lg gap-1 px-2 py-1 min-h-0 sm:px-3 sm:py-1.5 sm:gap-1.5 lg:max-w-4xl'
+      "
+    >
 
-      <div class="shrink-0 flex items-start justify-between gap-2">
-        <div class="min-w-0 text-left flex-1">
-          <h1 class="text-base sm:text-lg font-black text-white tracking-tight leading-tight">{{ gameKind === 'cricket' ? t('lobby.titleCricket') : t('lobby.titleX01') }}</h1>
-          <p class="text-slate-600 text-[10px] sm:text-xs mt-0.5 line-clamp-1 sm:line-clamp-none">{{ gameKind === 'cricket' ? t('lobby.subtitleCricket') : t('lobby.subtitleX01') }}</p>
+      <template v-if="gameKind !== 'cricket'">
+        <div class="shrink-0 flex items-start justify-between gap-2">
+          <div class="min-w-0 text-left flex-1">
+            <h1 class="text-base sm:text-lg font-black text-white tracking-tight leading-tight">{{ t('lobby.titleX01') }}</h1>
+            <p class="text-slate-600 text-[10px] sm:text-xs mt-0.5 line-clamp-1 sm:line-clamp-none">{{ t('lobby.subtitleX01') }}</p>
+          </div>
+          <button type="button" @click="showLobbyTip = !showLobbyTip"
+                  :disabled="lobbyShellLocked"
+                  class="shrink-0 w-8 h-8 rounded-lg border border-amber-500/35 bg-amber-500/10 text-amber-400 text-xs font-black hover:bg-amber-500/20 transition disabled:cursor-not-allowed disabled:opacity-40"
+                  :aria-expanded="showLobbyTip" :title="t('lobby.tipToggleTitle')">?</button>
         </div>
-        <button type="button" @click="showLobbyTip = !showLobbyTip"
-                :disabled="lobbyShellLocked"
-                class="shrink-0 w-8 h-8 rounded-lg border border-amber-500/35 bg-amber-500/10 text-amber-400 text-xs font-black hover:bg-amber-500/20 transition disabled:cursor-not-allowed disabled:opacity-40"
-                :aria-expanded="showLobbyTip" :title="t('lobby.tipToggleTitle')">?</button>
-      </div>
-      <div v-show="showLobbyTip" class="shrink-0 rounded-lg border border-amber-500/25 bg-amber-500/5 px-2 py-1">
-        <p class="text-[10px] text-slate-500 leading-snug">{{ t('lobby.tipBody') }}</p>
-      </div>
+        <div v-show="showLobbyTip" class="shrink-0 rounded-lg border border-amber-500/25 bg-amber-500/5 px-2 py-1">
+          <p class="text-[10px] text-slate-500 leading-snug">{{ t('lobby.tipBody') }}</p>
+        </div>
+      </template>
 
       <div v-if="checkingActive" class="flex flex-1 min-h-[120px] flex-col items-center justify-center text-center py-4 shrink-0">
         <div class="flex justify-center gap-2 mb-2">
@@ -58,20 +67,41 @@ export default {
       <template v-else>
 
         <!-- ═══ WAITING ROOM (tikai tiešsaiste — kods, spēlētāji) ═══ -->
-        <div v-if="room && room.play_mode !== 'local'" class="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <div
+          v-if="room && room.play_mode !== 'local'"
+          class="flex min-h-0 flex-1 flex-col overflow-hidden"
+          :class="gameKind === 'cricket' ? 'bg-[#0b0e14] text-[#e8eaf0]' : ''"
+        >
           <div class="min-h-0 flex-1 overflow-y-auto overscroll-y-contain flex flex-col gap-1.5 pr-0.5">
-            <div class="shrink-0 bg-slate-800/80 border border-slate-700/60 rounded-xl p-2 sm:p-2.5">
+            <div
+              class="shrink-0 rounded-xl p-2 sm:p-2.5"
+              :class="
+                gameKind === 'cricket'
+                  ? 'border border-[#252d3d] bg-[#131720]'
+                  : 'border border-slate-700/60 bg-slate-800/80'
+              "
+            >
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
-                  <div class="text-[9px] text-slate-600 uppercase tracking-widest font-semibold mb-0.5">{{ t('lobby.roomCode') }}</div>
-                  <div class="text-2xl sm:text-3xl font-mono font-black text-amber-400 tracking-[0.1em] leading-none select-all break-all">
+                  <div
+                    class="mb-0.5 text-[9px] font-semibold uppercase tracking-widest"
+                    :class="gameKind === 'cricket' ? 'text-[#7b8ba8]' : 'text-slate-600'"
+                  >{{ t('lobby.roomCode') }}</div>
+                  <div class="text-2xl font-mono font-black leading-none tracking-[0.1em] select-all break-all sm:text-3xl"
+                       :class="gameKind === 'cricket' ? 'text-[#f5a623]' : 'text-amber-400'">
                     {{ room.code }}
                   </div>
                 </div>
                 <div class="flex flex-col items-end gap-1 shrink-0">
                   <button type="button" @click="copyCode"
-                          class="flex items-center gap-1 text-[10px] bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white px-2 py-1 rounded-lg transition font-semibold">
-                    📋 {{ t('lobby.copy') }}
+                          class="flex min-h-[40px] items-center gap-2 rounded-xl px-4 py-2 text-xs font-black transition sm:min-h-[44px] sm:px-5 sm:py-2.5 sm:text-sm"
+                          :class="
+                            gameKind === 'cricket'
+                              ? 'border border-[#252d3d] bg-[#1a2030] text-[#e8eaf0] hover:bg-[#252d3d]'
+                              : 'bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white'
+                          ">
+                    <span class="text-sm sm:text-base leading-none" aria-hidden="true">📋</span>
+                    <span>{{ t('lobby.copy') }}</span>
                   </button>
                   <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
                         :class="room.game_type === 'cricket'
@@ -81,12 +111,24 @@ export default {
                   </span>
                 </div>
               </div>
-              <p v-if="room.play_mode !== 'local'" class="text-slate-600 text-[9px] mt-1 line-clamp-1">{{ t('lobby.shareCode') }}</p>
-              <p v-else class="text-slate-600 text-[9px] mt-1 line-clamp-1">{{ t('lobby.localShare') }}</p>
+              <p v-if="room.play_mode !== 'local'" class="mt-1 line-clamp-1 text-[9px]"
+                 :class="gameKind === 'cricket' ? 'text-[#7b8ba8]' : 'text-slate-600'">{{ t('lobby.shareCode') }}</p>
+              <p v-else class="mt-1 line-clamp-1 text-[9px]"
+                 :class="gameKind === 'cricket' ? 'text-[#7b8ba8]' : 'text-slate-600'">{{ t('lobby.localShare') }}</p>
             </div>
 
-            <div class="shrink-0 bg-slate-800/80 border border-slate-700/60 rounded-xl overflow-hidden">
-              <div class="px-2 py-1 border-b border-slate-700/50 flex items-center justify-between">
+            <div
+              class="shrink-0 overflow-hidden rounded-xl"
+              :class="
+                gameKind === 'cricket'
+                  ? 'border border-[#252d3d] bg-[#131720]'
+                  : 'border border-slate-700/60 bg-slate-800/80'
+              "
+            >
+              <div
+                class="flex items-center justify-between border-b px-2 py-1"
+                :class="gameKind === 'cricket' ? 'border-[#1e2738]' : 'border-slate-700/50'"
+              >
                 <span class="text-[10px] font-bold text-slate-200">{{ t('lobby.players') }}</span>
                 <span class="text-[10px] text-slate-600 font-mono bg-slate-900/60 px-1.5 py-0.5 rounded-full">
                   {{ room.players.length }}/{{ room.max_players }}
@@ -115,18 +157,34 @@ export default {
             </div>
           </div>
 
-          <div class="shrink-0 flex flex-col gap-1.5 border-t border-slate-800/80 bg-[#060d18]/95 pt-2 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur-sm">
+          <div
+            class="flex shrink-0 flex-col gap-1.5 border-t pt-2 pb-[env(safe-area-inset-bottom,0px)]"
+            :class="
+              gameKind === 'cricket'
+                ? 'border-[#1e2738] bg-[#0f1520]'
+                : 'border-slate-800/80 bg-[#060d18]/95 backdrop-blur-sm'
+            "
+          >
             <p v-if="error" class="text-red-400 text-[10px] px-0.5 text-center">{{ error }}</p>
 
             <button v-if="isHost"
                     type="button"
                     @click="openOrderModal"
-                    :disabled="loading || room.players.length < 1"
-                    class="w-full bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-black font-black py-2.5 rounded-xl transition-all disabled:opacity-40 text-xs sm:text-sm shadow-lg shadow-amber-950/40 active:scale-[0.99]">
+                    :disabled="loading || (room.play_mode !== 'local' ? room.players.length < 2 : room.players.length < 1)"
+                    class="w-full rounded-xl py-2.5 font-black transition-all active:scale-[0.99] disabled:opacity-40 text-xs sm:text-sm"
+                    :class="
+                      gameKind === 'cricket'
+                        ? 'border border-transparent bg-gradient-to-r from-[#f5a623] to-[#f5c842] text-[#0b0e14] shadow-lg shadow-black/30 hover:brightness-105'
+                        : 'bg-amber-500 text-black hover:bg-amber-400 active:bg-amber-600 shadow-lg shadow-amber-950/40'
+                    ">
               {{ loading ? t('lobby.starting') : t('lobby.startGame') }}
             </button>
 
-            <div v-else-if="room.play_mode !== 'local'" class="bg-slate-900/50 border border-slate-800 rounded-xl py-1.5 px-2 text-center">
+            <div
+              v-else-if="room.play_mode !== 'local'"
+              class="rounded-xl border py-1.5 px-2 text-center"
+              :class="gameKind === 'cricket' ? 'border-[#252d3d] bg-[#131720]' : 'border border-slate-800 bg-slate-900/50'"
+            >
               <div class="flex justify-center gap-1 mb-1">
                 <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-bounce" style="animation-delay:0ms"></span>
                 <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-bounce" style="animation-delay:150ms"></span>
@@ -141,16 +199,23 @@ export default {
               {{ t('lobby.localHostOnly') }}
             </div>
 
-            <button type="button" @click="leaveRoom"
-                    class="w-full text-slate-600 hover:text-red-400 text-[10px] py-1 transition font-semibold tracking-wide">
+            <button
+              type="button"
+              class="flex w-full items-center justify-center py-1.5 text-[10px] font-semibold tracking-wide transition"
+              :class="gameKind === 'cricket' ? 'text-[#7b8ba8] hover:text-red-400' : 'text-slate-600 hover:text-red-400'"
+              @click="leaveRoom"
+            >
               {{ t('lobby.leaveRoom') }}
             </button>
           </div>
         </div>
 
         <!-- ═══ LOKĀLĀ TELPA: bez koda/saraksta; secība modālī ═══ -->
-        <div v-else-if="room && room.play_mode === 'local'"
-             class="flex min-h-0 flex-1 flex-col items-stretch justify-center gap-3 overflow-hidden px-2 py-4">
+        <div
+          v-else-if="room && room.play_mode === 'local'"
+          class="flex min-h-0 flex-1 flex-col items-stretch justify-center gap-3 overflow-hidden px-2 py-4"
+          :class="gameKind === 'cricket' ? 'bg-[#0b0e14]' : ''"
+        >
           <p class="px-1 text-center text-[11px] leading-snug text-slate-400">{{ t('lobby.localPreStartHint') }}</p>
           <button type="button" @click="openOrderModal"
                   class="w-full rounded-xl bg-amber-500 py-3 text-sm font-black text-black shadow-lg shadow-amber-950/40 transition hover:bg-amber-400 active:scale-[0.99]">
@@ -573,48 +638,53 @@ export default {
       <Teleport to="body">
         <Transition name="fade">
           <div v-if="showOrderModal"
-               class="fixed inset-0 z-50 flex items-end justify-center bg-black/80 p-3 backdrop-blur-sm sm:items-center sm:p-4"
+               class="fixed inset-0 z-50 flex items-end justify-center bg-black/80 p-2 backdrop-blur-sm sm:items-center sm:p-4"
                @click.self="showOrderModal = false">
-            <div class="flex min-h-0 max-h-[min(92dvh,calc(100dvh-1.5rem))] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-slate-700 bg-slate-800 shadow-2xl sm:max-h-[min(88dvh,720px)]"
+            <div class="flex min-h-0 max-h-[min(92dvh,calc(100dvh-1.5rem))] w-full max-w-md flex-col overflow-hidden rounded-2xl shadow-2xl sm:max-h-[min(88dvh,720px)]"
+                 :class="gameKind === 'cricket' ? 'border border-[#252d3d] bg-[#131720]' : 'border border-slate-700 bg-slate-800'"
                  @click.stop>
 
-              <div class="shrink-0 border-b border-slate-700/80 px-4 pb-3 pt-4">
-                <h3 class="text-lg font-black leading-tight text-white">{{ t('lobby.orderTitle') }}</h3>
-                <p class="mt-1 text-xs leading-snug text-slate-500">{{ t('lobby.orderSubtitle') }}</p>
+              <div class="shrink-0 px-3 pb-2 pt-3 sm:px-4 sm:pb-3 sm:pt-4"
+                   :class="gameKind === 'cricket' ? 'border-b border-[#1e2738]' : 'border-b border-slate-700/80'">
+                <h3 class="text-base sm:text-lg font-black leading-tight" :class="gameKind === 'cricket' ? 'text-[#e8eaf0]' : 'text-white'">{{ t('lobby.orderTitle') }}</h3>
+                <p class="mt-1 hidden sm:block text-xs leading-snug" :class="gameKind === 'cricket' ? 'text-[#7b8ba8]' : 'text-slate-500'">{{ t('lobby.orderSubtitle') }}</p>
               </div>
 
-              <div class="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-4 py-3">
-                <div class="space-y-4">
+              <div class="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-3 py-2 sm:px-4 sm:py-3">
+                <div class="space-y-3 sm:space-y-4">
                   <div class="grid grid-cols-2 gap-2">
                     <button v-for="key in ORDER_METHOD_KEYS" :key="key" type="button"
                             @click="setOrderMethod(key)"
                             :title="ORDER_METHODS[key].description"
-                            class="rounded-xl border px-2 py-2.5 text-left text-xs font-bold transition active:scale-[0.98]"
+                            class="rounded-xl border px-2 py-2 text-left text-[11px] font-bold transition active:scale-[0.98] sm:py-2.5 sm:text-xs"
                             :class="orderMethod === key
                               ? 'border-amber-500 bg-amber-500/15 text-amber-200 ring-1 ring-amber-500/30'
-                              : 'border-slate-600/60 bg-slate-900/50 text-slate-300 hover:border-slate-500'">
+                              : (gameKind === 'cricket'
+                                ? 'border-[#252d3d] bg-[#0b0e14] text-[#e8eaf0] hover:border-[#3a4a63]'
+                                : 'border-slate-600/60 bg-slate-900/50 text-slate-300 hover:border-slate-500')">
                       <span class="block text-[11px] font-black">{{ ORDER_METHODS[key].label }}</span>
-                      <span class="mt-0.5 block text-[10px] font-normal leading-snug text-slate-500 line-clamp-3">{{ ORDER_METHODS[key].description }}</span>
+                      <span class="mt-0.5 hidden sm:block text-[10px] font-normal leading-snug line-clamp-3"
+                            :class="gameKind === 'cricket' ? 'text-[#7b8ba8]' : 'text-slate-500'">{{ ORDER_METHODS[key].description }}</span>
                     </button>
                   </div>
 
                   <div class="space-y-1.5">
                     <div v-for="(p, i) in playerOrder" :key="p.id"
-                         class="flex items-center gap-2 rounded-xl border px-3 py-2 transition"
+                         class="flex items-center gap-2 rounded-xl border px-2.5 py-1.5 transition sm:px-3 sm:py-2"
                          :class="p.is_host
                            ? 'border-amber-900/40 bg-amber-950/30'
                            : 'border-slate-800/60 bg-slate-900/60'">
-                      <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-black"
+                      <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-black sm:h-8 sm:w-8 sm:text-xs"
                            :class="i === 0 ? 'bg-amber-500 text-black' : 'bg-slate-700 text-slate-300'">
                         {{ i + 1 }}
                       </div>
-                      <span class="flex-1 truncate text-sm font-semibold text-white">{{ p.name }}</span>
+                      <span class="flex-1 truncate text-[13px] font-semibold text-white sm:text-sm">{{ p.name }}</span>
                       <span v-if="p.is_host" class="shrink-0 text-[10px] font-bold text-amber-500">{{ t('lobby.host') }}</span>
                       <div v-if="orderMethod === 'manual' || orderMethod === 'bulloff'" class="flex shrink-0 gap-0.5">
                         <button type="button" @click="moveUp(i)" :disabled="i === 0"
-                                class="flex h-8 w-8 items-center justify-center rounded-lg text-sm text-slate-400 transition hover:bg-slate-700 hover:text-white disabled:opacity-20">↑</button>
+                                class="flex h-7 w-7 items-center justify-center rounded-lg text-sm text-slate-400 transition hover:bg-slate-700 hover:text-white disabled:opacity-20 sm:h-8 sm:w-8">↑</button>
                         <button type="button" @click="moveDown(i)" :disabled="i >= playerOrder.length - 1"
-                                class="flex h-8 w-8 items-center justify-center rounded-lg text-sm text-slate-400 transition hover:bg-slate-700 hover:text-white disabled:opacity-20">↓</button>
+                                class="flex h-7 w-7 items-center justify-center rounded-lg text-sm text-slate-400 transition hover:bg-slate-700 hover:text-white disabled:opacity-20 sm:h-8 sm:w-8">↓</button>
                       </div>
                     </div>
                   </div>
@@ -624,14 +694,14 @@ export default {
                     <div class="mt-2 grid grid-cols-4 gap-1.5 sm:grid-cols-6">
                       <button v-for="n in BO_LEG_OPTIONS" :key="'bo'+n" type="button"
                               @click="createForm.legs = n"
-                              class="rounded-lg border py-2 text-xs font-black transition"
+                              class="rounded-lg border py-1.5 text-[11px] font-black transition sm:py-2 sm:text-xs"
                               :class="createForm.legs === n
                                 ? 'border-amber-400 bg-amber-500 text-black shadow'
                                 : 'border-slate-700 bg-slate-900/80 text-slate-400 hover:text-white'">
                         Bo{{ n }}
                       </button>
                     </div>
-                    <p class="mt-1.5 text-[10px] leading-snug text-slate-600">{{ t('lobby.winLegsHint') }} {{ Math.ceil(createForm.legs / 2) }} {{ t('lobby.winLegsWord') }}</p>
+                    <p class="mt-1.5 hidden sm:block text-[10px] leading-snug text-slate-600">{{ t('lobby.winLegsHint') }} {{ Math.ceil(createForm.legs / 2) }} {{ t('lobby.winLegsWord') }}</p>
                   </div>
 
                     <div>
@@ -639,27 +709,30 @@ export default {
                     <div class="mt-2 grid grid-cols-5 gap-1.5 sm:grid-cols-10">
                       <button v-for="n in SET_COUNT_OPTIONS" :key="'st'+n" type="button"
                               @click="createForm.sets = n"
-                              class="rounded-lg border py-2 text-xs font-black transition"
+                              class="rounded-lg border py-1.5 text-[11px] font-black transition sm:py-2 sm:text-xs"
                               :class="createForm.sets === n
                                 ? 'border-sky-400 bg-sky-500 text-black shadow'
                                 : 'border-slate-700 bg-slate-900/80 text-slate-400 hover:text-white'">
                         {{ n }}
                       </button>
                     </div>
-                    <p class="mt-1.5 text-[10px] leading-snug text-slate-600">{{ t('lobby.setsFixedHint') }}</p>
+                    <p class="mt-1.5 hidden sm:block text-[10px] leading-snug text-slate-600">{{ t('lobby.setsFixedHint') }}</p>
                   </div>
 
                   <p v-if="error" class="text-xs text-red-400">{{ error }}</p>
                 </div>
               </div>
 
-              <div class="flex shrink-0 gap-2 border-t border-slate-700/80 bg-slate-800 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+              <div class="flex shrink-0 gap-2 px-3 py-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-4 sm:py-3"
+                   :class="gameKind === 'cricket' ? 'border-t border-[#1e2738] bg-[#131720]' : 'border-t border-slate-700/80 bg-slate-800'">
                 <button type="button" @click="showOrderModal = false"
-                        class="flex-1 rounded-xl bg-slate-700 py-3 text-sm font-bold text-white transition hover:bg-slate-600">
+                        class="flex-1 rounded-xl py-2.5 text-sm font-bold transition sm:py-3"
+                        :class="gameKind === 'cricket' ? 'border border-[#252d3d] bg-[#1a2030] text-[#e8eaf0] hover:bg-[#252d3d]' : 'bg-slate-700 text-white hover:bg-slate-600'">
                   {{ t('lobby.cancel') }}
                 </button>
                 <button type="button" @click="confirmStartGame" :disabled="loading"
-                        class="flex-1 rounded-xl bg-amber-500 py-3 text-sm font-black text-black shadow-md shadow-amber-950/40 transition hover:bg-amber-400 disabled:opacity-40">
+                        class="flex-1 rounded-xl py-2.5 text-sm font-black shadow-md shadow-amber-950/40 transition hover:bg-amber-400 disabled:opacity-40 sm:py-3"
+                        :class="gameKind === 'cricket' ? 'bg-gradient-to-r from-[#f5a623] to-[#f5c842] text-[#0b0e14]' : 'bg-amber-500 text-black'">
                   {{ loading ? t('lobby.starting') : t('lobby.startConfirm') }}
                 </button>
               </div>

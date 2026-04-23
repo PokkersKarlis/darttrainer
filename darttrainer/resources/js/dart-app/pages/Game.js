@@ -667,6 +667,11 @@ export default {
         }
         router.push('/');
       } catch (e) {
+        // Ja mačs jau ir pazudis (404), pārejam uz sākumu bez kļūdas.
+        if (e?.response?.status === 404) {
+          router.push('/');
+          return;
+        }
         const msg = e.response?.data?.message || e.response?.data?.error || 'Neizdevās pārtraukt spēli.';
         window._dartToast?.(msg, 'error');
       }
