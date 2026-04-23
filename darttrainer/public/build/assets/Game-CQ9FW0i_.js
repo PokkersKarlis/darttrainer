@@ -1,798 +1,277 @@
-import * as Vue from 'vue';
-import { useRouter } from 'vue-router';
-import { useBodyShellClass } from '../composables/useBodyShellClass.js';
-import { useGameScreenLayout } from '../composables/useGameScreenLayout.js';
-import { useAuthStore, useLocaleStore, useGameStore } from '../store/index.js';
-import MatchReport from '../components/MatchReport.js';
-import CricketMarkCell from '../components/CricketMarkCell.js';
-import CricketClosedCheck from '../components/CricketClosedCheck.js';
-
-/** Pagaidu: scoreboard / X01 rezultātu kolonnas vietā — orientācijas tests. */
-const GAME_FIELD_ORIENTATION_PROBE = true;
-
-export default {
-  props: ['matchId'],
-  components: { MatchReport, CricketMarkCell, CricketClosedCheck },
-
-  setup(props) {
-    useBodyShellClass('body--game-shell');
-    const {
-      layoutKind,
-      layoutLabel,
-      layoutWidth,
-      layoutHeight,
-      layoutAspect,
-      syncGameScreenLayout,
-    } = useGameScreenLayout();
-    const gameFieldOrientationProbe = GAME_FIELD_ORIENTATION_PROBE;
-    const gameStore = useGameStore();
-    const auth = useAuthStore();
-    const locale = useLocaleStore();
-    const t = (k) => locale.t(k);
-    const router = useRouter();
-
-    const dartInput        = Vue.reactive({ darts: [] });
-    const submitting       = Vue.ref(false);
-    const turnResult       = Vue.ref(null);
-    /** Leg uzvara pēc checkout / cricket win — { winnerName, wonSet, wonLeg, line } */
-    const legWonCelebration = Vue.ref(null);
-    const activeMultiplier = Vue.ref(1);
-    const showUndoConfirm    = Vue.ref(false);
-    const showAbandonConfirm = Vue.ref(false);
-    /** Kamēr ielādē + lokālajam hostam automātisks resume no pauzes. */
-    const gameBootPending = Vue.ref(true);
-    const cricketAchievement = Vue.ref(null);
-    const nowMs = Vue.ref(Date.now());
-    const turnTimeoutBusy = Vue.ref(false);
-    let turnClockInterval = null;
-
-    const state     = Vue.computed(() => gameStore.state);
-    const isMyTurn  = Vue.computed(() => gameStore.isMyTurn);
-    const isMatchActive = Vue.computed(() => gameStore.isMatchActive);
-    const isSuspended = Vue.computed(() => gameStore.isSuspended);
-    const waitingForTurnUi = Vue.computed(() => isMatchActive.value && !isMyTurn.value);
-    const legsConfigTotal = Vue.computed(() => Math.max(1, Number(state.value?.legs_config?.legs) || 1));
-    const setsConfigTotal = Vue.computed(() => Math.max(1, Number(state.value?.legs_config?.sets) || 1));
-    const undoAvailable = Vue.computed(() => gameStore.undoAvailable);
-    const isX01     = Vue.computed(() => gameStore.gameType === 'x01');
-    const isCricket = Vue.computed(() => gameStore.gameType === 'cricket');
-    const players   = Vue.computed(() => gameStore.players);
-    const finished  = Vue.computed(() => gameStore.isFinished);
-    const legsToWin = Vue.computed(() => Math.ceil((state.value?.legs_config?.legs ?? 1) / 2));
-
-    const turnTimer = Vue.computed(() => state.value?.turn_timer ?? null);
-    const useTurnTimer = Vue.computed(() => !!state.value?.use_turn_timer);
-
-    const turnTimerRemainingSec = Vue.computed(() => {
-      const tt = turnTimer.value;
-      if (!tt?.deadline_at) return 0;
-      const end = new Date(tt.deadline_at).getTime();
-      return Math.max(0, Math.ceil((end - nowMs.value) / 1000));
-    });
-
-    const turnTimerProgress = Vue.computed(() => {
-      const tt = turnTimer.value;
-      if (!tt?.deadline_at || tt.pending) return 0;
-      const w = Math.max(1, tt.window_seconds || 300);
-      const rem = turnTimerRemainingSec.value;
-      return Math.min(100, Math.max(0, (rem / w) * 100));
-    });
-
-    const turnTimerRowVisible = Vue.computed(() => {
-      if (!useTurnTimer.value || !isMatchActive.value) return false;
-      const tt = turnTimer.value;
-      return !!(tt?.deadline_at && !tt.pending);
-    });
-
-    const showTurnTimeoutWaitingBanner = Vue.computed(() => {
-      if (!useTurnTimer.value || !isMatchActive.value || !turnTimer.value?.pending) return false;
-      const uid = auth.user?.id;
-      const cpu = state.value?.current_player?.user_id;
-      if (uid == null || cpu == null) return false;
-      return Number(cpu) === Number(uid);
-    });
-
-    const showTurnTimeoutOpponentModal = Vue.computed(() => {
-      if (!useTurnTimer.value || !isMatchActive.value || !turnTimer.value?.pending) return false;
-      const uid = auth.user?.id;
-      const cpu = state.value?.current_player?.user_id;
-      if (uid == null || cpu == null) return false;
-      return Number(cpu) !== Number(uid);
-    });
-
-    function formatTurnClock(sec) {
-      const s = Math.max(0, Number(sec) || 0);
-      const m = Math.floor(s / 60);
-      const r = s % 60;
-      return m + ':' + String(r).padStart(2, '0');
-    }
-
-    async function onTurnTimeoutGrantExtra() {
-      if (turnTimeoutBusy.value) return;
-      turnTimeoutBusy.value = true;
-      try {
-        await gameStore.turnTimeoutGrantExtra();
-      } catch (e) {
-        const msg = e.response?.data?.error || e.response?.data?.message || 'Kļūda.';
-        window._dartToast?.(msg, 'error');
-      } finally {
-        turnTimeoutBusy.value = false;
-      }
-    }
-
-    async function onTurnTimeoutEndNoStats() {
-      if (turnTimeoutBusy.value) return;
-      turnTimeoutBusy.value = true;
-      try {
-        await gameStore.turnTimeoutEndNoStats();
-      } catch (e) {
-        const msg = e.response?.data?.error || e.response?.data?.message || 'Kļūda.';
-        window._dartToast?.(msg, 'error');
-      } finally {
-        turnTimeoutBusy.value = false;
-      }
-    }
-
-    const cricketActiveSegs = Vue.computed(() => {
-      const segs = state.value?.cricket_segments;
-      const raw = Array.isArray(segs) && segs.length ? segs : [20, 19, 18, 17, 16, 15, 25];
-      return raw.map(s => Number(s));
-    });
-
-    // ── Cricket helpers ───────────────────────────────────────────────────────
-
-    function hitsFor(playerId, seg) {
-      if (playerId === undefined || playerId === null) return 0;
-      const pid = Number(playerId);
-      const player = players.value.find(p => Number(p.id) === pid);
-      const c = player?.cricket;
-      if (!c) return 0;
-      const s = Number(seg);
-      return s === 25 ? (c.seg_bull ?? 0) : (c['seg_' + s] ?? 0);
-    }
-
-    function myHitsFor(seg) {
-      return hitsFor(state.value?.current_player?.id, seg);
-    }
-
-    function segClosedByAll(seg) {
-      const s = Number(seg);
-      return players.value.length > 0 && players.value.every(p => hitsFor(p.id, s) >= 3);
-    }
-
-    const scorecardColumnTemplate = Vue.computed(() => {
-      const n = players.value.length;
-      const left  = Math.ceil(n / 2);
-      const right = Math.floor(n / 2);
-      return [...Array(left).fill('1fr'), 'minmax(3.25rem, 5vw)', ...Array(right).fill('1fr')].join(' ');
-    });
-
-    const scorecardGridStyle = Vue.computed(() => ({
-      display: 'grid',
-      gridTemplateColumns: scorecardColumnTemplate.value,
-      alignItems: 'center',
-    }));
-
-    const scorecardRowGridStyle = Vue.computed(() => ({
-      display: 'grid',
-      gridTemplateColumns: scorecardColumnTemplate.value,
-      alignItems: 'stretch',
-      minHeight: 0,
-    }));
-
-    const leftPlayers  = Vue.computed(() => players.value.slice(0, Math.ceil(players.value.length / 2)));
-    const rightPlayers = Vue.computed(() => players.value.slice(Math.ceil(players.value.length / 2)));
-
-    function sortCricketSegmentsNumeric(activeList) {
-      const raw = (activeList || []).map(Number);
-      const set = new Set(raw);
-      const standard = [...set].filter(s => s >= 1 && s <= 20).sort((a, b) => a - b);
-      const other = [...set].filter(s => (s < 1 || s > 20) && s !== 25).sort((a, b) => a - b);
-      const out = [...standard, ...other];
-      if (set.has(25)) out.push(25);
-      return out;
-    }
-
-    const cricketSdtSegments = Vue.computed(() => sortCricketSegmentsNumeric(cricketActiveSegs.value));
-
-    const cricketSdtNonBull = Vue.computed(() => cricketSdtSegments.value.filter(s => s !== 25));
-    const cricketSdtHasBull = Vue.computed(() => cricketSdtSegments.value.includes(25));
-    const cricketPadSplit = Vue.computed(() => {
-      const segs = cricketSdtNonBull.value;
-      const mid = Math.ceil(segs.length / 2);
-      return { left: segs.slice(0, mid), right: segs.slice(mid) };
-    });
-
-    // ── X01 helpers ───────────────────────────────────────────────────────────
-
-    function addX01Dart(seg, mul) {
-      if (dartInput.darts.length >= 3) return;
-      dartInput.darts.push({ segment: seg, multiplier: mul });
-    }
-
-    function addX01Miss() {
-      if (dartInput.darts.length >= 3) return;
-      dartInput.darts.push({ segment: 0, multiplier: 0 });
-    }
-
-    function addCricketDart(seg, mul) {
-      if (dartInput.darts.length >= 3) return;
-      dartInput.darts.push({ segment: seg, multiplier: mul });
-    }
-
-    function removeDart(i) { dartInput.darts.splice(i, 1); }
-
-    function dartLabel(d) {
-      if (d.segment === 0) return 'Miss';
-      if (d.segment === 25 && d.multiplier === 2) return 'Bull';
-      if (d.segment === 25) return 'Outer';
-      const pre = d.multiplier === 2 ? 'D' : d.multiplier === 3 ? 'T' : 'S';
-      return pre + d.segment;
-    }
-
-    function dartValue(d) { return d.segment === 0 ? 0 : d.segment * d.multiplier; }
-
-    function pickRandom(arr) {
-      return arr[Math.floor(Math.random() * arr.length)];
-    }
-
-    function detectLegAdvanced(prevLeg, prevSet, data) {
-      return prevLeg != null && prevSet != null
-        && (Number(data.current_leg) !== Number(prevLeg)
-          || Number(data.current_set) !== Number(prevSet));
-    }
-
-    function scoreTierFromPoints(pts) {
-      if (pts >= 180) return 't180';
-      if (pts >= 140) return 't140';
-      if (pts >= 100) return 't100';
-      if (pts >= 95) return 't95';
-      return null;
-    }
-
-    function scoreHeadlineForTier(tier) {
-      switch (tier) {
-        case 't95': return 'Pīķa zona';
-        case 't100': return 'Labi sit!';
-        case 't140': return 'Premium gājiens';
-        case 't180': return 'TON 80 · EXCELLENT';
-        default: return '';
-      }
-    }
-
-    function checkoutCopyForRemaining(prevRem) {
-      const r = Number(prevRem);
-      if (!r || r <= 0) return { coTier: null, title: '', tag: '' };
-      if (r <= 20) {
-        return {
-          coTier: 'co1',
-          title: pickRandom(['Aizvērts!', 'Ieejamā!', 'Čau, score!', 'Klusi, bet precīzi']),
-          tag: pickRandom(['Kā ar karoti medu.', 'Miers ir miers.', 'Mini finišs, liela sirds.']),
-        };
-      }
-      if (r <= 40) {
-        return {
-          coTier: 'co2',
-          title: pickRandom(['Slēdzam!', 'Aizķēries!', 'Uz mājām!']),
-          tag: pickRandom(['Jau redzams gals.', 'Vēl tuvāk kāpām.', 'Pretinieks nervozē.']),
-        };
-      }
-      if (r <= 80) {
-        return {
-          coTier: 'co3',
-          title: pickRandom(['Labs finišs!', 'Turpinām kāpt!', 'Score krīt!']),
-          tag: pickRandom(['Šis sāp pretiniekam.', 'Kārtīgs gājiens.', 'Tā turēt!']),
-        };
-      }
-      if (r <= 120) {
-        return {
-          coTier: 'co4',
-          title: pickRandom(['Iespaidīgs checkout!', 'Augstākā līga!', 'Meistarība!']),
-          tag: pickRandom(['Tu dari to pareizi.', 'Šķīvis klausa.', 'Tā ir māksla.']),
-        };
-      }
-      if (r <= 169) {
-        return {
-          coTier: 'co5',
-          title: pickRandom(['Augstas raudzes finišs!', 'Reta putna līmenis!', 'Ko tu dari ar šķīvi?!']),
-          tag: pickRandom(['Šito rāda atkārtojumā.', 'Kā no grāmatas.', 'Elite.']),
-        };
-      }
-      return {
-        coTier: 'coTop',
-        title: pickRandom(['LEĠENDĀRS!', '170 klubs!', 'Meistarklase!']),
-        tag: pickRandom(['Aplausi. Tu to nopelnīji.', 'Šādu redz reti.', 'Respekts.']),
-      };
-    }
-
-    function turnResultShellClass(tr) {
-      const k = tr?.kind;
-      const co = tr?.checkoutTitle;
-      const coRing = co ? 'ring-2 ring-emerald-500/30 border-emerald-600/45' : '';
-      if (k === 'bust') {
-        return 'border-rose-500/75 bg-gradient-to-br from-rose-950/98 via-[#1a0a0f]/95 to-slate-900/98 shadow-xl shadow-rose-900/40 ring-1 ring-rose-500/30';
-      }
-      if (k === 'miss') {
-        return 'border-slate-500/70 bg-slate-900/98 shadow-lg shadow-black/40 ring-1 ring-slate-600/30';
-      }
-      if (k === 'high') {
-        const t = tr.highTier;
-        if (t === 't95') {
-          return `border-amber-700/50 bg-gradient-to-br from-slate-900/98 to-[#0f172a]/98 shadow-md ${coRing}`.trim();
-        }
-        if (t === 't100') {
-          return `border-amber-400/65 bg-gradient-to-br from-amber-950/90 via-[#0f172a]/98 to-slate-900/98 shadow-lg shadow-amber-900/25 ${coRing}`.trim();
-        }
-        if (t === 't140') {
-          return `border-fuchsia-400/55 bg-gradient-to-br from-fuchsia-950/85 via-amber-950/50 to-[#0a1120]/98 shadow-xl shadow-fuchsia-900/30 ${coRing}`.trim();
-        }
-        if (t === 't180') {
-          return `border-yellow-300/70 bg-gradient-to-br from-yellow-950/90 via-amber-900/60 to-slate-950/98 shadow-2xl shadow-amber-500/35 ${coRing}`.trim();
-        }
-      }
-      if (co) {
-        return 'border-emerald-500/55 bg-gradient-to-br from-emerald-950/90 via-[#0f172a]/98 to-slate-900/98 shadow-xl shadow-emerald-900/25';
-      }
-      return 'border-slate-600 bg-slate-800/95';
-    }
-
-    function turnResultMotionClass(tr) {
-      const parts = [];
-      const k = tr?.kind;
-      if (k === 'bust') parts.push('dt-x01-toast-bust');
-      else if (k === 'miss') parts.push('dt-x01-toast-miss');
-      else if (k === 'high') {
-        if (tr.highTier === 't95') parts.push('dt-x01-tier-95');
-        else if (tr.highTier === 't100') parts.push('dt-x01-tier-100');
-        else if (tr.highTier === 't140') parts.push('dt-x01-tier-140');
-        else if (tr.highTier === 't180') parts.push('dt-x01-tier-180');
-      }
-      if (tr.checkoutTitle) parts.push('dt-x01-co-pop');
-      return parts.join(' ');
-    }
-
-    function turnResultTopBannerClass(tr) {
-      if (tr.kind === 'bust') return 'text-rose-300';
-      if (tr.kind === 'miss') return 'text-slate-400';
-      if (tr.highTier === 't95') return 'text-amber-200/90 text-[11px] sm:text-xs font-black tracking-[0.18em]';
-      if (tr.highTier === 't100') return 'text-amber-200 text-xs sm:text-sm font-black tracking-wide';
-      if (tr.highTier === 't140') return 'text-fuchsia-200 text-sm sm:text-base font-black tracking-tight';
-      if (tr.highTier === 't180') {
-        return 'text-yellow-200 text-base sm:text-lg font-black drop-shadow-[0_0_14px_rgba(250,204,21,0.4)]';
-      }
-      if (tr.checkoutTitle && tr.kind === 'normal') return 'text-emerald-300 text-xs sm:text-sm font-black';
-      return 'text-slate-200 text-xs font-bold';
-    }
-
-    const LEG_WIN_LINES = [
-      'Legs iekārtots!',
-      'Šajā legā — tu!',
-      'Kāpes augšā!',
-      'Punkts pievienots!',
-      'Uzvaras aplis!',
-    ];
-
-    function queueLegWinCelebration({ winnerName, wonSet, wonLeg }, delayMs) {
-      setTimeout(() => {
-        legWonCelebration.value = {
-          winnerName,
-          wonSet,
-          wonLeg,
-          line: pickRandom(LEG_WIN_LINES),
-        };
-        setTimeout(() => { legWonCelebration.value = null; }, 3600);
-      }, delayMs);
-    }
-
-    function showX01TurnFeedback(thrown, { throwerId, prevLeg, prevSet, prevRemaining, data }) {
-      const pts = thrown.reduce((s, d) => s + dartValue(d), 0);
-      const labels = thrown.map(dartLabel);
-      const legAdvanced = detectLegAdvanced(prevLeg, prevSet, data);
-      const nextPlayers = data.players || [];
-      const p = throwerId != null ? nextPlayers.find((x) => Number(x.id) === Number(throwerId)) : null;
-      const newRem = p?.remaining;
-
-      let kind = 'normal';
-      if (pts === 0) {
-        kind = 'miss';
-      } else if (!legAdvanced && prevRemaining != null && newRem != null
-          && Number(prevRemaining) === Number(newRem)) {
-        kind = 'bust';
-      } else {
-        const st = scoreTierFromPoints(pts);
-        if (st) {
-          kind = 'high';
-        }
-      }
-
-      const isCheckout = legAdvanced && pts > 0 && prevRemaining != null
-        && Number(prevRemaining) === Number(pts);
-      const co = isCheckout ? checkoutCopyForRemaining(prevRemaining) : { title: '', tag: '', coTier: null };
-
-      const highTier = kind === 'high' ? scoreTierFromPoints(pts) : null;
-      const scoreHeadline = highTier ? scoreHeadlineForTier(highTier) : '';
-
-      let topBanner = '';
-      if (kind === 'bust') topBanner = 'BUST';
-      else if (kind === 'miss') topBanner = '';
-      else if (scoreHeadline) topBanner = scoreHeadline;
-      else if (co.title) topBanner = co.title;
-
-      const checkoutDetail = (isCheckout && scoreHeadline && co.title)
-        ? { title: co.title, tag: co.tag }
-        : null;
-      const checkoutFooter = (isCheckout && !scoreHeadline && co.tag) ? co.tag : null;
-
-      let durationMs = 2800;
-      if (kind === 'miss' || kind === 'bust') durationMs = 3500;
-      if (kind === 'high') {
-        if (highTier === 't95') durationMs = 3100;
-        else if (highTier === 't100') durationMs = 3900;
-        else if (highTier === 't140') durationMs = 4400;
-        else if (highTier === 't180') durationMs = 5400;
-      }
-      if (co.title) durationMs = Math.max(durationMs, 4000);
-
-      turnResult.value = {
-        labels,
-        pts,
-        kind,
-        highTier,
-        checkoutTitle: (isCheckout && co.title) ? co.title : null,
-        topBanner,
-        bannerIsCompact: kind === 'bust' || kind === 'miss',
-        checkoutDetail,
-        checkoutFooter,
-      };
-      setTimeout(() => { turnResult.value = null; }, durationMs);
-
-      const matchFinishedNow = data.status === 'finished';
-      const isLegWin = (legAdvanced || matchFinishedNow) && pts > 0 && kind !== 'bust' && kind !== 'miss';
-      if (isLegWin && throwerId) {
-        const winner = nextPlayers.find((x) => Number(x.id) === Number(throwerId));
-        queueLegWinCelebration(
-          {
-            winnerName: winner?.name || '—',
-            wonSet: prevSet,
-            wonLeg: prevLeg,
-          },
-          durationMs + 220,
-        );
-      }
-    }
-
-    Vue.watch(
-      () => [state.value?.current_set, state.value?.current_leg],
-      () => {
-        dartInput.darts = [];
-      },
-    );
-
-    /** Spēlē Cricket — slēgšanas trāpījumi (atbilst servera CricketEngine::statHitMultiplierBeforeApply). */
-    const CRICKET_HITS_TO_CLOSE = 3;
-
-    function cricketSegKey(seg) {
-      const s = Number(seg);
-      return s === 25 ? 'seg_bull' : `seg_${s}`;
-    }
-
-    function cricketSegHitsFromPlayer(player, seg) {
-      const c = player?.cricket;
-      if (!c) return 0;
-      const k = cricketSegKey(seg);
-      return Math.max(0, Math.min(CRICKET_HITS_TO_CLOSE, Number(c[k] ?? 0)));
-    }
-
-    function buildCricketHitsSnapshot(players, activeSegments) {
-      const playerIds = players.map((p) => Number(p.id));
-      const hits = {};
-      for (const pid of playerIds) {
-        hits[pid] = {};
-        const pl = players.find((x) => Number(x.id) === pid);
-        for (const seg of activeSegments) {
-          hits[pid][seg] = pl ? cricketSegHitsFromPlayer(pl, seg) : 0;
-        }
-      }
-      return { hits, playerIds };
-    }
-
-    function cloneCricketHits(hits, playerIds, activeSegments) {
-      const out = {};
-      for (const pid of playerIds) {
-        out[pid] = {};
-        for (const seg of activeSegments) {
-          out[pid][seg] = hits[pid][seg] ?? 0;
-        }
-      }
-      return out;
-    }
-
-    function statHitBeforeApply(hits, playerIds, activeSegments, throwerId, segment, multiplier) {
-      const seg = Number(segment);
-      const mul = Number(multiplier);
-      if (mul <= 0 || seg <= 0) return 0;
-      if (!activeSegments.includes(seg)) return 0;
-
-      let allClosed = true;
-      for (const pid of playerIds) {
-        if ((hits[pid][seg] ?? 0) < CRICKET_HITS_TO_CLOSE) {
-          allClosed = false;
-          break;
-        }
-      }
-      if (allClosed) return 0;
-
-      const myHits = hits[throwerId][seg] ?? 0;
-      if (myHits >= CRICKET_HITS_TO_CLOSE) return 0;
-
-      return Math.min(mul, CRICKET_HITS_TO_CLOSE - myHits);
-    }
-
-    function applyDartToCricketHits(hits, throwerId, segment, multiplier, activeSegments) {
-      const seg = Number(segment);
-      const mul = Number(multiplier);
-      if (mul <= 0 || seg <= 0) return;
-      if (!activeSegments.includes(seg)) return;
-      const current = hits[throwerId][seg] ?? 0;
-      if (current >= CRICKET_HITS_TO_CLOSE) return;
-      const need = CRICKET_HITS_TO_CLOSE - current;
-      const add = Math.min(mul, need);
-      hits[throwerId][seg] = current + add;
-    }
-
-    /** Kopējie efektīvie slēgšanas trāpījumi gājienā + katrai šautnei (animācijai / sasniegumiem). */
-    function effectiveCricketMarksForTurn(darts, activeSegments, players, throwerId) {
-      const segs = activeSegments.map(Number);
-      const { hits, playerIds } = buildCricketHitsSnapshot(players, segs);
-      const H = cloneCricketHits(hits, playerIds, segs);
-      const tid = Number(throwerId);
-      const perDart = [];
-      let total = 0;
-      for (const d of darts) {
-        const eff = statHitBeforeApply(H, playerIds, segs, tid, d.segment, d.multiplier);
-        perDart.push(eff);
-        total += eff;
-        applyDartToCricketHits(H, tid, d.segment, d.multiplier, segs);
-      }
-      return { total, perDart };
-    }
-
-    function detectCricketAchievements(darts, activeSegs, players, throwerId) {
-      const segs = activeSegs.map(Number);
-      const { total, perDart } = effectiveCricketMarksForTurn(darts, segs, players, throwerId);
-
-      let bullMarks = 0;
-      let tripleCount = 0;
-      const tripleSegs = new Set();
-
-      for (let i = 0; i < darts.length; i++) {
-        const d = darts[i];
-        const seg = Number(d.segment);
-        const mul = Number(d.multiplier);
-        const eff = perDart[i] ?? 0;
-        if (!seg || !mul || !segs.includes(seg)) continue;
-        if (seg === 25) bullMarks += eff;
-        if (mul === 3 && eff > 0) {
-          tripleCount++;
-          tripleSegs.add(seg);
-        }
-      }
-
-      const achieve = (emoji, title, sub, color, glow) => ({ emoji, title, sub, color, glow });
-
-      if (tripleCount >= 3 && tripleSegs.size >= 3 && total >= 9) {
-        return achieve('🐎🔥', 'Baltais zirgs!', 'Trīs trīskārši · trīs lauki · 9 trāpījumi', '#6ee7b7', '#10b981');
-      }
-
-      if (total >= 9) {
-        return achieve('🔥', `${total} trāpījumi!`, 'Maksimums', '#fca5a5', '#f43f5e');
-      }
-
-      if (tripleCount >= 3 && tripleSegs.size >= 3) {
-        return achieve('🐎', 'Baltais zirgs!', 'Trīs trīskārši dažādos laukos', '#6ee7b7', '#10b981');
-      }
-
-      if (tripleCount >= 3 && tripleSegs.size === 1) {
-        return achieve('💥', 'Trīs trīskārši!', 'Vienā laukā', '#fcd34d', '#f59e0b');
-      }
-
-      if (bullMarks >= 3) {
-        const ex = bullMarks >= 6 ? '!!' : '!';
-        return achieve('🎯', `${bullMarks} Bull${ex}`, `${bullMarks} trāpījumi bullā`, '#7dd3fc', '#0ea5e9');
-      }
-
-      if (total >= 4) {
-        return achieve('⬡', `${total} trāpījumi!`, null, '#c4b5fd', '#8b5cf6');
-      }
-
-      return null;
-    }
-
-    async function submitThrow() {
-      if (dartInput.darts.length === 0) return;
-      submitting.value = true;
-      const thrown = [...dartInput.darts];
-      const snapshotPlayers = [...players.value];
-      const throwerId = state.value?.current_player?.id;
-      const prevLeg = state.value?.current_leg;
-      const prevSet = state.value?.current_set;
-      const prevRemaining = throwerId != null
-        ? players.value.find((p) => Number(p.id) === Number(throwerId))?.remaining
-        : null;
-      try {
-        const data = await gameStore.submitThrow(thrown);
-        const legAdv = detectLegAdvanced(prevLeg, prevSet, data);
-        if (!isCricket.value) {
-          showX01TurnFeedback(thrown, {
-            throwerId, prevLeg, prevSet, prevRemaining, data,
-          });
-        } else {
-          const activeSegs = (state.value?.cricket_segments ?? [20, 19, 18, 17, 16, 15, 25]).map(Number);
-          const ach = throwerId != null
-            ? detectCricketAchievements(thrown, activeSegs, snapshotPlayers, throwerId)
-            : null;
-          if (ach) {
-            cricketAchievement.value = ach;
-            setTimeout(() => { cricketAchievement.value = null; }, 2800);
-          }
-          if ((legAdv || data.status === 'finished') && throwerId) {
-            const winner = (data.players || []).find((p) => Number(p.id) === Number(throwerId));
-            queueLegWinCelebration({
-              winnerName: winner?.name || '—',
-              wonSet: prevSet,
-              wonLeg: prevLeg,
-            }, ach ? 2950 : 450);
-          }
-        }
-        dartInput.darts = [];
-      } finally { submitting.value = false; }
-    }
-
-    async function undo() {
-      if (dartInput.darts.length > 0) {
-        dartInput.darts.pop();
-      } else {
-        showUndoConfirm.value = true;
-      }
-    }
-
-    async function confirmUndo() {
-      showUndoConfirm.value = false;
-      if (!undoAvailable.value) return;
-      const ok = await gameStore.undo();
-      dartInput.darts = [];
-      if (!ok) {
-        window._dartToast?.('Neizdevās atsaukt gājienu.', 'error');
-      }
-    }
-
-    function goAbandonFromUndoDialog() {
-      showUndoConfirm.value = false;
-      showAbandonConfirm.value = true;
-    }
-
-    async function confirmAbandon() {
-      showAbandonConfirm.value = false;
-      try {
-        const data = await gameStore.abandonMatch();
-        if (data?.message) {
-          window._dartToast?.(data.message, 'info');
-        }
-        router.push('/');
-      } catch (e) {
-        // Ja mačs jau ir pazudis (404), pārejam uz sākumu bez kļūdas.
-        if (e?.response?.status === 404) {
-          router.push('/');
-          return;
-        }
-        const msg = e.response?.data?.message || e.response?.data?.error || 'Neizdevās pārtraukt spēli.';
-        window._dartToast?.(msg, 'error');
-      }
-    }
-
-    async function maybeAutoResumeSuspendedLocal() {
-      const s = gameStore.state;
-      if (!s || s.status !== 'suspended' || s.play_mode !== 'local') return;
-      if (!auth.user || Number(s.host_user_id) !== Number(auth.user.id)) return;
-      try {
-        await gameStore.resumeMatch();
-      } catch (e) {
-        const msg = e.response?.data?.error || e.response?.data?.message || t('common.error');
-        window._dartToast?.(msg, 'error');
-        router.push('/');
-      }
-    }
-
-    /** Aizvērt skatu, saglabājot spēli (lokāli: pauze; tiešsaistē: paliek telpā). Novirza uz sākumlapu. */
-    async function exitGameSaving() {
-      const playMode = state.value?.play_mode;
-      const hostId = state.value?.host_user_id;
-      const uid = auth.user?.id;
-      const isLocalHost = playMode === 'local' && uid != null && Number(hostId) === Number(uid);
-
-      try {
-        if (isLocalHost && gameStore.isMatchActive) {
-          await gameStore.suspendLocalMatch();
-          window._dartToast?.(t('game.suspendedExitToast'), 'success');
-        }
-      } catch (e) {
-        const msg = e.response?.data?.message || e.response?.data?.error || t('common.error');
-        window._dartToast?.(msg, 'error');
-        return;
-      }
-      gameStore.reset();
-      router.push('/');
-    }
-
-    function goHome() { gameStore.reset(); router.push('/'); }
-
-    function onDocKeydown(e) {
-      if (showTurnTimeoutOpponentModal.value) return;
-      if (!isMyTurn.value || submitting.value) return;
-      const el = e.target;
-      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || (el.closest && el.closest('[contenteditable="true"]')))) return;
-      if (e.key === 'Enter' && dartInput.darts.length > 0) {
-        e.preventDefault();
-        submitThrow();
-      } else if (e.key === 'Escape') {
-        e.preventDefault();
-        undo();
-      } else if (e.key === 'Backspace' && dartInput.darts.length > 0) {
-        e.preventDefault();
-        removeDart(dartInput.darts.length - 1);
-      }
-    }
-
-    Vue.onMounted(async () => {
-      gameBootPending.value = true;
-      try {
-        await gameStore.loadState(props.matchId);
-        await maybeAutoResumeSuspendedLocal();
-      } finally {
-        gameBootPending.value = false;
-      }
-      Vue.nextTick(() => syncGameScreenLayout());
-      gameStore.startPolling(1100);
-      document.addEventListener('keydown', onDocKeydown);
-      turnClockInterval = setInterval(() => { nowMs.value = Date.now(); }, 500);
-    });
-
-    Vue.onUnmounted(() => {
-      gameStore.stopPolling();
-      document.removeEventListener('keydown', onDocKeydown);
-      if (turnClockInterval) {
-        clearInterval(turnClockInterval);
-        turnClockInterval = null;
-      }
-    });
-
-    const matchId = Vue.computed(() => props.matchId);
-
-    return {
-      matchId,
-      state, isMyTurn, isX01, isCricket, players, finished, legsToWin,
-      dartInput, submitting, turnResult, legWonCelebration, activeMultiplier, showUndoConfirm, showAbandonConfirm,
-      isMatchActive, isSuspended, waitingForTurnUi, legsConfigTotal, setsConfigTotal,
-      gameBootPending,
-      undoAvailable,
-      cricketActiveSegs, cricketSdtSegments, cricketSdtNonBull, cricketSdtHasBull, cricketPadSplit,
-      hitsFor, myHitsFor, segClosedByAll,
-      scorecardGridStyle, scorecardRowGridStyle, leftPlayers, rightPlayers,
-      addX01Dart, addX01Miss, addCricketDart, removeDart, dartLabel, dartValue,
-      turnResultShellClass, turnResultMotionClass, turnResultTopBannerClass,
-      submitThrow, undo, confirmUndo, goAbandonFromUndoDialog, confirmAbandon, exitGameSaving, goHome, auth, gameStore,
-      cricketAchievement,
-      t,
-      useTurnTimer, turnTimer, turnTimerRemainingSec, turnTimerProgress, turnTimerRowVisible,
-      showTurnTimeoutWaitingBanner, showTurnTimeoutOpponentModal,
-      formatTurnClock, turnTimeoutBusy, onTurnTimeoutGrantExtra, onTurnTimeoutEndNoStats,
-      layoutKind, layoutLabel, layoutWidth, layoutHeight, layoutAspect, gameFieldOrientationProbe,
-    };
-  },
-
-  template: `
-    <div class="flex h-full min-h-0 flex-1 flex-col w-full min-w-0 overflow-hidden bg-[#060d18] text-slate-200"
-         :data-game-layout="state && !gameBootPending && !finished ? layoutKind : null">
+import{o as pe,a2 as ct,r as _,z as i,u as mt,a as ut,c as pt,w as bt,e as xt,I as ft}from"./main-gw_tWkAu.js";import{u as gt}from"./useBodyShellClass-ByqCwW7T.js";import{useGameStore as vt}from"./game-SlPIUUEL.js";/* empty css            */import"./index-BuNY4Ty6.js";const ht={props:{matchId:{type:[String,Number],required:!0}},emits:["home"],setup(A,{emit:m}){const C=_(!0),z=_(null),N=_(null),M=i(()=>{var c,B;return((B=(c=N.value)==null?void 0:c.match)==null?void 0:B.game_type)==="cricket"}),p=i(()=>{var c,B;return((B=(c=N.value)==null?void 0:c.match)==null?void 0:B.game_type)==="x01"}),S=i(()=>{var c;return((c=N.value)==null?void 0:c.report)??null}),v=i(()=>{var c;return((c=S.value)==null?void 0:c.meta)??{}}),y=i(()=>{var c;return((c=S.value)==null?void 0:c.player_rows)??[]}),V=i(()=>{var c;return((c=S.value)==null?void 0:c.agp)??null}),L=i(()=>{var c;return((c=S.value)==null?void 0:c.leg_rows)??[]});function E(c){if(!c)return"—";try{return new Date(c).toLocaleString("lv-LV",{weekday:"short",day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}catch{return c}}function W(){window.print()}return pe(async()=>{C.value=!0,z.value=null;try{const{data:c}=await ct.protocol(A.matchId);N.value=c}catch{z.value="Neizdevās ielādēt protokolu."}finally{C.value=!1}}),{loading:C,error:z,payload:N,isCricket:M,isX01:p,report:S,meta:v,rows:y,agp:V,legRows:L,fmtDateTime:E,printReport:W,goHome:()=>m("home")}},template:`
+    <div class="match-report flex h-full min-h-0 flex-1 flex-col overflow-hidden w-full bg-[#060d18] text-slate-200 print:bg-white print:text-black">
+      <div class="flex-shrink-0 border-b border-[#162540] print:border-slate-300 px-4 py-4 max-w-4xl mx-auto w-full">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p class="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500 print:text-slate-600 mb-1">Spēles protokols</p>
+            <h1 class="text-2xl font-black text-amber-400 print:text-amber-700 font-mono tracking-tight">
+              {{ meta.room_code || '—' }}
+            </h1>
+          </div>
+          <div class="flex gap-2 print:hidden">
+            <button type="button" @click="printReport"
+                    class="px-4 py-2 rounded-xl text-sm font-bold border border-[#1e3050] bg-[#0a1120] text-slate-200 hover:bg-[#162540] transition">
+              Drukāt
+            </button>
+            <button type="button" @click="goHome"
+                    class="px-4 py-2 rounded-xl text-sm font-black bg-amber-500 text-black hover:bg-amber-400 transition">
+              Uz sākumu
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex-1 min-h-0 overflow-y-auto overscroll-y-contain touch-pan-y px-4 py-6 max-w-4xl mx-auto w-full space-y-8 print:overflow-visible">
+
+        <div v-if="loading" class="flex justify-center py-16">
+          <div class="flex gap-2">
+            <span class="w-2 h-2 rounded-full bg-amber-500 animate-bounce"></span>
+            <span class="w-2 h-2 rounded-full bg-amber-500 animate-bounce" style="animation-delay:150ms"></span>
+            <span class="w-2 h-2 rounded-full bg-amber-500 animate-bounce" style="animation-delay:300ms"></span>
+          </div>
+        </div>
+
+        <div v-else-if="error" class="text-center text-rose-400 py-12 font-bold">{{ error }}</div>
+
+        <template v-else-if="report">
+
+          <!-- Uzvarētājs -->
+          <div v-if="payload.match?.winner" class="rounded-2xl border border-emerald-500/30 bg-emerald-950/20 px-5 py-4 print:border-emerald-700">
+            <div class="text-[10px] font-black uppercase tracking-widest text-emerald-400/90 mb-1">Uzvara</div>
+            <div class="text-2xl font-black text-emerald-100">{{ payload.match.winner.name }}</div>
+          </div>
+
+          <!-- Meta -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+            <div class="rounded-xl border border-[#162540] bg-[#0a1120]/80 p-3 print:bg-slate-50">
+              <div class="text-[9px] uppercase tracking-wider text-slate-500 print:text-slate-600 mb-0.5">Sākums</div>
+              <div class="font-bold tabular-nums">{{ fmtDateTime(meta.started_at) }}</div>
+            </div>
+            <div class="rounded-xl border border-[#162540] bg-[#0a1120]/80 p-3 print:bg-slate-50">
+              <div class="text-[9px] uppercase tracking-wider text-slate-500 print:text-slate-600 mb-0.5">Beigas</div>
+              <div class="font-bold tabular-nums">{{ fmtDateTime(meta.finished_at) }}</div>
+            </div>
+            <div class="rounded-xl border border-[#162540] bg-[#0a1120]/80 p-3 print:bg-slate-50">
+              <div class="text-[9px] uppercase tracking-wider text-slate-500 print:text-slate-600 mb-0.5">Ilgums</div>
+              <div class="font-black text-amber-400 print:text-amber-800 tabular-nums">{{ meta.duration_label }}</div>
+            </div>
+            <div class="rounded-xl border border-[#162540] bg-[#0a1120]/80 p-3 print:bg-slate-50">
+              <div class="text-[9px] uppercase tracking-wider text-slate-500 print:text-slate-600 mb-0.5">Tips / legi</div>
+              <div class="font-bold">{{ meta.game_type_label }} · {{ meta.legs_played }} leg.</div>
+              <div v-if="meta.x01_in_out" class="text-[11px] text-slate-400 print:text-slate-600 mt-1 font-mono">{{ meta.x01_in_out }}</div>
+            </div>
+          </div>
+          <p class="text-xs text-slate-500 print:text-slate-600 font-mono">Match ID: {{ meta.match_id }}</p>
+          <p v-if="isX01 && agp" class="text-sm text-slate-300 print:text-slate-800 mt-2">
+            <span class="font-bold text-amber-400 print:text-amber-800">Spēles 3DA (AGP):</span>
+            <span class="font-mono font-black tabular-nums ml-2">{{ agp.three_da }}</span>
+            <span v-if="agp.busts != null" class="text-slate-500 ml-3">· BUST kopā: {{ agp.busts }}</span>
+          </p>
+
+          <!-- Cricket: kopsavilkums -->
+          <section v-if="isCricket">
+            <h2 class="text-xs font-black uppercase tracking-widest text-slate-500 print:text-slate-600 mb-3">Spēlētāji · Cricket</h2>
+            <div class="overflow-x-auto rounded-xl border border-[#162540] print:border-slate-300">
+              <table class="w-full text-sm border-collapse">
+                <thead>
+                  <tr class="bg-[#0a1120] print:bg-slate-100 text-left text-[10px] uppercase tracking-wider text-slate-500">
+                    <th class="p-3 font-bold">Spēlētājs</th>
+                    <th class="p-3 font-bold text-center">Seti</th>
+                    <th class="p-3 font-bold text-center">Legi</th>
+                    <th class="p-3 font-bold text-center">Punkti</th>
+                    <th class="p-3 font-bold text-center">Zīmes</th>
+                    <th class="p-3 font-bold text-center">Metieni</th>
+                    <th class="p-3 font-bold text-center">MPR</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="r in rows" :key="r.id" class="border-t border-[#162540]/80 print:border-slate-200">
+                    <td class="p-3 font-bold">
+                      {{ r.name }}
+                      <span v-if="r.won_match" class="ml-2 text-[10px] font-black uppercase text-emerald-400">WIN</span>
+                    </td>
+                    <td class="p-3 text-center tabular-nums">{{ r.sets_won }}</td>
+                    <td class="p-3 text-center tabular-nums">{{ r.legs_won }}</td>
+                    <td class="p-3 text-center tabular-nums">{{ r.points }}</td>
+                    <td class="p-3 text-center tabular-nums">{{ r.marks }}</td>
+                    <td class="p-3 text-center tabular-nums">{{ r.darts }}</td>
+                    <td class="p-3 text-center font-mono font-black text-amber-400/95 print:text-amber-800 tabular-nums">{{ r.mpr }}</td>
+                  </tr>
+                  <tr v-if="agp" class="border-t-2 border-amber-500/30 bg-[#0a1120]/50 print:bg-slate-100 font-bold">
+                    <td class="p-3 text-slate-400">Kopā (mačs)</td>
+                    <td class="p-3 text-center">—</td>
+                    <td class="p-3 text-center tabular-nums">{{ meta.legs_played }}</td>
+                    <td class="p-3 text-center tabular-nums">{{ agp.points }}</td>
+                    <td class="p-3 text-center tabular-nums">{{ agp.marks }}</td>
+                    <td class="p-3 text-center tabular-nums">{{ agp.darts }}</td>
+                    <td class="p-3 text-center font-mono text-amber-400 print:text-amber-900 tabular-nums">{{ agp.mpr }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="text-[10px] text-slate-500 mt-2">MPR = vidējie slēgšanas metieni uz 3 šautnēm (marks ÷ metieni × 3).</p>
+          </section>
+
+          <!-- X01 -->
+          <section v-if="isX01">
+            <h2 class="text-xs font-black uppercase tracking-widest text-slate-500 print:text-slate-600 mb-3">Spēlētāji · {{ meta.game_type_label }}</h2>
+            <div class="overflow-x-auto rounded-xl border border-[#162540] print:border-slate-300">
+              <table class="w-full text-sm border-collapse">
+                <thead>
+                  <tr class="bg-[#0a1120] print:bg-slate-100 text-left text-[10px] uppercase tracking-wider text-slate-500">
+                    <th class="p-3 font-bold">Spēlētājs</th>
+                    <th class="p-3 font-bold text-center">Seti</th>
+                    <th class="p-3 font-bold text-center">Legi</th>
+                    <th class="p-3 font-bold text-center">Punkti</th>
+                    <th class="p-3 font-bold text-center">Metieni</th>
+                    <th class="p-3 font-bold text-center">3DA</th>
+                    <th class="p-3 font-bold text-center">BUST</th>
+                    <th class="p-3 font-bold text-center">CO</th>
+                    <th class="p-3 font-bold text-center">Max</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="r in rows" :key="r.id" class="border-t border-[#162540]/80 print:border-slate-200">
+                    <td class="p-3 font-bold">
+                      {{ r.name }}
+                      <span v-if="r.won_match" class="ml-2 text-[10px] font-black uppercase text-emerald-400">WIN</span>
+                    </td>
+                    <td class="p-3 text-center tabular-nums">{{ r.sets_won }}</td>
+                    <td class="p-3 text-center tabular-nums">{{ r.legs_won }}</td>
+                    <td class="p-3 text-center tabular-nums">{{ r.points }}</td>
+                    <td class="p-3 text-center tabular-nums">{{ r.darts }}</td>
+                    <td class="p-3 text-center font-mono font-black text-amber-400/95 print:text-amber-800 tabular-nums">{{ r.three_da }}</td>
+                    <td class="p-3 text-center tabular-nums">{{ r.busts ?? 0 }}</td>
+                    <td class="p-3 text-center tabular-nums">{{ r.checkouts ?? 0 }}</td>
+                    <td class="p-3 text-center tabular-nums font-mono">{{ r.high_turn ?? 0 }}</td>
+                  </tr>
+                  <tr v-if="agp" class="border-t-2 border-amber-500/30 bg-[#0a1120]/50 print:bg-slate-100 font-bold">
+                    <td class="p-3 text-slate-400">Kopā (mačs)</td>
+                    <td class="p-3 text-center">—</td>
+                    <td class="p-3 text-center tabular-nums">{{ meta.legs_played }}</td>
+                    <td class="p-3 text-center tabular-nums">{{ agp.points }}</td>
+                    <td class="p-3 text-center tabular-nums">{{ agp.darts }}</td>
+                    <td class="p-3 text-center font-mono text-amber-400 print:text-amber-900 tabular-nums">{{ agp.three_da }}</td>
+                    <td class="p-3 text-center tabular-nums">{{ agp.busts ?? '—' }}</td>
+                    <td class="p-3 text-center">—</td>
+                    <td class="p-3 text-center">—</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- Legu detaļas -->
+          <section v-if="legRows.length">
+            <h2 class="text-xs font-black uppercase tracking-widest text-slate-500 print:text-slate-600 mb-3">Legi</h2>
+            <div class="overflow-x-auto rounded-xl border border-[#162540] print:border-slate-300">
+              <table class="w-full text-xs sm:text-sm border-collapse min-w-[32rem]">
+                <thead>
+                  <tr class="bg-[#0a1120] print:bg-slate-100 text-[10px] uppercase tracking-wider text-slate-500">
+                    <th class="p-2 text-left font-bold">Leg</th>
+                    <th v-if="isCricket" class="p-2 text-center font-bold" v-for="p in legRows[0].players" :key="'h'+p.id">MPR / zīmes<br><span class="normal-case font-semibold text-slate-400">{{ p.name }}</span></th>
+                    <th v-if="isX01" class="p-2 text-center font-bold" v-for="p in legRows[0].players" :key="'xh'+p.id">3DA / leg<br><span class="normal-case font-semibold text-slate-400">{{ p.name }}</span></th>
+                    <th class="p-2 text-center font-bold">{{ legRows[0].game_label }}</th>
+                    <th v-if="isCricket" class="p-2 text-center font-bold" v-for="p in legRows[0].players" :key="'h2'+p.id">Punkti</th>
+                    <th v-if="isX01" class="p-2 text-center font-bold" v-for="p in legRows[0].players" :key="'xh2'+p.id">Punkti</th>
+                    <th class="p-2 text-center font-bold">Metieni</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="leg in legRows" :key="leg.label" class="border-t border-[#162540]/80 print:border-slate-200">
+                    <td class="p-2 font-mono font-black text-amber-400/90">{{ leg.label }}</td>
+                    <template v-if="isCricket">
+                      <td v-for="p in leg.players" :key="leg.label+'m'+p.id" class="p-2 text-center font-mono tabular-nums leading-tight">
+                        <div>{{ p.mpr }}</div>
+                        <div class="text-[10px] font-sans text-slate-500 print:text-slate-600">{{ p.marks }} zīmes</div>
+                      </td>
+                      <td class="p-2 text-center text-slate-500 font-bold">{{ leg.game_label }}</td>
+                      <td v-for="p in leg.players" :key="leg.label+'pt'+p.id" class="p-2 text-center tabular-nums">{{ p.points }}</td>
+                    </template>
+                    <template v-else>
+                      <td v-for="p in leg.players" :key="leg.label+'x'+p.id" class="p-2 text-center font-mono tabular-nums leading-tight">
+                        <div>{{ p.three_da }}</div>
+                        <div class="text-[10px] font-sans text-slate-500 print:text-slate-600">
+                          {{ p.darts }} š. · busti {{ p.busts ?? 0 }}<span v-if="(p.high_turn ?? 0) > 0"> · max {{ p.high_turn }}</span>
+                        </div>
+                      </td>
+                      <td class="p-2 text-center text-slate-500 font-bold">{{ leg.game_label }}</td>
+                      <td v-for="p in leg.players" :key="leg.label+'xpt'+p.id" class="p-2 text-center tabular-nums">{{ p.points }}</td>
+                    </template>
+                    <td class="p-2 text-center font-mono tabular-nums">{{ leg.total_darts }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <p class="text-[10px] text-slate-600 print:text-slate-500 pb-8">
+            Statistika aprēķināta no saglabātajiem metieniem. Metodes var atšķirties no citām platformām.
+          </p>
+        </template>
+      </div>
+    </div>
+  `},be={props:{boosted:{type:Boolean,default:!0},prominent:{type:Boolean,default:!1}},template:`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+         aria-hidden="true"
+         class="inline-block align-middle flex-shrink-0"
+         :class="prominent
+           ? 'w-[clamp(1.85rem,6vmin,3.15rem)] h-[clamp(1.85rem,6vmin,3.15rem)] min-w-[1.85rem] min-h-[1.85rem] ' +
+             'drop-shadow-[0_4px_18px_rgba(16,185,129,.42)]'
+           : boosted
+             ? 'w-[1.24em] h-[1.24em] min-w-[1.24em] min-h-[1.24em] sm:w-[1.32em] sm:h-[1.32em] sm:min-w-[1.32em] sm:min-h-[1.32em] ' +
+               'drop-shadow-[0_2px_10px_rgba(16,185,129,.28)]'
+             : 'w-[1em] h-[1em] min-w-[1em] min-h-[1em] drop-shadow-[0_1px_6px_rgba(16,185,129,.2)]'">
+      <circle cx="12" cy="12" :r="prominent ? 9.85 : 9.65"
+              fill="#10b981" :fill-opacity="prominent ? 0.22 : 0.14"
+              :stroke="prominent ? '#6ee7b7' : '#34d399'"
+              :stroke-opacity="prominent ? 0.95 : 0.6"
+              :stroke-width="prominent ? 1.55 : 1.35"/>
+      <path d="M7.05 12.45 10.4 15.6 17.1 7.65"
+            stroke="#ecfdf5"
+            :stroke-width="prominent ? 2.75 : 2.35"
+            stroke-linecap="round" stroke-linejoin="round"
+            stroke-opacity="0.97"/>
+    </svg>
+  `},yt={components:{CricketClosedCheck:be},props:{hits:{type:Number,default:0},closed:{type:Boolean,default:!1},size:{type:String,default:"md"}},setup(A){function m(v){const y=v??0;return y===2?"2":y===1?"1":"0"}function C(v){const y=v??0;return y>=3?"Slēgts (3 trāpījumi)":y===2?"Divi trāpījumi":y===1?"Viens trāpījums":"Nav trāpījumu"}function z(v){return v>=3?"text-emerald-300":v===2?"text-amber-200":v===1?"text-sky-200":"text-slate-500"}function N(v){const y=v??0;return y>=3?"bg-emerald-500/20 ring-1 ring-emerald-400/35 shadow-[0_0_20px_rgba(52,211,153,.12)]":y===2?"bg-amber-500/18 ring-1 ring-amber-400/30":y===1?"bg-sky-500/18 ring-1 ring-sky-400/28":"bg-[#0c1528]/90 ring-1 ring-[#1e3050]/80"}const M=i(()=>{const v={sm:"text-xl",md:"text-2xl",lg:"text-3xl",board:"text-[clamp(1.35rem,4.2vmin,2.75rem)] sm:text-[clamp(1.5rem,3.8vmin,2.5rem)]","board-sm":"text-[clamp(0.7rem,2.6vmin,1.05rem)]"};return v[A.size]??v.md}),p=i(()=>A.size==="board"||A.size==="board-sm"),S=i(()=>A.size==="board-sm");return{symbol:m,hitTitle:C,colorClass:z,pillClass:N,sizeClass:M,isBoard:p,isBoardCompact:S}},template:`
+    <div class="flex items-center justify-center w-full h-full min-h-0 min-w-0 select-none p-0.5"
+         :title="hitTitle(hits)">
+      <Transition name="mark" mode="out-in">
+        <span
+          :key="hits"
+          class="font-black leading-none transition-colors duration-200
+                 drop-shadow-[0_2px_8px_rgba(0,0,0,.45)]"
+        >
+          <span
+            v-if="hits < 3"
+            :class="[
+              isBoard ? pillClass(hits) : '',
+              isBoard ? (isBoardCompact
+                ? 'rounded-lg px-1 py-0.5 flex items-center justify-center min-w-[1.35rem] min-h-[1.35rem]'
+                : 'rounded-xl px-2 py-1 flex items-center justify-center min-w-[2.25rem] min-h-[2.25rem] sm:min-w-[2.5rem] sm:min-h-[2.5rem]') : '',
+              sizeClass,
+              colorClass(hits),
+              'font-mono tabular-nums',
+            ]"
+          >{{ symbol(hits) }}</span>
+          <span
+            v-else
+            :class="[
+              isBoard ? pillClass(hits) : '',
+              isBoard ? (isBoardCompact
+                ? 'rounded-lg px-0.5 py-0.5 flex items-center justify-center min-w-[1.45rem] min-h-[1.45rem]'
+                : 'rounded-xl px-1.5 py-0.5 flex items-center justify-center min-w-[2.5rem] min-h-[2.5rem] sm:min-w-[2.85rem] sm:min-h-[2.85rem]') : 'inline-flex items-center justify-center',
+              'inline-flex items-center justify-center font-sans',
+              'mark-close-anim',
+            ]"
+          >
+            <CricketClosedCheck :prominent="true" />
+          </span>
+        </span>
+      </Transition>
+    </div>
+  `},jt={props:["matchId"],components:{MatchReport:ht,CricketMarkCell:yt,CricketClosedCheck:be},setup(A){gt("body--game-shell");const m=vt(),C=mt(),z=ut(),N=e=>z.t(e),M=pt(),p=ft({darts:[]}),S=_(!1),v=_(null),y=_(null),V=_(1),L=_(!1),E=_(!1),W=_(!0),c=_(null),B=_(Date.now()),F=_(!1);let X=null;const h=i(()=>m.state),O=i(()=>m.isMyTurn),G=i(()=>m.isMatchActive),xe=i(()=>m.isSuspended),fe=i(()=>G.value&&!O.value),ge=i(()=>{var e,t;return Math.max(1,Number((t=(e=h.value)==null?void 0:e.legs_config)==null?void 0:t.legs)||1)}),ve=i(()=>{var e,t;return Math.max(1,Number((t=(e=h.value)==null?void 0:e.legs_config)==null?void 0:t.sets)||1)}),Z=i(()=>m.undoAvailable),he=i(()=>m.gameType==="x01"),Q=i(()=>m.gameType==="cricket"),j=i(()=>m.players),ye=i(()=>m.isFinished),ke=i(()=>{var e,t;return Math.ceil((((t=(e=h.value)==null?void 0:e.legs_config)==null?void 0:t.legs)??1)/2)}),P=i(()=>{var e;return((e=h.value)==null?void 0:e.turn_timer)??null}),K=i(()=>{var e;return!!((e=h.value)!=null&&e.use_turn_timer)}),Y=i(()=>{const e=P.value;if(!(e!=null&&e.deadline_at))return 0;const t=new Date(e.deadline_at).getTime();return Math.max(0,Math.ceil((t-B.value)/1e3))}),we=i(()=>{const e=P.value;if(!(e!=null&&e.deadline_at)||e.pending)return 0;const t=Math.max(1,e.window_seconds||300),s=Y.value;return Math.min(100,Math.max(0,s/t*100))}),Te=i(()=>{if(!K.value||!G.value)return!1;const e=P.value;return!!(e!=null&&e.deadline_at&&!e.pending)}),_e=i(()=>{var s,r,a,l;if(!K.value||!G.value||!((s=P.value)!=null&&s.pending))return!1;const e=(r=C.user)==null?void 0:r.id,t=(l=(a=h.value)==null?void 0:a.current_player)==null?void 0:l.user_id;return e==null||t==null?!1:Number(t)===Number(e)}),ee=i(()=>{var s,r,a,l;if(!K.value||!G.value||!((s=P.value)!=null&&s.pending))return!1;const e=(r=C.user)==null?void 0:r.id,t=(l=(a=h.value)==null?void 0:a.current_player)==null?void 0:l.user_id;return e==null||t==null?!1:Number(t)!==Number(e)});function Ce(e){const t=Math.max(0,Number(e)||0),s=Math.floor(t/60),r=t%60;return s+":"+String(r).padStart(2,"0")}async function Ne(){var e,t,s,r,a;if(!F.value){F.value=!0;try{await m.turnTimeoutGrantExtra()}catch(l){const n=((t=(e=l.response)==null?void 0:e.data)==null?void 0:t.error)||((r=(s=l.response)==null?void 0:s.data)==null?void 0:r.message)||"Kļūda.";(a=window._dartToast)==null||a.call(window,n,"error")}finally{F.value=!1}}}async function Se(){var e,t,s,r,a;if(!F.value){F.value=!0;try{await m.turnTimeoutEndNoStats()}catch(l){const n=((t=(e=l.response)==null?void 0:e.data)==null?void 0:t.error)||((r=(s=l.response)==null?void 0:s.data)==null?void 0:r.message)||"Kļūda.";(a=window._dartToast)==null||a.call(window,n,"error")}finally{F.value=!1}}}const te=i(()=>{var s;const e=(s=h.value)==null?void 0:s.cricket_segments;return(Array.isArray(e)&&e.length?e:[20,19,18,17,16,15,25]).map(r=>Number(r))});function $(e,t){if(e==null)return 0;const s=Number(e),r=j.value.find(n=>Number(n.id)===s),a=r==null?void 0:r.cricket;if(!a)return 0;const l=Number(t);return l===25?a.seg_bull??0:a["seg_"+l]??0}function je(e){var t,s;return $((s=(t=h.value)==null?void 0:t.current_player)==null?void 0:s.id,e)}function Ae(e){const t=Number(e);return j.value.length>0&&j.value.every(s=>$(s.id,t)>=3)}const se=i(()=>{const e=j.value.length,t=Math.ceil(e/2),s=Math.floor(e/2);return[...Array(t).fill("1fr"),"minmax(3.25rem, 5vw)",...Array(s).fill("1fr")].join(" ")}),Me=i(()=>({display:"grid",gridTemplateColumns:se.value,alignItems:"center"})),Be=i(()=>({display:"grid",gridTemplateColumns:se.value,alignItems:"stretch",minHeight:0})),Re=i(()=>j.value.slice(0,Math.ceil(j.value.length/2))),Ie=i(()=>j.value.slice(Math.ceil(j.value.length/2)));function De(e){const t=(e||[]).map(Number),s=new Set(t),r=[...s].filter(n=>n>=1&&n<=20).sort((n,o)=>n-o),a=[...s].filter(n=>(n<1||n>20)&&n!==25).sort((n,o)=>n-o),l=[...r,...a];return s.has(25)&&l.push(25),l}const J=i(()=>De(te.value)),ae=i(()=>J.value.filter(e=>e!==25)),ze=i(()=>J.value.includes(25)),Fe=i(()=>{const e=ae.value,t=Math.ceil(e.length/2);return{left:e.slice(0,t),right:e.slice(t)}});function He(e,t){p.darts.length>=3||p.darts.push({segment:e,multiplier:t})}function Le(){p.darts.length>=3||p.darts.push({segment:0,multiplier:0})}function Pe(e,t){p.darts.length>=3||p.darts.push({segment:e,multiplier:t})}function re(e){p.darts.splice(e,1)}function ne(e){return e.segment===0?"Miss":e.segment===25&&e.multiplier===2?"Bull":e.segment===25?"Outer":(e.multiplier===2?"D":e.multiplier===3?"T":"S")+e.segment}function le(e){return e.segment===0?0:e.segment*e.multiplier}function T(e){return e[Math.floor(Math.random()*e.length)]}function ie(e,t,s){return e!=null&&t!=null&&(Number(s.current_leg)!==Number(e)||Number(s.current_set)!==Number(t))}function oe(e){return e>=180?"t180":e>=140?"t140":e>=100?"t100":e>=95?"t95":null}function Ue(e){switch(e){case"t95":return"Pīķa zona";case"t100":return"Labi sit!";case"t140":return"Premium gājiens";case"t180":return"TON 80 · EXCELLENT";default:return""}}function Ee(e){const t=Number(e);return!t||t<=0?{coTier:null,title:"",tag:""}:t<=20?{coTier:"co1",title:T(["Aizvērts!","Ieejamā!","Čau, score!","Klusi, bet precīzi"]),tag:T(["Kā ar karoti medu.","Miers ir miers.","Mini finišs, liela sirds."])}:t<=40?{coTier:"co2",title:T(["Slēdzam!","Aizķēries!","Uz mājām!"]),tag:T(["Jau redzams gals.","Vēl tuvāk kāpām.","Pretinieks nervozē."])}:t<=80?{coTier:"co3",title:T(["Labs finišs!","Turpinām kāpt!","Score krīt!"]),tag:T(["Šis sāp pretiniekam.","Kārtīgs gājiens.","Tā turēt!"])}:t<=120?{coTier:"co4",title:T(["Iespaidīgs checkout!","Augstākā līga!","Meistarība!"]),tag:T(["Tu dari to pareizi.","Šķīvis klausa.","Tā ir māksla."])}:t<=169?{coTier:"co5",title:T(["Augstas raudzes finišs!","Reta putna līmenis!","Ko tu dari ar šķīvi?!"]),tag:T(["Šito rāda atkārtojumā.","Kā no grāmatas.","Elite."])}:{coTier:"coTop",title:T(["LEĠENDĀRS!","170 klubs!","Meistarklase!"]),tag:T(["Aplausi. Tu to nopelnīji.","Šādu redz reti.","Respekts."])}}function We(e){const t=e==null?void 0:e.kind,s=e==null?void 0:e.checkoutTitle,r=s?"ring-2 ring-emerald-500/30 border-emerald-600/45":"";if(t==="bust")return"border-rose-500/75 bg-gradient-to-br from-rose-950/98 via-[#1a0a0f]/95 to-slate-900/98 shadow-xl shadow-rose-900/40 ring-1 ring-rose-500/30";if(t==="miss")return"border-slate-500/70 bg-slate-900/98 shadow-lg shadow-black/40 ring-1 ring-slate-600/30";if(t==="high"){const a=e.highTier;if(a==="t95")return`border-amber-700/50 bg-gradient-to-br from-slate-900/98 to-[#0f172a]/98 shadow-md ${r}`.trim();if(a==="t100")return`border-amber-400/65 bg-gradient-to-br from-amber-950/90 via-[#0f172a]/98 to-slate-900/98 shadow-lg shadow-amber-900/25 ${r}`.trim();if(a==="t140")return`border-fuchsia-400/55 bg-gradient-to-br from-fuchsia-950/85 via-amber-950/50 to-[#0a1120]/98 shadow-xl shadow-fuchsia-900/30 ${r}`.trim();if(a==="t180")return`border-yellow-300/70 bg-gradient-to-br from-yellow-950/90 via-amber-900/60 to-slate-950/98 shadow-2xl shadow-amber-500/35 ${r}`.trim()}return s?"border-emerald-500/55 bg-gradient-to-br from-emerald-950/90 via-[#0f172a]/98 to-slate-900/98 shadow-xl shadow-emerald-900/25":"border-slate-600 bg-slate-800/95"}function Ge(e){const t=[],s=e==null?void 0:e.kind;return s==="bust"?t.push("dt-x01-toast-bust"):s==="miss"?t.push("dt-x01-toast-miss"):s==="high"&&(e.highTier==="t95"?t.push("dt-x01-tier-95"):e.highTier==="t100"?t.push("dt-x01-tier-100"):e.highTier==="t140"?t.push("dt-x01-tier-140"):e.highTier==="t180"&&t.push("dt-x01-tier-180")),e.checkoutTitle&&t.push("dt-x01-co-pop"),t.join(" ")}function Xe(e){return e.kind==="bust"?"text-rose-300":e.kind==="miss"?"text-slate-400":e.highTier==="t95"?"text-amber-200/90 text-[11px] sm:text-xs font-black tracking-[0.18em]":e.highTier==="t100"?"text-amber-200 text-xs sm:text-sm font-black tracking-wide":e.highTier==="t140"?"text-fuchsia-200 text-sm sm:text-base font-black tracking-tight":e.highTier==="t180"?"text-yellow-200 text-base sm:text-lg font-black drop-shadow-[0_0_14px_rgba(250,204,21,0.4)]":e.checkoutTitle&&e.kind==="normal"?"text-emerald-300 text-xs sm:text-sm font-black":"text-slate-200 text-xs font-bold"}const Ke=["Legs iekārtots!","Šajā legā — tu!","Kāpes augšā!","Punkts pievienots!","Uzvaras aplis!"];function de({winnerName:e,wonSet:t,wonLeg:s},r){setTimeout(()=>{y.value={winnerName:e,wonSet:t,wonLeg:s,line:T(Ke)},setTimeout(()=>{y.value=null},3600)},r)}function Ve(e,{throwerId:t,prevLeg:s,prevSet:r,prevRemaining:a,data:l}){const n=e.reduce((D,q)=>D+le(q),0),o=e.map(ne),u=ie(s,r,l),x=l.players||[],f=t!=null?x.find(D=>Number(D.id)===Number(t)):null,b=f==null?void 0:f.remaining;let d="normal";n===0?d="miss":!u&&a!=null&&b!=null&&Number(a)===Number(b)?d="bust":oe(n)&&(d="high");const k=u&&n>0&&a!=null&&Number(a)===Number(n),g=k?Ee(a):{title:"",tag:""},w=d==="high"?oe(n):null,I=w?Ue(w):"";let H="";d==="bust"?H="BUST":d==="miss"?H="":I?H=I:g.title&&(H=g.title);const it=k&&I&&g.title?{title:g.title,tag:g.tag}:null,ot=k&&!I&&g.tag?g.tag:null;let R=2800;(d==="miss"||d==="bust")&&(R=3500),d==="high"&&(w==="t95"?R=3100:w==="t100"?R=3900:w==="t140"?R=4400:w==="t180"&&(R=5400)),g.title&&(R=Math.max(R,4e3)),v.value={labels:o,pts:n,kind:d,highTier:w,checkoutTitle:k&&g.title?g.title:null,topBanner:H,bannerIsCompact:d==="bust"||d==="miss",checkoutDetail:it,checkoutFooter:ot},setTimeout(()=>{v.value=null},R);const dt=l.status==="finished";if((u||dt)&&n>0&&d!=="bust"&&d!=="miss"&&t){const D=x.find(q=>Number(q.id)===Number(t));de({winnerName:(D==null?void 0:D.name)||"—",wonSet:r,wonLeg:s},R+220)}}bt(()=>{var e,t;return[(e=h.value)==null?void 0:e.current_set,(t=h.value)==null?void 0:t.current_leg]},()=>{p.darts=[]});const U=3;function Oe(e){const t=Number(e);return t===25?"seg_bull":`seg_${t}`}function $e(e,t){const s=e==null?void 0:e.cricket;if(!s)return 0;const r=Oe(t);return Math.max(0,Math.min(U,Number(s[r]??0)))}function Je(e,t){const s=e.map(a=>Number(a.id)),r={};for(const a of s){r[a]={};const l=e.find(n=>Number(n.id)===a);for(const n of t)r[a][n]=l?$e(l,n):0}return{hits:r,playerIds:s}}function qe(e,t,s){const r={};for(const a of t){r[a]={};for(const l of s)r[a][l]=e[a][l]??0}return r}function Ze(e,t,s,r,a,l){const n=Number(a),o=Number(l);if(o<=0||n<=0||!s.includes(n))return 0;let u=!0;for(const f of t)if((e[f][n]??0)<U){u=!1;break}if(u)return 0;const x=e[r][n]??0;return x>=U?0:Math.min(o,U-x)}function Qe(e,t,s,r,a){const l=Number(s),n=Number(r);if(n<=0||l<=0||!a.includes(l))return;const o=e[t][l]??0;if(o>=U)return;const u=U-o,x=Math.min(n,u);e[t][l]=o+x}function Ye(e,t,s,r){const a=t.map(Number),{hits:l,playerIds:n}=Je(s,a),o=qe(l,n,a),u=Number(r),x=[];let f=0;for(const b of e){const d=Ze(o,n,a,u,b.segment,b.multiplier);x.push(d),f+=d,Qe(o,u,b.segment,b.multiplier,a)}return{total:f,perDart:x}}function et(e,t,s,r){const a=t.map(Number),{total:l,perDart:n}=Ye(e,a,s,r);let o=0,u=0;const x=new Set;for(let b=0;b<e.length;b++){const d=e[b],k=Number(d.segment),g=Number(d.multiplier),w=n[b]??0;!k||!g||!a.includes(k)||(k===25&&(o+=w),g===3&&w>0&&(u++,x.add(k)))}const f=(b,d,k,g,w)=>({emoji:b,title:d,sub:k,color:g,glow:w});if(u>=3&&x.size>=3&&l>=9)return f("🐎🔥","Baltais zirgs!","Trīs trīskārši · trīs lauki · 9 trāpījumi","#6ee7b7","#10b981");if(l>=9)return f("🔥",`${l} trāpījumi!`,"Maksimums","#fca5a5","#f43f5e");if(u>=3&&x.size>=3)return f("🐎","Baltais zirgs!","Trīs trīskārši dažādos laukos","#6ee7b7","#10b981");if(u>=3&&x.size===1)return f("💥","Trīs trīskārši!","Vienā laukā","#fcd34d","#f59e0b");if(o>=3){const b=o>=6?"!!":"!";return f("🎯",`${o} Bull${b}`,`${o} trāpījumi bullā`,"#7dd3fc","#0ea5e9")}return l>=4?f("⬡",`${l} trāpījumi!`,null,"#c4b5fd","#8b5cf6"):null}async function ce(){var n,o,u,x,f,b;if(p.darts.length===0)return;S.value=!0;const e=[...p.darts],t=[...j.value],s=(o=(n=h.value)==null?void 0:n.current_player)==null?void 0:o.id,r=(u=h.value)==null?void 0:u.current_leg,a=(x=h.value)==null?void 0:x.current_set,l=s!=null?(f=j.value.find(d=>Number(d.id)===Number(s)))==null?void 0:f.remaining:null;try{const d=await m.submitThrow(e),k=ie(r,a,d);if(!Q.value)Ve(e,{throwerId:s,prevLeg:r,prevSet:a,prevRemaining:l,data:d});else{const g=(((b=h.value)==null?void 0:b.cricket_segments)??[20,19,18,17,16,15,25]).map(Number),w=s!=null?et(e,g,t,s):null;if(w&&(c.value=w,setTimeout(()=>{c.value=null},2800)),(k||d.status==="finished")&&s){const I=(d.players||[]).find(H=>Number(H.id)===Number(s));de({winnerName:(I==null?void 0:I.name)||"—",wonSet:a,wonLeg:r},w?2950:450)}}p.darts=[]}finally{S.value=!1}}async function me(){p.darts.length>0?p.darts.pop():L.value=!0}async function tt(){var t;if(L.value=!1,!Z.value)return;const e=await m.undo();p.darts=[],e||(t=window._dartToast)==null||t.call(window,"Neizdevās atsaukt gājienu.","error")}function st(){L.value=!1,E.value=!0}async function at(){var e,t,s,r,a,l,n;E.value=!1;try{const o=await m.abandonMatch();o!=null&&o.message&&((e=window._dartToast)==null||e.call(window,o.message,"info")),M.push("/")}catch(o){if(((t=o==null?void 0:o.response)==null?void 0:t.status)===404){M.push("/");return}const u=((r=(s=o.response)==null?void 0:s.data)==null?void 0:r.message)||((l=(a=o.response)==null?void 0:a.data)==null?void 0:l.error)||"Neizdevās pārtraukt spēli.";(n=window._dartToast)==null||n.call(window,u,"error")}}async function rt(){var t,s,r,a,l;const e=m.state;if(!(!e||e.status!=="suspended"||e.play_mode!=="local")&&!(!C.user||Number(e.host_user_id)!==Number(C.user.id)))try{await m.resumeMatch()}catch(n){const o=((s=(t=n.response)==null?void 0:t.data)==null?void 0:s.error)||((a=(r=n.response)==null?void 0:r.data)==null?void 0:a.message)||N("common.error");(l=window._dartToast)==null||l.call(window,o,"error"),M.push("/")}}async function nt(){var a,l,n,o,u,x,f,b,d;const e=(a=h.value)==null?void 0:a.play_mode,t=(l=h.value)==null?void 0:l.host_user_id,s=(n=C.user)==null?void 0:n.id,r=e==="local"&&s!=null&&Number(t)===Number(s);try{r&&m.isMatchActive&&(await m.suspendLocalMatch(),(o=window._dartToast)==null||o.call(window,N("game.suspendedExitToast"),"success"))}catch(k){const g=((x=(u=k.response)==null?void 0:u.data)==null?void 0:x.message)||((b=(f=k.response)==null?void 0:f.data)==null?void 0:b.error)||N("common.error");(d=window._dartToast)==null||d.call(window,g,"error");return}m.reset(),M.push("/")}function lt(){m.reset(),M.push("/")}function ue(e){if(ee.value||!O.value||S.value)return;const t=e.target;t&&(t.tagName==="INPUT"||t.tagName==="TEXTAREA"||t.closest&&t.closest('[contenteditable="true"]'))||(e.key==="Enter"&&p.darts.length>0?(e.preventDefault(),ce()):e.key==="Escape"?(e.preventDefault(),me()):e.key==="Backspace"&&p.darts.length>0&&(e.preventDefault(),re(p.darts.length-1)))}return pe(async()=>{W.value=!0;try{await m.loadState(A.matchId),await rt()}finally{W.value=!1}m.startPolling(1100),document.addEventListener("keydown",ue),X=setInterval(()=>{B.value=Date.now()},500)}),xt(()=>{m.stopPolling(),document.removeEventListener("keydown",ue),X&&(clearInterval(X),X=null)}),{matchId:i(()=>A.matchId),state:h,isMyTurn:O,isX01:he,isCricket:Q,players:j,finished:ye,legsToWin:ke,dartInput:p,submitting:S,turnResult:v,legWonCelebration:y,activeMultiplier:V,showUndoConfirm:L,showAbandonConfirm:E,isMatchActive:G,isSuspended:xe,waitingForTurnUi:fe,legsConfigTotal:ge,setsConfigTotal:ve,gameBootPending:W,undoAvailable:Z,cricketActiveSegs:te,cricketSdtSegments:J,cricketSdtNonBull:ae,cricketSdtHasBull:ze,cricketPadSplit:Fe,hitsFor:$,myHitsFor:je,segClosedByAll:Ae,scorecardGridStyle:Me,scorecardRowGridStyle:Be,leftPlayers:Re,rightPlayers:Ie,addX01Dart:He,addX01Miss:Le,addCricketDart:Pe,removeDart:re,dartLabel:ne,dartValue:le,turnResultShellClass:We,turnResultMotionClass:Ge,turnResultTopBannerClass:Xe,submitThrow:ce,undo:me,confirmUndo:tt,goAbandonFromUndoDialog:st,confirmAbandon:at,exitGameSaving:nt,goHome:lt,auth:C,gameStore:m,cricketAchievement:c,t:N,useTurnTimer:K,turnTimer:P,turnTimerRemainingSec:Y,turnTimerProgress:we,turnTimerRowVisible:Te,showTurnTimeoutWaitingBanner:_e,showTurnTimeoutOpponentModal:ee,formatTurnClock:Ce,turnTimeoutBusy:F,onTurnTimeoutGrantExtra:Ne,onTurnTimeoutEndNoStats:Se}},template:`
+    <div class="flex h-full min-h-0 flex-1 flex-col w-full min-w-0 overflow-hidden bg-[#060d18] text-slate-200">
 
       <!-- Turn result toast (X01: punkti / checkout / BUST / Miss) -->
       <Teleport to="body">
@@ -1135,20 +614,8 @@ export default {
                 </div>
               </div>
 
-              <!-- Scoreboard (pagaidu: orientācijas tests) -->
-              <div v-if="gameFieldOrientationProbe"
-                   class="flex-1 min-h-0 mx-4 mb-4 rounded-xl overflow-hidden
-                          border border-dashed border-amber-500/35 bg-[#0a1120]/90 flex flex-col items-center justify-center shadow-inner px-4 py-8">
-                <div class="text-center space-y-3 max-w-md">
-                  <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Layout probe</div>
-                  <div class="text-5xl sm:text-6xl font-black tracking-tight leading-none"
-                       :class="layoutKind === 'landscape' ? 'text-sky-400' : layoutKind === 'portrait' ? 'text-amber-400' : 'text-emerald-400'">
-                    {{ layoutLabel }}
-                  </div>
-                  <div class="text-slate-500 text-sm font-mono tabular-nums">{{ layoutWidth }} × {{ layoutHeight }} · {{ layoutAspect }}</div>
-                </div>
-              </div>
-              <div v-else class="flex-1 min-h-0 mx-4 mb-4 rounded-xl overflow-hidden
+              <!-- Scoreboard -->
+              <div class="flex-1 min-h-0 mx-4 mb-4 rounded-xl overflow-hidden
                           border border-[#162540] bg-[#0f1c30]/90 flex flex-col shadow-inner">
                 <!-- Headers -->
                 <div class="flex-shrink-0 border-b border-[#162540] py-2 px-1 bg-[#0a1120]/60"
@@ -1466,19 +933,8 @@ export default {
               </div>
             </div>
 
-            <!-- Scoreboard (pagaidu: orientācijas tests) -->
-            <div v-if="gameFieldOrientationProbe"
-                 class="min-h-0 mx-2 mb-1 rounded-lg overflow-hidden border border-dashed border-amber-500/35 bg-[#0a1120]/90 flex flex-col items-center justify-center shadow-inner py-6 px-2">
-              <div class="text-center space-y-2">
-                <div class="text-[8px] font-black uppercase tracking-widest text-slate-500">Layout</div>
-                <div class="text-3xl font-black leading-tight"
-                     :class="layoutKind === 'landscape' ? 'text-sky-400' : layoutKind === 'portrait' ? 'text-amber-400' : 'text-emerald-400'">
-                  {{ layoutLabel }}
-                </div>
-                <div class="text-slate-500 text-[11px] font-mono tabular-nums">{{ layoutWidth }}×{{ layoutHeight }} · {{ layoutAspect }}</div>
-              </div>
-            </div>
-            <div v-else class="min-h-0 mx-2 mb-1 rounded-lg overflow-hidden border border-[#162540] bg-[#0f1c30]/95 flex flex-col shadow-inner">
+            <!-- Scoreboard -->
+            <div class="min-h-0 mx-2 mb-1 rounded-lg overflow-hidden border border-[#162540] bg-[#0f1c30]/95 flex flex-col shadow-inner">
               <div class="flex-shrink-0 border-b border-[#162540] py-1 px-0.5 bg-[#0a1120]/60"
                    :style="scorecardGridStyle">
                 <div v-for="p in leftPlayers" :key="'lhm-'+p.id"
@@ -1697,18 +1153,8 @@ export default {
 
           <div class="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6 min-h-0">
 
-            <div v-if="gameFieldOrientationProbe"
-                 class="lg:col-span-2 min-h-0 order-2 lg:order-1 flex flex-col items-center justify-center rounded-xl border border-dashed border-amber-500/35 bg-[#0a1120]/80 py-10 sm:py-16 px-4">
-              <div class="text-center space-y-3">
-                <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Layout probe (X01)</div>
-                <div class="text-4xl sm:text-5xl font-black tracking-tight leading-none"
-                     :class="layoutKind === 'landscape' ? 'text-sky-400' : layoutKind === 'portrait' ? 'text-amber-400' : 'text-emerald-400'">
-                  {{ layoutLabel }}
-                </div>
-                <div class="text-slate-500 text-sm font-mono tabular-nums">{{ layoutWidth }} × {{ layoutHeight }} · {{ layoutAspect }}</div>
-              </div>
-            </div>
-            <div v-else class="lg:col-span-2 min-h-0 overflow-y-auto flex flex-col gap-2 sm:gap-4 order-2 lg:order-1">
+            <!-- Scoreboard -->
+            <div class="lg:col-span-2 min-h-0 overflow-y-auto flex flex-col gap-2 sm:gap-4 order-2 lg:order-1">
 
               <div v-for="player in players" :key="player.id"
                    class="border-2 rounded-lg sm:rounded-xl p-2.5 sm:p-4 transition-all duration-300 shrink-0"
@@ -1861,5 +1307,4 @@ export default {
 
       </template>
     </div>
-  `,
-};
+  `};export{jt as default};

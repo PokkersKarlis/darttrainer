@@ -18,7 +18,7 @@
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-BniniYe3.css",
+    "file": "assets/app-DceAi-0p.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -54,8 +54,8 @@
       "resources/js/dart-app/pages/NotFound.vue"
     ],
     "css": [
-      "assets/main-Bg9kLLaJ.css",
-      "assets/app-BniniYe3.css"
+      "assets/main-CA2KbRBw.css",
+      "assets/app-DceAi-0p.css"
     ]
   },
   "resources/js/dart-app/pages/Admin.js": {
@@ -68,7 +68,7 @@
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/app-BniniYe3.css"
+      "assets/app-DceAi-0p.css"
     ]
   },
   "resources/js/dart-app/pages/Friends.vue": {
@@ -82,8 +82,8 @@
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/Friends-DRKunl_0.css",
-      "assets/app-BniniYe3.css"
+      "assets/Friends-CCnK9YsW.css",
+      "assets/app-DceAi-0p.css"
     ]
   },
   "resources/js/dart-app/pages/Game.js": {
@@ -98,7 +98,7 @@
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/app-BniniYe3.css"
+      "assets/app-DceAi-0p.css"
     ]
   },
   "resources/js/dart-app/pages/Home.vue": {
@@ -112,8 +112,8 @@
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/Home-Cw6ezjUp.css",
-      "assets/app-BniniYe3.css"
+      "assets/Home-BN1qdMy8.css",
+      "assets/app-DceAi-0p.css"
     ]
   },
   "resources/js/dart-app/pages/Login.vue": {
@@ -126,8 +126,8 @@
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/Login-B_dPF498.css",
-      "assets/app-BniniYe3.css"
+      "assets/Login-Bfs2nat4.css",
+      "assets/app-DceAi-0p.css"
     ]
   },
   "resources/js/dart-app/pages/NotFound.vue": {
@@ -140,7 +140,7 @@
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/app-BniniYe3.css"
+      "assets/app-DceAi-0p.css"
     ]
   },
   "resources/js/dart-app/pages/Register.vue": {
@@ -153,8 +153,8 @@
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/Register-C9y3Dq8p.css",
-      "assets/app-BniniYe3.css"
+      "assets/Register-ClR8d0Vn.css",
+      "assets/app-DceAi-0p.css"
     ]
   },
   "resources/js/dart-app/pages/Statistics.vue": {
@@ -168,8 +168,8 @@
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/Statistics-DGsAUv9e.css",
-      "assets/app-BniniYe3.css"
+      "assets/Statistics-B-uyZn6Y.css",
+      "assets/app-DceAi-0p.css"
     ]
   },
   "resources/js/dart-app/pages/X01Training.js": {
@@ -182,7 +182,7 @@
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/app-BniniYe3.css"
+      "assets/app-DceAi-0p.css"
     ]
   },
   "resources/js/dart-app/pages/lobby/LobbyApp.vue": {
@@ -196,7 +196,7 @@
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/app-BniniYe3.css"
+      "assets/app-DceAi-0p.css"
     ]
   },
   "resources/js/dart-app/store/game.js": {
@@ -209,7 +209,7 @@
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/app-BniniYe3.css"
+      "assets/app-DceAi-0p.css"
     ]
   }
 }
