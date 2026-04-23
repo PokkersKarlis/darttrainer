@@ -1231,27 +1231,39 @@ onUnmounted(() => {
           </div>
           <div class="dh-mi-stg">
             <div class="dh-mi-st">
-              <div class="dh-stat-v">{{ summary.users_total }}</div>
+              <div class="dh-stat-v dh-stat-v--amber">
+                {{ summary.users_total }}
+              </div>
               <div class="dh-stat-l">{{ t('home.usersTotal') }}</div>
             </div>
             <div class="dh-mi-st">
-              <div class="dh-stat-v">{{ summary.active_players }}</div>
+              <div class="dh-stat-v dh-stat-v--emerald">
+                {{ summary.active_players }}
+              </div>
               <div class="dh-stat-l">{{ t('home.activePlayers') }}</div>
             </div>
             <div class="dh-mi-st">
-              <div class="dh-stat-v">{{ summary.games_total }}</div>
+              <div class="dh-stat-v dh-stat-v--amber">
+                {{ summary.games_total }}
+              </div>
               <div class="dh-stat-l">{{ t('home.gamesTotal') }}</div>
             </div>
             <div class="dh-mi-st">
-              <div class="dh-stat-v">{{ summary.matches_active }}</div>
+              <div class="dh-stat-v dh-stat-v--red">
+                {{ summary.matches_active }}
+              </div>
               <div class="dh-stat-l">{{ t('home.matchesActive') }}</div>
             </div>
             <div class="dh-mi-st">
-              <div class="dh-stat-v">{{ summary.rooms_open }}</div>
+              <div class="dh-stat-v dh-stat-v--emerald">
+                {{ summary.rooms_open }}
+              </div>
               <div class="dh-stat-l">{{ t('home.roomsOpen') }}</div>
             </div>
             <div v-if="summary.last_registration_at" class="dh-mi-st">
-              <div class="dh-stat-v">{{ fmtRegDay(summary.last_registration_at) }}</div>
+              <div class="dh-stat-v dh-stat-v--amber">
+                {{ fmtRegDay(summary.last_registration_at) }}
+              </div>
               <div v-if="fmtRegYear(summary.last_registration_at)" class="dh-stat-s">
                 {{ fmtRegYear(summary.last_registration_at) }}
               </div>
