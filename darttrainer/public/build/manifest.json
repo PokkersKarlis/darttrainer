@@ -3,22 +3,22 @@
     "file": "assets/index-BuNY4Ty6.js",
     "name": "index"
   },
-  "_useBodyShellClass-BPotVWWz.js": {
-    "file": "assets/useBodyShellClass-BPotVWWz.js",
+  "_useBodyShellClass-I7ctqzZ9.js": {
+    "file": "assets/useBodyShellClass-I7ctqzZ9.js",
     "name": "useBodyShellClass",
     "imports": [
       "resources/js/dart-app/main.vue"
     ]
   },
-  "_useCanvasBnav-BaQOj8F7.js": {
-    "file": "assets/useCanvasBnav-BaQOj8F7.js",
+  "_useCanvasBnav-Bkug6Fhl.js": {
+    "file": "assets/useCanvasBnav-Bkug6Fhl.js",
     "name": "useCanvasBnav",
     "imports": [
       "resources/js/dart-app/main.vue"
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-DceAi-0p.css",
+    "file": "assets/app-CGGiQM9W.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -32,7 +32,7 @@
     ]
   },
   "resources/js/dart-app/main.vue": {
-    "file": "assets/main-DBGjzUcR.js",
+    "file": "assets/main-DJCgqRZr.js",
     "name": "main",
     "src": "resources/js/dart-app/main.vue",
     "isEntry": true,
@@ -55,11 +55,11 @@
     ],
     "css": [
       "assets/main-CA2KbRBw.css",
-      "assets/app-DceAi-0p.css"
+      "assets/app-CGGiQM9W.css"
     ]
   },
   "resources/js/dart-app/pages/Admin.js": {
-    "file": "assets/Admin-DMpbLMRH.js",
+    "file": "assets/Admin-D4zbrZUP.js",
     "name": "Admin",
     "src": "resources/js/dart-app/pages/Admin.js",
     "isDynamicEntry": true,
@@ -68,56 +68,56 @@
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/app-DceAi-0p.css"
+      "assets/app-CGGiQM9W.css"
     ]
   },
   "resources/js/dart-app/pages/Friends.vue": {
-    "file": "assets/Friends-212YbWmb.js",
+    "file": "assets/Friends-SGI97D01.js",
     "name": "Friends",
     "src": "resources/js/dart-app/pages/Friends.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/dart-app/main.vue",
-      "_useCanvasBnav-BaQOj8F7.js",
+      "_useCanvasBnav-Bkug6Fhl.js",
       "_index-BuNY4Ty6.js"
     ],
     "css": [
       "assets/Friends-CCnK9YsW.css",
-      "assets/app-DceAi-0p.css"
+      "assets/app-CGGiQM9W.css"
     ]
   },
   "resources/js/dart-app/pages/Game.js": {
-    "file": "assets/Game-BelbnopX.js",
+    "file": "assets/Game-DWVXYzae.js",
     "name": "Game",
     "src": "resources/js/dart-app/pages/Game.js",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/dart-app/main.vue",
-      "_useBodyShellClass-BPotVWWz.js",
+      "_useBodyShellClass-I7ctqzZ9.js",
       "resources/js/dart-app/store/game.js",
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/app-DceAi-0p.css"
+      "assets/app-CGGiQM9W.css"
     ]
   },
   "resources/js/dart-app/pages/Home.vue": {
-    "file": "assets/Home-NqbGAI8Q.js",
+    "file": "assets/Home-BytvWewa.js",
     "name": "Home",
     "src": "resources/js/dart-app/pages/Home.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/dart-app/main.vue",
-      "_useCanvasBnav-BaQOj8F7.js",
+      "_useCanvasBnav-Bkug6Fhl.js",
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/Home-BN1qdMy8.css",
-      "assets/app-DceAi-0p.css"
+      "assets/Home-YZqSTj_S.css",
+      "assets/app-CGGiQM9W.css"
     ]
   },
   "resources/js/dart-app/pages/Login.vue": {
-    "file": "assets/Login-CfPN6Ed_.js",
+    "file": "assets/Login-BusobIeU.js",
     "name": "Login",
     "src": "resources/js/dart-app/pages/Login.vue",
     "isDynamicEntry": true,
@@ -127,11 +127,11 @@
     ],
     "css": [
       "assets/Login-Bfs2nat4.css",
-      "assets/app-DceAi-0p.css"
+      "assets/app-CGGiQM9W.css"
     ]
   },
   "resources/js/dart-app/pages/NotFound.vue": {
-    "file": "assets/NotFound-CMlg4ojG.js",
+    "file": "assets/NotFound-azdA5gug.js",
     "name": "NotFound",
     "src": "resources/js/dart-app/pages/NotFound.vue",
     "isDynamicEntry": true,
@@ -140,11 +140,11 @@
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/app-DceAi-0p.css"
+      "assets/app-CGGiQM9W.css"
     ]
   },
   "resources/js/dart-app/pages/Register.vue": {
-    "file": "assets/Register-D9wYDaRW.js",
+    "file": "assets/Register-DTb0YMTk.js",
     "name": "Register",
     "src": "resources/js/dart-app/pages/Register.vue",
     "isDynamicEntry": true,
@@ -154,26 +154,26 @@
     ],
     "css": [
       "assets/Register-ClR8d0Vn.css",
-      "assets/app-DceAi-0p.css"
+      "assets/app-CGGiQM9W.css"
     ]
   },
   "resources/js/dart-app/pages/Statistics.vue": {
-    "file": "assets/Statistics-BKLNE2A0.js",
+    "file": "assets/Statistics-B5_g6tlU.js",
     "name": "Statistics",
     "src": "resources/js/dart-app/pages/Statistics.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/dart-app/main.vue",
-      "_useCanvasBnav-BaQOj8F7.js",
+      "_useCanvasBnav-Bkug6Fhl.js",
       "_index-BuNY4Ty6.js"
     ],
     "css": [
       "assets/Statistics-B-uyZn6Y.css",
-      "assets/app-DceAi-0p.css"
+      "assets/app-CGGiQM9W.css"
     ]
   },
   "resources/js/dart-app/pages/X01Training.js": {
-    "file": "assets/X01Training-BnlcpOKp.js",
+    "file": "assets/X01Training-L36oHr0d.js",
     "name": "X01Training",
     "src": "resources/js/dart-app/pages/X01Training.js",
     "isDynamicEntry": true,
@@ -182,25 +182,25 @@
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/app-DceAi-0p.css"
+      "assets/app-CGGiQM9W.css"
     ]
   },
   "resources/js/dart-app/pages/lobby/LobbyApp.vue": {
-    "file": "assets/LobbyApp-B6VUDk1R.js",
+    "file": "assets/LobbyApp-Ch95oFMA.js",
     "name": "LobbyApp",
     "src": "resources/js/dart-app/pages/lobby/LobbyApp.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/dart-app/main.vue",
-      "_useBodyShellClass-BPotVWWz.js",
+      "_useBodyShellClass-I7ctqzZ9.js",
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/app-DceAi-0p.css"
+      "assets/app-CGGiQM9W.css"
     ]
   },
   "resources/js/dart-app/store/game.js": {
-    "file": "assets/game-CkXBCEpx.js",
+    "file": "assets/game-COrWnzCP.js",
     "name": "game",
     "src": "resources/js/dart-app/store/game.js",
     "isDynamicEntry": true,
@@ -209,7 +209,7 @@
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/app-DceAi-0p.css"
+      "assets/app-CGGiQM9W.css"
     ]
   }
 }
