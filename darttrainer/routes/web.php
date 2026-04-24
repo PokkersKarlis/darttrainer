@@ -21,17 +21,17 @@ Route::get('/game/{match}', function (string $match) {
 
     $userId = Auth::id();
     if ($userId === null) {
-        abort(404);
+        return redirect('/404');
     }
 
     $matchId = (int) $match;
     if ($matchId <= 0) {
-        abort(404);
+        return redirect('/404');
     }
 
     $roomId = DB::table('matches')->where('id', $matchId)->value('room_id');
     if (!$roomId) {
-        abort(404);
+        return redirect('/404');
     }
 
     $allowed = DB::table('room_players')
@@ -40,7 +40,7 @@ Route::get('/game/{match}', function (string $match) {
         ->exists();
 
     if (!$allowed) {
-        abort(404);
+        return redirect('/404');
     }
 
     return view('dart-spa');
@@ -54,7 +54,7 @@ Route::fallback(function () {
     // Extra safety: never serve SPA for `/game/*` to guests/non-players via fallback.
     $path = (string) request()->path();
     if (str_starts_with($path, 'game/')) {
-        abort(404);
+        return redirect('/404');
     }
 
     return view('dart-spa');

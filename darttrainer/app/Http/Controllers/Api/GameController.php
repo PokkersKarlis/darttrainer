@@ -676,52 +676,7 @@ class GameController extends Controller
             abort(404);
         }
 
-        // Tiešsaistes spēle: piesienam pie vienas "ierīces atslēgas" cookie, lai ar inkognito logu nepieslēdzas paralēli.
-        if (!$room->isLocalPlay()) {
-            $deviceKey = (string) request()->cookie('dt_device', '');
-            if ($deviceKey === '') {
-                abort(404);
-            }
-            if ($playerRow && $playerRow->device_key) {
-                if ($playerRow->device_key !== $deviceKey) {
-                    abort(404);
-                }
-            } elseif ($playerRow) {
-                // Backfill veciem ierakstiem, kur ierīces atslēga bija tukša.
-                $playerRow->device_key = $deviceKey;
-                $playerRow->save();
-            }
-        }
-
-        // Lokālā spēle: atļauta tikai no tās pašas ierīces/sesijas, kas sāka maču.
-        if ($room->isLocalPlay()) {
-            $deviceKey = (string) request()->cookie('dt_local_device', '');
-            $sessionId = session()->getId();
-
-            // Ja nav ierīces atslēgas, lokālā spēle nav pieejama (incognito u.c.).
-            if ($deviceKey === '') {
-                abort(404);
-            }
-
-            // Saderībai ar veciem mačiem, kur glabājās session id:
-            // - ja glabātais id sakrīt ar session id, atļaujam un pārrakstām uz deviceKey
-            // - ja nesakrīt ne ar ko, liedzam
-            if ($match->local_session_id) {
-                if ($match->local_session_id === $deviceKey) {
-                    return;
-                }
-                if ($match->local_session_id === $sessionId) {
-                    $match->local_session_id = $deviceKey;
-                    $match->save();
-                    return;
-                }
-                abort(404);
-            }
-
-            // Backfill veciem mačiem (ja kolonna ir NULL) — piesienam ierīces atslēgai.
-            $match->local_session_id = $deviceKey;
-            $match->save();
-        }
+        // Online/lokāli: piekļuve ir tikai pēc tā, vai lietotājs ir telpas spēlētājs.
     }
 
     private function authorizeCurrentPlayer(GameMatch $match): void

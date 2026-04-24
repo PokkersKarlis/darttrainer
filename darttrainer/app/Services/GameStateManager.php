@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Schema;
 class GameStateManager
 {
     /** Gājiena laika limits (sekundes) — pēc tam pretiniekam tiek piedāvāta izvēle. */
-    public const TURN_TIMER_MAIN_SECONDS = 30;
+    public const TURN_TIMER_MAIN_SECONDS = 60;
 
     /** Papildu minūte pēc pretinieka piekrišanas. */
     public const TURN_TIMER_EXTRA_SECONDS = 60;

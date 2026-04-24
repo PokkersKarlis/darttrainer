@@ -70,9 +70,17 @@ export function installApiInterceptors(getAuthStore) {
         const raw = err.response?.data?.message ?? err.response?.data?.error;
         const safe =
           typeof dartSafeDisplayMessage === 'function' ? dartSafeDisplayMessage(raw) : String(raw ?? '');
-        const msg = safe || 'Kļūda. Mēģini vēlreiz.';
+        const fallbackMsg = 'Kļūda. Mēģini vēlreiz.';
+        const msg = safe || fallbackMsg;
         if (typeof window._dartToast === 'function') {
           window._dartToast(msg, 'error');
+        }
+        // Ja nav drošas kļūdas ziņas (t.i. rādam fallback), visticamāk ir negaidīts stāvoklis.
+        // Šādā gadījumā aizvedam lietotāju uz sākumlapu.
+        if (!safe) {
+          try {
+            window.location.assign('/');
+          } catch (_) {}
         }
       }
 
