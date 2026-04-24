@@ -127,6 +127,8 @@ class AdminController extends Controller
 
         $db = $this->dbOverview();
 
+        $visits = $this->dailyVisitsOverview();
+
         return response()->json([
             'users_total'    => User::query()->count(),
             'active_players' => $activePlayers,
@@ -138,6 +140,7 @@ class AdminController extends Controller
             'top_sessions'   => $topSessionsRows,
             'analytics'      => $analytics,
             'db'             => $db,
+            'daily_visits'   => $visits,
             'build'          => [
                 'app_version'      => config('app.version'),
                 'laravel_version'  => app()->version(),
@@ -190,6 +193,67 @@ class AdminController extends Controller
             ];
         } catch (\Throwable $e) {
             return ['driver' => 'unknown', 'database' => null, 'tables' => [], 'total_bytes' => 0];
+        }
+    }
+
+    /** @return array<string, mixed> */
+    private function dailyVisitsOverview(): array
+    {
+        try {
+            $today = now()->toDateString();
+            $yesterday = now()->subDay()->toDateString();
+
+            $rows = DB::table('daily_visits')
+                ->whereIn('visit_date', [$today, $yesterday])
+                ->orderByDesc('hits')
+                ->limit(400)
+                ->get([
+                    'visit_date',
+                    'ip_address',
+                    'user_id',
+                    'user_name',
+                    'hits',
+                    'hit_login',
+                    'hit_register',
+                    'first_seen_at',
+                    'last_seen_at',
+                ]);
+
+            $fmt = fn ($r) => [
+                'date'         => (string) $r->visit_date,
+                'ip'           => (string) $r->ip_address,
+                'user_id'      => (int) $r->user_id ?: null,
+                'user_name'    => $r->user_name,
+                'hits'         => (int) $r->hits,
+                'hit_login'    => (bool) $r->hit_login,
+                'hit_register' => (bool) $r->hit_register,
+                'first_seen_at'=> $r->first_seen_at ? (string) $r->first_seen_at : null,
+                'last_seen_at' => $r->last_seen_at ? (string) $r->last_seen_at : null,
+            ];
+
+            $todayRows = $rows->filter(fn ($r) => (string) $r->visit_date === $today)->map($fmt)->values()->all();
+            $yesterdayRows = $rows->filter(fn ($r) => (string) $r->visit_date === $yesterday)->map($fmt)->values()->all();
+
+            $todayUnique = (int) DB::table('daily_visits')->where('visit_date', $today)->count();
+            $yesterdayUnique = (int) DB::table('daily_visits')->where('visit_date', $yesterday)->count();
+
+            return [
+                'today' => [
+                    'date'   => $today,
+                    'unique' => $todayUnique,
+                    'items'  => $todayRows,
+                ],
+                'yesterday' => [
+                    'date'   => $yesterday,
+                    'unique' => $yesterdayUnique,
+                    'items'  => $yesterdayRows,
+                ],
+            ];
+        } catch (\Throwable) {
+            return [
+                'today' => ['date' => now()->toDateString(), 'unique' => 0, 'items' => []],
+                'yesterday' => ['date' => now()->subDay()->toDateString(), 'unique' => 0, 'items' => []],
+            ];
         }
     }
 

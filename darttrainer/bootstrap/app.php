@@ -31,6 +31,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin'          => \App\Http\Middleware\EnsureUserIsAdmin::class,
             'verified.email' => \App\Http\Middleware\EnsureEmailVerifiedForApi::class,
         ]);
+
+        // Web: dienas unikālie apmeklējumi admin panelim
+        $middleware->web(append: [
+            \App\Http\Middleware\TrackDailyVisit::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

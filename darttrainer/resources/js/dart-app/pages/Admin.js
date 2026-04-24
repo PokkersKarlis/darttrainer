@@ -624,6 +624,66 @@ export default {
             </div>
           </details>
 
+          <!-- Daily unique visits -->
+          <p class="text-[10px] font-bold uppercase tracking-[0.1em] mb-3" style="color:#3a4a63">{{ t('admin.dailyVisitsTitle') }}</p>
+          <div class="rounded-xl overflow-hidden mb-8" style="background:#131720;border:1px solid #1e2738">
+            <div class="p-4" style="border-bottom:1px solid #1e2738">
+              <div class="text-sm font-bold" style="color:#e8eaf0">
+                {{ t('admin.dailyVisitsToday') }}:
+                <span class="ml-2 font-mono" style="color:#f5a623">{{ overview.daily_visits?.today?.unique ?? 0 }}</span>
+                <span class="ml-3" style="color:#7b8ba8">{{ overview.daily_visits?.today?.date }}</span>
+              </div>
+              <div class="text-sm font-bold mt-1" style="color:#e8eaf0">
+                {{ t('admin.dailyVisitsYesterday') }}:
+                <span class="ml-2 font-mono" style="color:#f5a623">{{ overview.daily_visits?.yesterday?.unique ?? 0 }}</span>
+                <span class="ml-3" style="color:#7b8ba8">{{ overview.daily_visits?.yesterday?.date }}</span>
+              </div>
+            </div>
+
+            <div class="rounded-xl overflow-x-auto" style="background:#131720">
+              <table class="w-full text-sm min-w-[760px]">
+                <thead>
+                  <tr style="background:#0b0e14">
+                    <th class="text-left py-2.5 px-4 text-[10px] font-bold uppercase tracking-[0.1em]" style="color:#3a4a63">{{ t('admin.dailyVisitsDate') }}</th>
+                    <th class="text-left py-2.5 px-4 text-[10px] font-bold uppercase tracking-[0.1em]" style="color:#3a4a63">{{ t('stats.player') }}</th>
+                    <th class="text-left py-2.5 px-4 text-[10px] font-bold uppercase tracking-[0.1em]" style="color:#3a4a63">{{ t('admin.ip') }}</th>
+                    <th class="text-right py-2.5 px-4 text-[10px] font-bold uppercase tracking-[0.1em]" style="color:#3a4a63">{{ t('admin.dailyVisitsHits') }}</th>
+                    <th class="text-center py-2.5 px-4 text-[10px] font-bold uppercase tracking-[0.1em]" style="color:#3a4a63">{{ t('admin.dailyVisitsLogin') }}</th>
+                    <th class="text-center py-2.5 px-4 text-[10px] font-bold uppercase tracking-[0.1em]" style="color:#3a4a63">{{ t('admin.dailyVisitsRegister') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="v in ([...(overview.daily_visits?.today?.items || []), ...(overview.daily_visits?.yesterday?.items || [])])"
+                    :key="v.date + '|' + v.ip + '|' + (v.user_id || 0)"
+                    style="border-top:1px solid #1e2738"
+                  >
+                    <td class="py-2.5 px-4 font-mono text-xs" style="color:#7b8ba8">{{ v.date }}</td>
+                    <td class="py-2.5 px-4 font-medium" style="color:#e8eaf0">
+                      {{ v.user_name || (v.user_id ? ('#' + v.user_id) : '—') }}
+                    </td>
+                    <td class="py-2.5 px-4 font-mono text-xs" style="color:#7b8ba8">
+                      <span v-if="v.ip && ipCountryByIp[v.ip]" class="mr-2" :title="ipCountryByIp[v.ip]">
+                        {{ flagEmoji(ipCountryByIp[v.ip]) }}
+                      </span>
+                      {{ v.ip }}
+                    </td>
+                    <td class="py-2.5 px-4 text-right font-mono text-xs" style="color:#f5a623">{{ v.hits }}</td>
+                    <td class="py-2.5 px-4 text-center text-xs" :style="{ color: v.hit_login ? '#34d399' : '#3a4a63' }">
+                      {{ v.hit_login ? 'yes' : '—' }}
+                    </td>
+                    <td class="py-2.5 px-4 text-center text-xs" :style="{ color: v.hit_register ? '#34d399' : '#3a4a63' }">
+                      {{ v.hit_register ? 'yes' : '—' }}
+                    </td>
+                  </tr>
+                  <tr v-if="!((overview.daily_visits?.today?.items || []).length + (overview.daily_visits?.yesterday?.items || []).length)">
+                    <td colspan="6" class="py-8 text-center text-sm" style="color:#3a4a63">{{ t('stats.noData') }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           <!-- Sessions -->
           <p class="text-[10px] font-bold uppercase tracking-[0.1em] mb-3" style="color:#3a4a63">{{ t('admin.sessionsTitle') }}</p>
           <div class="rounded-xl overflow-hidden mb-8" style="background:#131720;border:1px solid #1e2738">
