@@ -432,19 +432,19 @@ const onlineName = computed(() => auth.user?.name || '—');
                 <div class="rounded-xl border border-[#252d3d] bg-[#131720] p-4">
                   <h2 class="text-sm font-bold text-[#e8eaf0]">{{ t('lobby.joinCodeLabel') }}</h2>
                   <p class="mt-1 text-xs text-[#7b8ba8]">{{ t('lobby.wizardStep2HintOnline') }}</p>
-                  <div class="mt-3 flex gap-2">
+                  <div class="mt-3 flex flex-col gap-2 sm:flex-row">
                     <input
                       v-model="joinForm.code"
                       type="text"
                       maxlength="6"
-                      class="flex-1 rounded-lg border border-[#252d3d] bg-[#0b0e14] px-3.5 py-2.5 text-sm font-mono tracking-widest text-[#e8eaf0] outline-none placeholder:text-[#3a4a63]"
+                      class="min-w-0 flex-1 rounded-lg border border-[#252d3d] bg-[#0b0e14] px-3.5 py-2.5 text-sm font-mono tracking-widest text-[#e8eaf0] outline-none placeholder:text-[#3a4a63]"
                       :placeholder="t('lobby.joinCodePlaceholder')"
                       :disabled="loading || lobbyShellLocked"
                       @keyup.enter="!lobbyShellLocked && joinRoom()"
                     />
                     <button
                       type="button"
-                      class="shrink-0 rounded-lg px-4 py-2.5 text-sm font-bold disabled:opacity-40"
+                      class="w-full shrink-0 rounded-lg px-4 py-2.5 text-sm font-bold disabled:opacity-40 sm:w-auto"
                       style="background: linear-gradient(135deg, #f5a623, #f5c842); color: #0b0e14; border: none"
                       :disabled="loading || lobbyShellLocked || !joinForm.code"
                       @click="joinRoom"
