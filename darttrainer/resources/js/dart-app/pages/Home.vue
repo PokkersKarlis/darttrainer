@@ -531,6 +531,28 @@ onUnmounted(() => {
               </div>
             </div>
           </div>
+          <div
+            class="dth-warn"
+            role="status"
+            style="border-color: rgba(245, 158, 11, 0.25); background: rgba(245, 158, 11, 0.08)"
+          >
+            <div class="dth-warn-ic" aria-hidden="true" style="color: #f59e0b">ℹ</div>
+            <div class="dh-warn-body">
+              <div class="dh-warn-h" style="color: #f5a623">
+                {{ t('home.x01DevTitle') }}
+              </div>
+              <p class="dh-warn-p" style="color: #e8eaf0">
+                {{ t('home.x01DevBody') }}
+              </p>
+              <div class="dth-warn-links">
+                <a :href="discordUrl" target="_blank" rel="noopener noreferrer" class="dth-warn-dc">
+                  <HomeStrokeIcon name="discord" :size="14" color="#5865F2" />
+                  {{ t('nav.discord') }}
+                </a>
+                <a class="dth-warn-mail" href="mailto:bugs@traindart.com">bugs@traindart.com</a>
+              </div>
+            </div>
+          </div>
           <div class="dth-hero dth-hero--stack">
             <div class="dth-hero-top">
               <div class="dth-hero-ico" aria-hidden="true">

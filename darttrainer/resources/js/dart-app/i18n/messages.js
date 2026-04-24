@@ -56,6 +56,9 @@ export const DART_I18N = {
       rebuildNoticeTitle: 'Pārbūve un testēšana',
       rebuildNoticeP1:
         'Lapa atrodas pārbūves procesā. Pašlaik pieejamā funkcionalitāte ir testa režīmā, pastāv datu zaudējumu risks.',
+      x01DevTitle: 'X01 ir izstrādes stadijā',
+      x01DevBody:
+        'X01 spēles (501/301 u.c.) un vēl daudz kas cits šobrīd ir izstrādes stadijā. Ja ir ierosinājumi vai pamanītas problēmas — raksti uz bugs@traindart.com vai Discord; administrācija noteikti izvērtēs perspektīvākās un attīstībai svarīgākās lietas.',
       rebuildNoticeContactHint: 'Kļūdu pieteikšanai — Discord vai e-pasts (atsevišķi zemāk).',
       activeGame: 'Aktīva spēle',
       roomCode: 'Kods',
@@ -674,6 +677,9 @@ export const DART_I18N = {
       rebuildNoticeTitle: 'Under reconstruction and testing',
       rebuildNoticeP1:
         'This site is under reconstruction. The functionality available right now is in test mode, and there is a risk of data loss.',
+      x01DevTitle: 'X01 is in development',
+      x01DevBody:
+        'X01 games (501/301 etc.) and many other things are still in development. If you have suggestions or found issues, email bugs@traindart.com or use Discord — the admins will review the most promising and important improvements.',
       rebuildNoticeContactHint: 'Report bugs via Discord or email (address on the line below).',
       activeGame: 'Active game',
       roomCode: 'Code',
