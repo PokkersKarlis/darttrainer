@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore, useLocaleStore } from '../../store/index.js';
 import { useCanPlayGames } from '../../composables/useCanPlayGames.js';
 import { useCanPlayX01 } from '../../composables/useCanPlayX01.js';
+import { useCookieConsent } from '../../composables/useCookieConsent.js';
 import { DARTTRAINER_DISCORD_URL } from '../../constants/discord.js';
 import HomeStrokeIcon from '../home/HomeStrokeIcon.vue';
 import HeaderUserMenu from '../shell/header/HeaderUserMenu.vue';
@@ -23,6 +24,8 @@ const canPlayX01 = useCanPlayX01();
 const needsEmailVerify = computed(() => auth.needsEmailVerification);
 const t = (k) => locale.t(k);
 const discordUrl = DARTTRAINER_DISCORD_URL;
+const consent = useCookieConsent();
+const canLoadPaypal = computed(() => consent.canFunctional.value || consent.canMarketing.value);
 
 const isMobile = ref(
   typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches,
@@ -235,7 +238,12 @@ function isSbActive(id) {
             <HomeStrokeIcon name="discord" :size="16" color="#5865F2" />
             <span>{{ t('nav.discord') }}</span>
           </a>
+          <button type="button" class="dth-sb-disc" @click="consent.openSettings()">
+            <span>🍪</span>
+            <span>{{ t('consent.settingsLink') }}</span>
+          </button>
           <form
+            v-if="canLoadPaypal"
             action="https://www.paypal.com/donate"
             method="post"
             target="_blank"

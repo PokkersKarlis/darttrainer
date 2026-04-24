@@ -9,6 +9,7 @@ import EmailVerifyBanner from '../components/shell/EmailVerifyBanner.vue';
 import FriendsIncomingModal from '../components/shell/FriendsIncomingModal.js';
 import { applySocialMeta } from '../utils/socialMeta.js';
 import HomeCanvasLayout from '../components/layout/HomeCanvasLayout.vue';
+import CookieConsent from '../components/CookieConsent.vue';
 
 const APP_NAME = 'DartTrainer';
 
@@ -245,5 +246,7 @@ watch(
         </div>
       </transition-group>
     </div>
+
+    <CookieConsent />
   </div>
 </template>

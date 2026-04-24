@@ -11,6 +11,7 @@ import HomeStrokeIcon from '../components/home/HomeStrokeIcon.vue';
 import HeaderUserMenu from '../components/shell/header/HeaderUserMenu.vue';
 import EmailVerifyBanner from '../components/shell/EmailVerifyBanner.vue';
 import { HOME_PAGE_SNAPSHOT_VERSION } from './homePageMeta.js';
+import { useCookieConsent } from '../composables/useCookieConsent.js';
 
 defineOptions({ name: 'HomePage' });
 
@@ -24,6 +25,8 @@ const { bnav, bnavOn, bnavClick, bnavDisabled } = useCanvasBnav();
 
 const t = (key) => locale.t(key);
 const discordUrl = DARTTRAINER_DISCORD_URL;
+const consent = useCookieConsent();
+const canLoadPaypal = computed(() => consent.canFunctional.value || consent.canMarketing.value);
 
 const summary = ref(null);
 const summaryErr = ref(false);
@@ -452,6 +455,7 @@ onUnmounted(() => {
             <span>{{ t('nav.discord') }}</span>
           </a>
           <form
+            v-if="canLoadPaypal"
             action="https://www.paypal.com/donate"
             method="post"
             target="_blank"
@@ -981,6 +985,30 @@ onUnmounted(() => {
                 t('nav.discord')
               }}</a>
               <a class="dh-mi-wb" href="mailto:bugs@traindart.com">bugs@traindart.com</a>
+            </div>
+
+            <div class="mt-2 flex flex-wrap items-center gap-2">
+              <a
+                :href="discordUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="dth-btn dth-btn--outline dth-btn--sm"
+              >
+                {{ t('nav.discord') }}
+              </a>
+              <form
+                v-if="canLoadPaypal"
+                action="https://www.paypal.com/donate"
+                method="post"
+                target="_blank"
+                rel="noopener noreferrer"
+                style="margin: 0"
+              >
+                <input type="hidden" name="hosted_button_id" value="A3THH5ND6F4NJ" />
+                <button type="submit" class="dth-btn dth-btn--accent dth-btn--sm">
+                  {{ t('home.homeDonate') }}
+                </button>
+              </form>
             </div>
           </div>
         </div>

@@ -49,6 +49,7 @@ const routes = [
     props: true,
     meta: { titleKey: 'nav.lobby', gameFocus: true },
   },
+  { path: '/privacy', component: load(() => import('../pages/Privacy.vue')), meta: { titleKey: 'privacy.title', public: true } },
   { path: '/training/x01', component: load(() => import('../pages/X01Training.js')), meta: { titleKey: 'nav.x01solo' } },
   { path: '/404', component: load(() => import('../pages/NotFound.vue')), meta: { titleKey: 'notFound.title', public: true } },
   { path: '/:pathMatch(.*)*', redirect: '/404', meta: { public: true } },

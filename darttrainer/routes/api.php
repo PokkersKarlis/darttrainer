@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ConsentController;
 use App\Http\Controllers\Api\FriendController;
 use App\Http\Controllers\Api\GameController;
 use App\Http\Controllers\Api\PublicStatsController;
@@ -17,6 +18,9 @@ Route::get('/csrf-cookie', fn () => response()->noContent());
 Route::middleware('throttle:60,1')->group(function () {
     Route::get('/public/home-summary', [PublicStatsController::class, 'homeSummary']);
 });
+
+// Cookie consent logging (anonymous; for GDPR proof). Requires CSRF cookie but no auth.
+Route::middleware('throttle:30,1')->post('/consent', [ConsentController::class, 'store']);
 
 // ── Auth (sesija; daļa bez e-pasta apstiprinājuma) ───────────────────────────
 Route::middleware('throttle:8,1')->group(function () {

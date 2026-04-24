@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { useAuthStore, useLocaleStore } from '../../store/index.js';
+import { useCookieConsent } from '../../composables/useCookieConsent.js';
 import ShellNavLink from './ShellNavLink.js';
 import ShellSidebarSectionLabel from './ShellSidebarSectionLabel.js';
 import ShellSidebarAdminLink from './ShellSidebarAdminLink.js';
@@ -25,6 +26,9 @@ const x01NavTitle = computed(() => {
   return t('nav.x01UnavailableHint');
 });
 const discordUrl = DARTTRAINER_DISCORD_URL;
+
+const consent = useCookieConsent();
+const canLoadPaypal = computed(() => consent.canFunctional.value || consent.canMarketing.value);
 </script>
 
 <template>
@@ -123,8 +127,16 @@ const discordUrl = DARTTRAINER_DISCORD_URL;
         <DiscordIcon :size="18" />
         {{ t('nav.discord') }}
       </a>
+      <button
+        type="button"
+        class="nav-link"
+        style="margin-top: 6px"
+        @click="consent.openSettings()"
+      >
+        🍪 {{ t('consent.settingsLink') }}
+      </button>
       <form
-        v-if="auth.user"
+        v-if="auth.user && canLoadPaypal"
         action="https://www.paypal.com/donate"
         method="post"
         target="_blank"
