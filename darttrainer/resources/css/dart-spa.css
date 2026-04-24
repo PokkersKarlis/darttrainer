@@ -9,16 +9,122 @@
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 
 /* Achievement toast */
-.achieve-enter-active { animation: achieve-in .35s cubic-bezier(.34,1.56,.64,1); }
-.achieve-leave-active { animation: achieve-out .25s ease-in forwards; }
+.achieve-enter-active { animation: achieve-in .38s cubic-bezier(.34,1.52,.64,1); }
+.achieve-leave-active { animation: achieve-out .28s ease-in forwards; }
 @keyframes achieve-in {
-  from { opacity:0; transform: translateX(-50%) translateY(-20px) scale(.7); }
+  from { opacity:0; transform: translateX(-50%) translateY(-22px) scale(.68); }
   to   { opacity:1; transform: translateX(-50%) translateY(0)      scale(1); }
 }
 @keyframes achieve-out {
   from { opacity:1; transform: translateX(-50%) translateY(0)    scale(1); }
-  to   { opacity:0; transform: translateX(-50%) translateY(-12px) scale(.85); }
+  to   { opacity:0; transform: translateX(-50%) translateY(-14px) scale(.82); }
 }
+
+/* ── Cricket Achievement Tiers ──────────────────────── */
+
+/* Brief screen flash */
+.cricket-flash-enter-active { animation: dt-ach-flash .55s ease-out forwards; }
+.cricket-flash-leave-active { display: none; }
+@keyframes dt-ach-flash {
+  0%   { opacity: 0.28; }
+  100% { opacity: 0; }
+}
+
+/* Card shake */
+@keyframes dt-ach-shake-anim {
+  0%, 100% { transform: none; }
+  10%  { transform: translateX(-7px) rotate(-1.2deg); }
+  23%  { transform: translateX(7px)  rotate(1.2deg); }
+  36%  { transform: translateX(-5px) rotate(-.5deg); }
+  50%  { transform: translateX(5px)  rotate(.5deg); }
+  63%  { transform: translateX(-3px); }
+  76%  { transform: translateX(3px); }
+  90%  { transform: translateX(-1px); }
+}
+.dt-ach-shake { animation: dt-ach-shake-anim .68s ease-out; }
+
+/* Gold sparkle particles */
+@keyframes dt-ach-spark-float {
+  0%   { transform: translateY(0)      scale(1);   opacity: 1; }
+  100% { transform: translateY(-90px)  scale(0.1); opacity: 0; }
+}
+.dt-ach-spark {
+  position: absolute;
+  bottom: 8px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #fbbf24;
+  box-shadow: 0 0 8px 2px rgba(245,158,11,.5);
+  animation: dt-ach-spark-float 1.05s ease-out infinite;
+  pointer-events: none;
+}
+
+/* Holy Grail: rotating light rays */
+@keyframes dt-ach-rays-spin {
+  from { transform: translate(-50%,-50%) rotate(0deg); }
+  to   { transform: translate(-50%,-50%) rotate(360deg); }
+}
+.dt-ach-rays {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 500%; height: 500%;
+  background: conic-gradient(
+    transparent 0deg,   rgba(251,191,36,.07) 11deg, transparent 22deg,
+    transparent 45deg,  rgba(251,191,36,.05) 56deg, transparent 67deg,
+    transparent 90deg,  rgba(251,191,36,.07) 101deg, transparent 112deg,
+    transparent 135deg, rgba(251,191,36,.05) 146deg, transparent 157deg,
+    transparent 180deg, rgba(251,191,36,.07) 191deg, transparent 202deg,
+    transparent 225deg, rgba(251,191,36,.05) 236deg, transparent 247deg,
+    transparent 270deg, rgba(251,191,36,.07) 281deg, transparent 292deg,
+    transparent 315deg, rgba(251,191,36,.05) 326deg, transparent 337deg,
+    transparent 360deg
+  );
+  animation: dt-ach-rays-spin 10s linear infinite;
+  pointer-events: none;
+}
+
+/* Bull pulsing rings */
+@keyframes dt-ach-ring-pulse {
+  0%   { transform: translate(-50%,-50%) scale(0.3); opacity: 0.9; }
+  100% { transform: translate(-50%,-50%) scale(3.5); opacity: 0; }
+}
+.dt-ach-ring {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  border: 2px solid #ef4444;
+  animation: dt-ach-ring-pulse 1.4s ease-out infinite;
+  pointer-events: none;
+}
+.dt-ach-ring:nth-child(2) { animation-delay: .47s; }
+.dt-ach-ring:nth-child(3) { animation-delay: .93s; }
+
+/* White Horse silhouette running */
+@keyframes dt-ach-horse-run {
+  0%   { transform: translateX(-20vw); opacity: 0; }
+  8%   { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { transform: translateX(110vw); opacity: 0; }
+}
+.dt-ach-horse-run { animation: dt-ach-horse-run 2.4s cubic-bezier(.4,0,.2,1) forwards; }
+
+/* Achievement card base + tier variants */
+.dt-ach-card {
+  background: #080f1e;
+  border: 1px solid rgba(255,255,255,.08);
+}
+.dt-ach-bigMark    { border-color: rgba(59,130,246,.45);  background: linear-gradient(160deg,#060f20,#080f1e); }
+.dt-ach-superMark  { border-color: rgba(249,115,22,.45);  background: linear-gradient(160deg,#130a02,#080f1e); }
+.dt-ach-megaMark   { border-color: rgba(234,179,8,.52);   background: linear-gradient(160deg,#121000,#080f1e); }
+.dt-ach-ultraMark  { border-color: rgba(236,72,153,.58);  background: linear-gradient(160deg,#190617,#080f1e); }
+.dt-ach-insaneMark { border-color: rgba(245,158,11,.68);  border-width: 2px; background: linear-gradient(160deg,#160d00,#080f1e); }
+.dt-ach-holyGrail  { border-color: rgba(251,191,36,.78);  border-width: 2px; background: linear-gradient(160deg,#1c1509,#0c1528); }
+.dt-ach-whitehorse { border-color: rgba(226,232,240,.48); background: linear-gradient(160deg,#0e1622,#080f1e); }
+.dt-ach-tripleTriples { border-color: rgba(245,158,11,.6); background: linear-gradient(160deg,#120d00,#080f1e); }
+.dt-ach-shanghai   { border-color: rgba(239,68,68,.58);   background: linear-gradient(160deg,#1a0808,#080f1e); }
+.dt-ach-bulls3     { border-color: rgba(239,68,68,.45); }
+.dt-ach-rodeo      { border-color: rgba(217,119,6,.58);   background: linear-gradient(160deg,#150a00,#080f1e); }
 
 @keyframes mark-pop {
   0%   { transform: scale(0.2) rotate(-20deg); opacity: 0; }
@@ -137,6 +243,16 @@ html, body { height: 100%; margin: 0; }
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+}
+
+/* `/game/*`: router-view aizpilda sakni, lai Cricket/X01 var izmantot 100% augstumu un pilnu mērogošanu */
+.dt-app-root.dt-app--game-focus > * {
+  flex: 1 1 0%;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .dt-app--cricket-lobby .dt-cricket-lobby-shell {

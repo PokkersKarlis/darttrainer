@@ -6,13 +6,16 @@ import { useAuthStore, useLocaleStore, useGameStore } from '../store/index.js';
 import MatchReport from '../components/MatchReport.js';
 import CricketMarkCell from '../components/CricketMarkCell.js';
 import CricketClosedCheck from '../components/CricketClosedCheck.js';
-
-/** Pagaidu: scoreboard / X01 rezultātu kolonnas vietā — orientācijas tests. */
-const GAME_FIELD_ORIENTATION_PROBE = true;
+import CricketGameAdaptiveLayout from '../components/game/CricketGameAdaptiveLayout.vue';
+import {
+  detectCricketAchievements,
+  simulateCricketClosingHits,
+  cricketDartMeta,
+} from '../composables/useCricketTurnAnalysis.js';
 
 export default {
   props: ['matchId'],
-  components: { MatchReport, CricketMarkCell, CricketClosedCheck },
+  components: { MatchReport, CricketMarkCell, CricketClosedCheck, CricketGameAdaptiveLayout },
 
   setup(props) {
     useBodyShellClass('body--game-shell');
@@ -24,7 +27,6 @@ export default {
       layoutAspect,
       syncGameScreenLayout,
     } = useGameScreenLayout();
-    const gameFieldOrientationProbe = GAME_FIELD_ORIENTATION_PROBE;
     const gameStore = useGameStore();
     const auth = useAuthStore();
     const locale = useLocaleStore();
@@ -36,12 +38,17 @@ export default {
     const turnResult       = Vue.ref(null);
     /** Leg uzvara pēc checkout / cricket win — { winnerName, wonSet, wonLeg, line } */
     const legWonCelebration = Vue.ref(null);
+    /** Mača beigas — īss ekrāna aplaus; pēc tam parādās MatchReport */
+    const matchEndCelebration = Vue.ref(null);
+    let matchEndCelebrationTimer = null;
     const activeMultiplier = Vue.ref(1);
     const showUndoConfirm    = Vue.ref(false);
     const showAbandonConfirm = Vue.ref(false);
     /** Kamēr ielādē + lokālajam hostam automātisks resume no pauzes. */
     const gameBootPending = Vue.ref(true);
     const cricketAchievement = Vue.ref(null);
+    const cricketFlash       = Vue.ref(null);
+    let cricketFlashTimer = null;
     const nowMs = Vue.ref(Date.now());
     const turnTimeoutBusy = Vue.ref(false);
     let turnClockInterval = null;
@@ -217,7 +224,24 @@ export default {
 
     function addCricketDart(seg, mul) {
       if (dartInput.darts.length >= 3) return;
-      dartInput.darts.push({ segment: seg, multiplier: mul });
+      const throwerId = state.value?.current_player?.id;
+      const activeSegs = (state.value?.cricket_segments ?? [20, 19, 18, 17, 16, 15, 25]).map(Number);
+      const snapshotPlayers = [...players.value];
+      const { H, playerIds, segs, tid } = simulateCricketClosingHits(snapshotPlayers, activeSegs, throwerId, dartInput.darts);
+      const meta = cricketDartMeta({
+        hits: H,
+        playerIds,
+        segs,
+        throwerId: tid,
+        segment: seg,
+        multiplier: mul,
+      });
+
+      dartInput.darts.push({
+        segment: seg,
+        multiplier: mul,
+        cricketMeta: meta,
+      });
     }
 
     function removeDart(i) { dartInput.darts.splice(i, 1); }
@@ -380,7 +404,7 @@ export default {
           wonLeg,
           line: pickRandom(LEG_WIN_LINES),
         };
-        setTimeout(() => { legWonCelebration.value = null; }, 3600);
+        setTimeout(() => { legWonCelebration.value = null; }, 5000);
       }, delayMs);
     }
 
@@ -448,7 +472,7 @@ export default {
 
       const matchFinishedNow = data.status === 'finished';
       const isLegWin = (legAdvanced || matchFinishedNow) && pts > 0 && kind !== 'bust' && kind !== 'miss';
-      if (isLegWin && throwerId) {
+      if (isLegWin && throwerId && !matchFinishedNow) {
         const winner = nextPlayers.find((x) => Number(x.id) === Number(throwerId));
         queueLegWinCelebration(
           {
@@ -468,149 +492,10 @@ export default {
       },
     );
 
-    /** Spēlē Cricket — slēgšanas trāpījumi (atbilst servera CricketEngine::statHitMultiplierBeforeApply). */
-    const CRICKET_HITS_TO_CLOSE = 3;
-
-    function cricketSegKey(seg) {
-      const s = Number(seg);
-      return s === 25 ? 'seg_bull' : `seg_${s}`;
-    }
-
-    function cricketSegHitsFromPlayer(player, seg) {
-      const c = player?.cricket;
-      if (!c) return 0;
-      const k = cricketSegKey(seg);
-      return Math.max(0, Math.min(CRICKET_HITS_TO_CLOSE, Number(c[k] ?? 0)));
-    }
-
-    function buildCricketHitsSnapshot(players, activeSegments) {
-      const playerIds = players.map((p) => Number(p.id));
-      const hits = {};
-      for (const pid of playerIds) {
-        hits[pid] = {};
-        const pl = players.find((x) => Number(x.id) === pid);
-        for (const seg of activeSegments) {
-          hits[pid][seg] = pl ? cricketSegHitsFromPlayer(pl, seg) : 0;
-        }
-      }
-      return { hits, playerIds };
-    }
-
-    function cloneCricketHits(hits, playerIds, activeSegments) {
-      const out = {};
-      for (const pid of playerIds) {
-        out[pid] = {};
-        for (const seg of activeSegments) {
-          out[pid][seg] = hits[pid][seg] ?? 0;
-        }
-      }
-      return out;
-    }
-
-    function statHitBeforeApply(hits, playerIds, activeSegments, throwerId, segment, multiplier) {
-      const seg = Number(segment);
-      const mul = Number(multiplier);
-      if (mul <= 0 || seg <= 0) return 0;
-      if (!activeSegments.includes(seg)) return 0;
-
-      let allClosed = true;
-      for (const pid of playerIds) {
-        if ((hits[pid][seg] ?? 0) < CRICKET_HITS_TO_CLOSE) {
-          allClosed = false;
-          break;
-        }
-      }
-      if (allClosed) return 0;
-
-      const myHits = hits[throwerId][seg] ?? 0;
-      if (myHits >= CRICKET_HITS_TO_CLOSE) return 0;
-
-      return Math.min(mul, CRICKET_HITS_TO_CLOSE - myHits);
-    }
-
-    function applyDartToCricketHits(hits, throwerId, segment, multiplier, activeSegments) {
-      const seg = Number(segment);
-      const mul = Number(multiplier);
-      if (mul <= 0 || seg <= 0) return;
-      if (!activeSegments.includes(seg)) return;
-      const current = hits[throwerId][seg] ?? 0;
-      if (current >= CRICKET_HITS_TO_CLOSE) return;
-      const need = CRICKET_HITS_TO_CLOSE - current;
-      const add = Math.min(mul, need);
-      hits[throwerId][seg] = current + add;
-    }
-
-    /** Kopējie efektīvie slēgšanas trāpījumi gājienā + katrai šautnei (animācijai / sasniegumiem). */
-    function effectiveCricketMarksForTurn(darts, activeSegments, players, throwerId) {
-      const segs = activeSegments.map(Number);
-      const { hits, playerIds } = buildCricketHitsSnapshot(players, segs);
-      const H = cloneCricketHits(hits, playerIds, segs);
-      const tid = Number(throwerId);
-      const perDart = [];
-      let total = 0;
-      for (const d of darts) {
-        const eff = statHitBeforeApply(H, playerIds, segs, tid, d.segment, d.multiplier);
-        perDart.push(eff);
-        total += eff;
-        applyDartToCricketHits(H, tid, d.segment, d.multiplier, segs);
-      }
-      return { total, perDart };
-    }
-
-    function detectCricketAchievements(darts, activeSegs, players, throwerId) {
-      const segs = activeSegs.map(Number);
-      const { total, perDart } = effectiveCricketMarksForTurn(darts, segs, players, throwerId);
-
-      let bullMarks = 0;
-      let tripleCount = 0;
-      const tripleSegs = new Set();
-
-      for (let i = 0; i < darts.length; i++) {
-        const d = darts[i];
-        const seg = Number(d.segment);
-        const mul = Number(d.multiplier);
-        const eff = perDart[i] ?? 0;
-        if (!seg || !mul || !segs.includes(seg)) continue;
-        if (seg === 25) bullMarks += eff;
-        if (mul === 3 && eff > 0) {
-          tripleCount++;
-          tripleSegs.add(seg);
-        }
-      }
-
-      const achieve = (emoji, title, sub, color, glow) => ({ emoji, title, sub, color, glow });
-
-      if (tripleCount >= 3 && tripleSegs.size >= 3 && total >= 9) {
-        return achieve('🐎🔥', 'Baltais zirgs!', 'Trīs trīskārši · trīs lauki · 9 trāpījumi', '#6ee7b7', '#10b981');
-      }
-
-      if (total >= 9) {
-        return achieve('🔥', `${total} trāpījumi!`, 'Maksimums', '#fca5a5', '#f43f5e');
-      }
-
-      if (tripleCount >= 3 && tripleSegs.size >= 3) {
-        return achieve('🐎', 'Baltais zirgs!', 'Trīs trīskārši dažādos laukos', '#6ee7b7', '#10b981');
-      }
-
-      if (tripleCount >= 3 && tripleSegs.size === 1) {
-        return achieve('💥', 'Trīs trīskārši!', 'Vienā laukā', '#fcd34d', '#f59e0b');
-      }
-
-      if (bullMarks >= 3) {
-        const ex = bullMarks >= 6 ? '!!' : '!';
-        return achieve('🎯', `${bullMarks} Bull${ex}`, `${bullMarks} trāpījumi bullā`, '#7dd3fc', '#0ea5e9');
-      }
-
-      if (total >= 4) {
-        return achieve('⬡', `${total} trāpījumi!`, null, '#c4b5fd', '#8b5cf6');
-      }
-
-      return null;
-    }
-
     async function submitThrow() {
       if (dartInput.darts.length === 0) return;
       submitting.value = true;
+      console.log(dartInput.darts);
       const thrown = [...dartInput.darts];
       const snapshotPlayers = [...players.value];
       const throwerId = state.value?.current_player?.id;
@@ -633,9 +518,26 @@ export default {
             : null;
           if (ach) {
             cricketAchievement.value = ach;
-            setTimeout(() => { cricketAchievement.value = null; }, 2800);
+            // Screen flash for impactful tiers
+            if (ach.fullScreen || ach.shake) {
+              if (cricketFlashTimer) clearTimeout(cricketFlashTimer);
+              cricketFlash.value = { color: ach.glow };
+              cricketFlashTimer = setTimeout(() => {
+                cricketFlash.value = null;
+                cricketFlashTimer = null;
+              }, 550);
+            }
+            // Haptic feedback on mobile
+            if (ach.shake && typeof navigator !== 'undefined' && navigator.vibrate) {
+              navigator.vibrate(
+                ach.tier === 'holyGrail'  ? [120, 60, 120, 60, 200] :
+                ach.tier === 'insaneMark' ? [80, 40, 80, 40, 120]   :
+                                            [60, 40, 80]
+              );
+            }
+            setTimeout(() => { cricketAchievement.value = null; }, ach.duration);
           }
-          if ((legAdv || data.status === 'finished') && throwerId) {
+          if (legAdv && data.status !== 'finished' && throwerId) {
             const winner = (data.players || []).find((p) => Number(p.id) === Number(throwerId));
             queueLegWinCelebration({
               winnerName: winner?.name || '—',
@@ -643,6 +545,21 @@ export default {
               wonLeg: prevLeg,
             }, ach ? 2950 : 450);
           }
+        }
+        if (data.status === 'finished') {
+          const w = data.winner;
+          const name = w?.name
+            || (data.players || []).find((p) => Number(p.id) === Number(w?.id))?.name
+            || '—';
+          if (matchEndCelebrationTimer) {
+            clearTimeout(matchEndCelebrationTimer);
+            matchEndCelebrationTimer = null;
+          }
+          matchEndCelebration.value = { winnerName: name };
+          matchEndCelebrationTimer = setTimeout(() => {
+            matchEndCelebration.value = null;
+            matchEndCelebrationTimer = null;
+          }, 5000);
         }
         dartInput.darts = [];
       } finally { submitting.value = false; }
@@ -726,6 +643,10 @@ export default {
 
     function goHome() { gameStore.reset(); router.push('/'); }
 
+    function revealAbandonConfirm() {
+      showAbandonConfirm.value = true;
+    }
+
     function onDocKeydown(e) {
       if (showTurnTimeoutOpponentModal.value) return;
       if (!isMyTurn.value || submitting.value) return;
@@ -764,6 +685,14 @@ export default {
         clearInterval(turnClockInterval);
         turnClockInterval = null;
       }
+      if (matchEndCelebrationTimer) {
+        clearTimeout(matchEndCelebrationTimer);
+        matchEndCelebrationTimer = null;
+      }
+      if (cricketFlashTimer) {
+        clearTimeout(cricketFlashTimer);
+        cricketFlashTimer = null;
+      }
     });
 
     const matchId = Vue.computed(() => props.matchId);
@@ -771,7 +700,7 @@ export default {
     return {
       matchId,
       state, isMyTurn, isX01, isCricket, players, finished, legsToWin,
-      dartInput, submitting, turnResult, legWonCelebration, activeMultiplier, showUndoConfirm, showAbandonConfirm,
+      dartInput, submitting, turnResult, legWonCelebration, matchEndCelebration, activeMultiplier, showUndoConfirm, showAbandonConfirm,
       isMatchActive, isSuspended, waitingForTurnUi, legsConfigTotal, setsConfigTotal,
       gameBootPending,
       undoAvailable,
@@ -781,12 +710,13 @@ export default {
       addX01Dart, addX01Miss, addCricketDart, removeDart, dartLabel, dartValue,
       turnResultShellClass, turnResultMotionClass, turnResultTopBannerClass,
       submitThrow, undo, confirmUndo, goAbandonFromUndoDialog, confirmAbandon, exitGameSaving, goHome, auth, gameStore,
-      cricketAchievement,
+      cricketAchievement, cricketFlash,
       t,
       useTurnTimer, turnTimer, turnTimerRemainingSec, turnTimerProgress, turnTimerRowVisible,
       showTurnTimeoutWaitingBanner, showTurnTimeoutOpponentModal,
       formatTurnClock, turnTimeoutBusy, onTurnTimeoutGrantExtra, onTurnTimeoutEndNoStats,
-      layoutKind, layoutLabel, layoutWidth, layoutHeight, layoutAspect, gameFieldOrientationProbe,
+      layoutKind, layoutLabel, layoutWidth, layoutHeight, layoutAspect,
+      revealAbandonConfirm,
     };
   },
 
@@ -865,21 +795,95 @@ export default {
         </Transition>
       </Teleport>
 
+      <!-- Mača uzvara — pirms protokola (~5 s) -->
+      <Teleport to="body">
+        <Transition name="fade">
+          <div v-if="finished && matchEndCelebration"
+               class="fixed inset-0 z-[60] flex items-center justify-center bg-black/75 backdrop-blur-sm px-4 pointer-events-none">
+            <div class="pointer-events-none max-w-md w-full text-center rounded-2xl border border-amber-500/40 bg-gradient-to-b from-[#1a1408]/98 to-[#0c1528]/98 px-8 py-10 shadow-2xl shadow-amber-900/30">
+              <div class="text-[11px] font-black uppercase tracking-[0.2em] text-amber-500/90 mb-3">{{ t('game.matchVictoryTitle') }}</div>
+              <div class="text-3xl sm:text-4xl font-black text-amber-50 leading-tight mb-2">{{ matchEndCelebration.winnerName }}</div>
+              <div class="text-sm text-slate-400">{{ t('game.matchVictorySubtitle') }}</div>
+            </div>
+          </div>
+        </Transition>
+      </Teleport>
+
+      <!-- Cricket achievement: screen flash -->
+      <Teleport to="body">
+        <Transition name="cricket-flash">
+          <div v-if="cricketFlash"
+               class="fixed inset-0 pointer-events-none dt-ach-flash"
+               style="z-index:44"
+               :style="{ background: cricketFlash.color + '28' }"></div>
+        </Transition>
+      </Teleport>
+
       <!-- Cricket achievement popup -->
       <Teleport to="body">
         <Transition name="achieve">
           <div v-if="cricketAchievement"
-               class="fixed z-50 pointer-events-none"
-               style="top: 26%; left: 50%; transform: translateX(-50%); width: min(22rem, 90vw)">
-            <div class="relative overflow-hidden rounded-2xl shadow-2xl shadow-black/70"
-                 style="background: #080f1e; border: 1px solid rgba(255,255,255,0.08)">
-              <!-- colour accent bar -->
-              <div class="h-1 w-full" :style="{ background: cricketAchievement.glow }"></div>
-              <div class="px-6 py-5 flex flex-col items-center text-center gap-1">
-                <div class="text-6xl leading-none mb-1 drop-shadow-[0_4px_16px_rgba(0,0,0,0.6)]">
+               class="fixed z-[45] pointer-events-none"
+               :style="{
+                 top: '24%',
+                 left: '50%',
+                 transform: 'translateX(-50%)',
+                 width: cricketAchievement.fullScreen ? 'min(28rem,92vw)' : 'min(22rem,90vw)',
+               }">
+
+            <!-- Ambient backdrop for epic tiers -->
+            <div v-if="cricketAchievement.fullScreen"
+                 class="fixed inset-0 pointer-events-none"
+                 style="z-index:-1"
+                 :style="{ background: 'radial-gradient(ellipse at 50% 28%, ' + cricketAchievement.glow + '1e 0%, transparent 62%)' }"></div>
+
+            <!-- Holy Grail: rotating rays behind card -->
+            <div v-if="cricketAchievement.tier === 'holyGrail'"
+                 class="absolute pointer-events-none"
+                 style="inset:-300%; overflow:hidden; z-index:-1">
+              <div class="dt-ach-rays"></div>
+            </div>
+
+            <!-- White Horse: silhouette running across full screen -->
+            <div v-if="cricketAchievement.tier === 'whitehorse'"
+                 class="fixed pointer-events-none dt-ach-horse-run"
+                 style="top:32%; left:0; z-index:46; font-size:7rem; line-height:1;
+                        filter:drop-shadow(0 0 18px rgba(255,255,255,.75)) drop-shadow(0 0 36px rgba(148,163,184,.5))">
+              🐴
+            </div>
+
+            <!-- Main card -->
+            <div class="relative overflow-hidden rounded-2xl shadow-2xl shadow-black/80 dt-ach-card"
+                 :class="['dt-ach-' + cricketAchievement.tier, cricketAchievement.shake ? 'dt-ach-shake' : '']">
+
+              <!-- Top accent bar -->
+              <div class="h-1.5 w-full" :style="{ background: cricketAchievement.glow }"></div>
+
+              <!-- Bull pulsing rings (bulls3 / rodeo) -->
+              <div v-if="cricketAchievement.tier === 'bulls3' || cricketAchievement.tier === 'rodeo'"
+                   class="absolute inset-0 pointer-events-none overflow-hidden">
+                <div class="dt-ach-ring"></div>
+                <div class="dt-ach-ring"></div>
+                <div class="dt-ach-ring"></div>
+              </div>
+
+              <!-- Gold sparkles (insaneMark / holyGrail) -->
+              <template v-if="cricketAchievement.tier === 'insaneMark' || cricketAchievement.tier === 'holyGrail'">
+                <span class="dt-ach-spark" style="left:10%"></span>
+                <span class="dt-ach-spark" style="left:28%;animation-delay:.18s"></span>
+                <span class="dt-ach-spark" style="left:50%;animation-delay:.08s"></span>
+                <span class="dt-ach-spark" style="left:70%;animation-delay:.28s"></span>
+                <span class="dt-ach-spark" style="left:88%;animation-delay:.14s"></span>
+              </template>
+
+              <!-- Content -->
+              <div class="relative px-6 py-5 flex flex-col items-center text-center gap-1.5">
+                <div class="leading-none mb-1 drop-shadow-[0_4px_20px_rgba(0,0,0,0.75)]"
+                     :class="cricketAchievement.fullScreen ? 'text-7xl' : 'text-6xl'">
                   {{ cricketAchievement.emoji }}
                 </div>
-                <div class="text-xl font-black text-white tracking-tight leading-snug">
+                <div class="font-black text-white tracking-tight leading-snug"
+                     :class="cricketAchievement.fullScreen ? 'text-2xl' : 'text-xl'">
                   {{ cricketAchievement.title }}
                 </div>
                 <div v-if="cricketAchievement.sub"
@@ -888,9 +892,10 @@ export default {
                   {{ cricketAchievement.sub }}
                 </div>
               </div>
-              <!-- subtle glow overlay -->
+
+              <!-- Glow edge overlay -->
               <div class="absolute inset-0 pointer-events-none rounded-2xl"
-                   :style="{ boxShadow: '0 0 60px 0 ' + cricketAchievement.glow + '33' }"></div>
+                   :style="{ boxShadow: '0 0 80px 0 ' + cricketAchievement.glow + '44' }"></div>
             </div>
           </div>
         </Transition>
@@ -1032,632 +1037,52 @@ export default {
       <template v-else>
 
         <!-- ══ FINISHED: protokols (ritināms, pilns augstums no shell) ══ -->
-        <div v-if="finished" class="flex min-h-0 flex-1 flex-col overflow-hidden w-full">
-          <MatchReport :match-id="matchId" class="min-h-0 flex-1" @home="goHome" />
+        <div v-if="finished" class="relative flex min-h-0 flex-1 flex-col overflow-hidden w-full">
+          <MatchReport v-show="!matchEndCelebration" :match-id="matchId" class="min-h-0 flex-1" @home="goHome" />
         </div>
 
         <!-- ════════════════ CRICKET ════════════════ -->
-        <div v-else-if="isCricket"
-             class="flex flex-1 min-h-0 flex-col overflow-hidden bg-gradient-to-b from-[#060d18] via-[#070d16] to-[#0a1120]">
-
-          <!-- ── Desktop layout (lg+) ── -->
-          <div class="hidden lg:flex flex-1 min-h-0">
-
-            <!-- Center: player cards + scoreboard -->
-            <div class="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
-
-              <!-- Room/leg bar + multiplayer darbības -->
-              <div class="flex-shrink-0 px-3 sm:px-5 py-2 border-b border-[#162540] bg-[#0a1120]/80
-                          flex flex-wrap items-center justify-between gap-2">
-                <span class="text-amber-400 font-mono font-black text-sm tracking-widest">{{ state.room_code }}</span>
-                <div class="flex items-center gap-2 flex-wrap justify-end">
-                  <span class="text-slate-500 text-xs tabular-nums">
-                    Leg {{ state.current_leg }}/{{ legsConfigTotal }}<template v-if="setsConfigTotal > 1"> · Set {{ state.current_set }}/{{ setsConfigTotal }}</template>
-                  </span>
-                  <template v-if="(isMatchActive || isSuspended) && auth.user">
-                    <button type="button" @click="exitGameSaving"
-                            class="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide
-                                   border border-slate-600/60 text-slate-400 hover:text-white hover:bg-[#162540] transition touch-manipulation">
-                      {{ t('game.exitSave') }}
-                    </button>
-                    <button v-if="isMatchActive" type="button" @click="showAbandonConfirm = true"
-                            class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wide
-                                   border border-rose-800/50 text-rose-400 hover:bg-rose-950/40 transition touch-manipulation">
-                      Pārtraukt
-                    </button>
-                  </template>
-                </div>
-              </div>
-
-              <div v-if="isMatchActive && showTurnTimeoutWaitingBanner"
-                   class="shrink-0 px-3 py-2.5 bg-amber-950/50 border-b border-amber-700/40 text-center text-xs sm:text-sm font-semibold text-amber-100 leading-snug">
-                {{ t('game.turnTimer.waitingOpponentChoice') }}
-              </div>
-              <div v-else-if="turnTimerRowVisible"
-                   class="shrink-0 flex items-center gap-3 px-3 sm:px-5 py-2 border-b border-[#162540] bg-[#0d1526]/95">
-                <span class="text-[10px] font-black uppercase tracking-widest text-slate-500 shrink-0 hidden md:inline">{{ t('game.turnTimer.label') }}</span>
-                <div class="flex-1 min-w-0 h-2 rounded-full bg-[#1e3050] overflow-hidden ring-1 ring-black/25">
-                  <div class="h-full rounded-full bg-gradient-to-r from-amber-700 via-amber-500 to-amber-300 transition-[width] duration-500 ease-linear"
-                       :style="{ width: turnTimerProgress + '%' }"></div>
-                </div>
-                <span class="text-sm font-mono font-black tabular-nums text-amber-400 w-[4.75rem] text-right shrink-0">{{ formatTurnClock(turnTimerRemainingSec) }}</span>
-              </div>
-
-              <!-- Player cards -->
-              <div class="flex-shrink-0 px-4 pt-3 pb-2 grid gap-2"
-                   :class="players.length >= 3 ? 'grid-cols-3' : 'grid-cols-2'">
-                <div v-for="player in players" :key="player.id"
-                     class="rounded-2xl px-4 py-3 transition-all duration-300"
-                     :class="Number(player.id) === Number(state.current_player?.id)
-                       ? 'bg-[#1a2540] border border-amber-500/35 shadow-md shadow-black/20'
-                       : 'bg-[#0f1c30] border border-[#162540]'">
-                  <div class="flex items-center gap-1.5 mb-1 min-w-0">
-                    <span v-if="Number(player.id) === Number(state.current_player?.id)"
-                          class="text-amber-400 text-xs animate-pulse flex-shrink-0">▶</span>
-                    <span class="text-xs font-bold truncate flex-1"
-                          :class="Number(player.id) === Number(state.current_player?.id) ? 'text-amber-300' : 'text-slate-500'">
-                      {{ player.name }}
-                    </span>
-                    <!-- Leg / Set score -->
-                    <div class="flex-shrink-0 flex items-center gap-1 ml-1">
-                      <template v-if="state.legs_config?.sets > 1">
-                        <span class="text-[10px] font-black tabular-nums px-1.5 py-0.5 rounded-md"
-                              :class="Number(player.id) === Number(state.current_player?.id) ? 'bg-amber-500/20 text-amber-300' : 'bg-[#1a2a42] text-slate-400'">
-                          {{ player.sets_won }}S · {{ player.legs_won }}L
-                        </span>
-                      </template>
-                      <template v-else>
-                        <span class="text-lg font-black tabular-nums leading-none"
-                              :class="player.legs_won > 0
-                                ? (Number(player.id) === Number(state.current_player?.id) ? 'text-amber-400' : 'text-slate-300')
-                                : 'text-slate-700'">
-                          {{ player.legs_won }}
-                        </span>
-                        <span class="text-slate-700 text-xs font-bold">/{{ legsToWin }}</span>
-                      </template>
-                    </div>
-                  </div>
-                  <div class="text-3xl font-black tabular-nums leading-none mb-1.5"
-                       :class="player.cricket?.all_closed ? 'text-emerald-400' : 'text-slate-100'">
-                    {{ player.cricket?.points ?? 0 }}
-                  </div>
-                  <div class="flex items-center justify-between gap-2">
-                    <div class="flex gap-0.5">
-                      <div v-for="i in legsToWin" :key="i"
-                           class="w-1.5 h-1.5 rounded-full border transition-all"
-                           :class="i <= player.legs_won ? 'bg-amber-400 border-amber-400' : 'border-[#1e3050]'"></div>
-                    </div>
-                    <div class="flex flex-col items-end shrink-0" :title="t('game.cricketAvgHint')">
-                      <span class="text-[9px] font-black uppercase tracking-wide text-amber-500 leading-none mb-0.5">{{ t('game.cricketAvgShort') }}</span>
-                      <span class="text-base font-black tabular-nums text-amber-100 leading-none">{{ player.avg_pts ?? '—' }}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Scoreboard (pagaidu: orientācijas tests) -->
-              <div v-if="gameFieldOrientationProbe"
-                   class="flex-1 min-h-0 mx-4 mb-4 rounded-xl overflow-hidden
-                          border border-dashed border-amber-500/35 bg-[#0a1120]/90 flex flex-col items-center justify-center shadow-inner px-4 py-8">
-                <div class="text-center space-y-3 max-w-md">
-                  <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Layout probe</div>
-                  <div class="text-5xl sm:text-6xl font-black tracking-tight leading-none"
-                       :class="layoutKind === 'landscape' ? 'text-sky-400' : layoutKind === 'portrait' ? 'text-amber-400' : 'text-emerald-400'">
-                    {{ layoutLabel }}
-                  </div>
-                  <div class="text-slate-500 text-sm font-mono tabular-nums">{{ layoutWidth }} × {{ layoutHeight }} · {{ layoutAspect }}</div>
-                </div>
-              </div>
-              <div v-else class="flex-1 min-h-0 mx-4 mb-4 rounded-xl overflow-hidden
-                          border border-[#162540] bg-[#0f1c30]/90 flex flex-col shadow-inner">
-                <!-- Headers -->
-                <div class="flex-shrink-0 border-b border-[#162540] py-2 px-1 bg-[#0a1120]/60"
-                     :style="scorecardGridStyle">
-                  <div v-for="p in leftPlayers" :key="'lhd-'+p.id"
-                       class="text-center text-xs font-bold truncate px-1"
-                       :class="Number(p.id) === Number(state.current_player?.id) ? 'text-amber-400' : 'text-slate-500'">
-                    {{ p.name }}
-                  </div>
-                  <div class="text-center text-[10px] text-slate-500 font-black uppercase tracking-widest">Lauks</div>
-                  <div v-for="p in rightPlayers" :key="'rhd-'+p.id"
-                       class="text-center text-xs font-bold truncate px-1"
-                       :class="Number(p.id) === Number(state.current_player?.id) ? 'text-amber-400' : 'text-slate-500'">
-                    {{ p.name }}
-                  </div>
-                </div>
-                <!-- Segment rows -->
-                <div class="flex-1 min-h-0 flex flex-col overflow-y-auto">
-                  <div v-for="(seg, idx) in cricketSdtSegments" :key="seg"
-                       class="flex-1 min-h-0 basis-0 border-b border-[#162540]/40 last:border-b-0 transition-all duration-300"
-                       :class="[idx % 2 === 0 ? 'bg-[#0a1120]/25' : '', segClosedByAll(seg) ? 'opacity-25' : '']"
-                       :style="scorecardRowGridStyle">
-                    <div v-for="p in leftPlayers" :key="'lmd-'+p.id+'-'+seg"
-                         class="flex items-center justify-center min-h-0 min-w-0 border-r border-[#162540]/30 p-1">
-                      <CricketMarkCell :hits="hitsFor(p.id, seg)" :closed="segClosedByAll(seg)" size="board" />
-                    </div>
-                    <div class="flex items-center justify-center min-h-0 min-w-0 px-1 rounded-lg mx-0.5 my-0.5 shadow-inner"
-                         :class="segClosedByAll(seg)
-                           ? 'bg-[#0a1120]/95 border border-[#1e3050]'
-                           : 'border border-rose-900/40 bg-[#1a0a0f]'">
-                      <div class="flex flex-col items-center justify-center leading-none gap-0.5 py-0.5">
-                        <span class="font-black tabular-nums select-none text-[clamp(1.125rem,2.8vmin,1.75rem)]"
-                              :class="segClosedByAll(seg) ? 'text-slate-500 line-through' : 'text-rose-300/90'">
-                          {{ seg === 25 ? '25' : seg }}
-                        </span>
-                        <span v-if="seg === 25 && !segClosedByAll(seg)"
-                              class="text-[8px] font-bold uppercase tracking-widest text-rose-400/80">bull</span>
-                      </div>
-                    </div>
-                    <div v-for="p in rightPlayers" :key="'rmd-'+p.id+'-'+seg"
-                         class="flex items-center justify-center min-h-0 min-w-0 border-l border-[#162540]/30 p-1">
-                      <CricketMarkCell :hits="hitsFor(p.id, seg)" :closed="segClosedByAll(seg)" size="board" />
-                    </div>
-                  </div>
-                </div>
-                <!-- Legend -->
-                <div class="flex-shrink-0 border-t border-[#162540] py-1.5 px-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-500 bg-[#0a1120]/40">
-                  <span><span class="font-mono font-black text-slate-400">0</span> nav</span>
-                  <span><span class="font-mono font-black text-sky-400/90">1</span> viens</span>
-                  <span><span class="font-mono font-black text-amber-400/90">2</span> divi</span>
-                  <span class="inline-flex items-center gap-1.5">
-                    <span class="inline-flex items-center justify-center text-emerald-400/95 w-4 h-4 flex-shrink-0">
-                      <CricketClosedCheck :boosted="false" />
-                    </span>
-                    slēgts
-                  </span>
-                </div>
-              </div>
-
-            </div>
-
-            <!-- Right: input panel -->
-            <div class="flex-shrink-0 w-[min(22rem,40vw)] min-w-[18rem] flex flex-col border-l border-[#162540] bg-[#0a1120]/95 overflow-hidden">
-
-              <div v-if="waitingForTurnUi"
-                   class="flex-1 flex flex-col items-center justify-center gap-4 p-6 text-center">
-                <div class="text-slate-500 text-xs uppercase tracking-widest font-semibold">Gaida</div>
-                <div class="text-slate-100 font-black text-xl">{{ state.current_player?.name }}</div>
-                <div class="flex gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-amber-500 animate-bounce" style="animation-delay:0ms"></span>
-                  <span class="w-2 h-2 rounded-full bg-amber-500 animate-bounce" style="animation-delay:150ms"></span>
-                  <span class="w-2 h-2 rounded-full bg-amber-500 animate-bounce" style="animation-delay:300ms"></span>
-                </div>
-              </div>
-
-              <template v-else>
-                <div class="flex-1 flex flex-col gap-3 p-3 overflow-hidden min-h-0">
-
-                  <div class="flex items-center justify-between gap-2 flex-shrink-0">
-                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-500">Šīs kārtas</span>
-                    <div class="flex gap-1" aria-hidden="true">
-                      <span v-for="i in 3" :key="i"
-                            class="h-1.5 w-1.5 rounded-full transition-all"
-                            :class="i <= dartInput.darts.length ? 'bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,.5)]' : 'bg-[#1e3050]'"></span>
-                    </div>
-                  </div>
-
-                  <!-- Dart slots -->
-                  <div class="flex gap-2 flex-shrink-0">
-                    <div v-for="(d, i) in dartInput.darts" :key="i"
-                         class="flex-1 bg-[#0f1c30] border border-[#162540] rounded-xl
-                                px-1.5 py-2 text-center relative group min-w-0 touch-manipulation min-h-[3.5rem] flex flex-col justify-center">
-                      <div class="text-amber-400 font-mono font-black text-sm sm:text-base truncate">{{ dartLabel(d) }}</div>
-                      <div class="text-slate-500 text-[11px] tabular-nums">{{ dartValue(d) > 0 ? dartValue(d) : '—' }}</div>
-                      <button type="button" @click="removeDart(i)"
-                              class="absolute -top-1 -right-1 w-7 h-7 sm:w-6 sm:h-6 bg-red-700 hover:bg-red-600 text-white
-                                     rounded-full text-xs flex items-center justify-center shadow-md
-                                     opacity-100 transition">✕</button>
-                    </div>
-                    <div v-for="i in (3 - dartInput.darts.length)" :key="'ed'+i"
-                         class="flex-1 min-h-[3.5rem] bg-[#060d18]/80 border border-dashed border-[#1e3050]
-                                rounded-xl flex items-center justify-center text-[#1e3050] text-xs font-mono">—</div>
-                  </div>
-
-
-                  <!-- Segment cards — scrollable -->
-                  <div class="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2 pr-0.5">
-                    <div class="grid grid-cols-2 gap-x-2 gap-y-2">
-                      <div class="flex flex-col gap-2">
-                        <div v-for="seg in cricketPadSplit.left" :key="'dl'+seg"
-                             class="rounded-2xl border border-slate-500/25 bg-gradient-to-b from-[#101c32] via-[#0a1424] to-[#060d14] p-2 shadow-lg shadow-black/25 ring-1 ring-white/[0.06]">
-                          <div class="mb-1.5 flex items-center justify-between gap-2">
-                            <span class="text-[9px] font-bold uppercase tracking-[0.18em] text-slate-500">Lauks</span>
-                            <span class="min-w-[2.25rem] rounded-xl px-2.5 py-1 text-center text-xl font-black tabular-nums border border-rose-900/40 bg-[#1a0a0f] text-rose-300/90">{{ seg }}</span>
-                          </div>
-                          <div class="grid grid-cols-3 gap-1.5">
-                            <button type="button" @click="addCricketDart(seg, 1)"
-                                    :disabled="segClosedByAll(seg) || dartInput.darts.length >= 3"
-                                    class="relative flex items-center justify-center overflow-hidden rounded-xl border px-1 py-2.5 shadow-sm transition active:scale-[0.96] touch-manipulation select-none disabled:opacity-20
-                                           border-slate-400/35 bg-gradient-to-b from-slate-600/50 to-slate-950/95 text-white ring-1 ring-inset ring-white/10 hover:from-slate-500/55"
-                                    :class="myHitsFor(seg) >= 3 ? '!border-emerald-600/50 !from-emerald-950/90 !to-emerald-950 !ring-emerald-500/15' : ''">
-                              <span class="text-xl font-black leading-none tabular-nums">1×</span>
-                              <span v-if="myHitsFor(seg) >= 3" class="absolute right-0.5 top-0.5 text-[8px] text-emerald-400">✓</span>
-                            </button>
-                            <button type="button" @click="addCricketDart(seg, 2)"
-                                    :disabled="segClosedByAll(seg) || dartInput.darts.length >= 3"
-                                    class="relative flex items-center justify-center overflow-hidden rounded-xl border px-1 py-2.5 shadow-sm transition active:scale-[0.96] touch-manipulation select-none disabled:opacity-20
-                                           border-sky-400/40 bg-gradient-to-b from-sky-600/45 to-sky-950/95 text-sky-50 ring-1 ring-inset ring-sky-300/15 hover:from-sky-500/55"
-                                    :class="myHitsFor(seg) >= 3 ? '!border-emerald-600/50 !from-emerald-950/90 !to-emerald-950 !ring-emerald-500/15' : ''">
-                              <span class="text-xl font-black leading-none tabular-nums">2×</span>
-                              <span v-if="myHitsFor(seg) >= 3" class="absolute right-0.5 top-0.5 text-[8px] text-emerald-400">✓</span>
-                            </button>
-                            <button type="button" @click="addCricketDart(seg, 3)"
-                                    :disabled="segClosedByAll(seg) || dartInput.darts.length >= 3"
-                                    class="relative flex items-center justify-center overflow-hidden rounded-xl border px-1 py-2.5 shadow-sm transition active:scale-[0.96] touch-manipulation select-none disabled:opacity-20
-                                           border-amber-400/45 bg-gradient-to-b from-amber-600/40 to-amber-950/95 text-amber-50 ring-1 ring-inset ring-amber-300/15 hover:from-amber-500/50"
-                                    :class="myHitsFor(seg) >= 3 ? '!border-emerald-600/50 !from-emerald-950/90 !to-emerald-950 !ring-emerald-500/15' : ''">
-                              <span class="text-xl font-black leading-none tabular-nums">3×</span>
-                              <span v-if="myHitsFor(seg) >= 3" class="absolute right-0.5 top-0.5 text-[8px] text-emerald-400">✓</span>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="flex flex-col gap-2">
-                        <div v-for="seg in cricketPadSplit.right" :key="'dr'+seg"
-                             class="rounded-2xl border border-slate-500/25 bg-gradient-to-b from-[#101c32] via-[#0a1424] to-[#060d14] p-2 shadow-lg shadow-black/25 ring-1 ring-white/[0.06]">
-                          <div class="mb-1.5 flex items-center justify-between gap-2">
-                            <span class="text-[9px] font-bold uppercase tracking-[0.18em] text-slate-500">Lauks</span>
-                            <span class="min-w-[2.25rem] rounded-xl px-2.5 py-1 text-center text-xl font-black tabular-nums border border-rose-900/40 bg-[#1a0a0f] text-rose-300/90">{{ seg }}</span>
-                          </div>
-                          <div class="grid grid-cols-3 gap-1.5">
-                            <button type="button" @click="addCricketDart(seg, 1)"
-                                    :disabled="segClosedByAll(seg) || dartInput.darts.length >= 3"
-                                    class="relative flex items-center justify-center overflow-hidden rounded-xl border px-1 py-2.5 shadow-sm transition active:scale-[0.96] touch-manipulation select-none disabled:opacity-20
-                                           border-slate-400/35 bg-gradient-to-b from-slate-600/50 to-slate-950/95 text-white ring-1 ring-inset ring-white/10 hover:from-slate-500/55"
-                                    :class="myHitsFor(seg) >= 3 ? '!border-emerald-600/50 !from-emerald-950/90 !to-emerald-950 !ring-emerald-500/15' : ''">
-                              <span class="text-xl font-black leading-none tabular-nums">1×</span>
-                              <span v-if="myHitsFor(seg) >= 3" class="absolute right-0.5 top-0.5 text-[8px] text-emerald-400">✓</span>
-                            </button>
-                            <button type="button" @click="addCricketDart(seg, 2)"
-                                    :disabled="segClosedByAll(seg) || dartInput.darts.length >= 3"
-                                    class="relative flex items-center justify-center overflow-hidden rounded-xl border px-1 py-2.5 shadow-sm transition active:scale-[0.96] touch-manipulation select-none disabled:opacity-20
-                                           border-sky-400/40 bg-gradient-to-b from-sky-600/45 to-sky-950/95 text-sky-50 ring-1 ring-inset ring-sky-300/15 hover:from-sky-500/55"
-                                    :class="myHitsFor(seg) >= 3 ? '!border-emerald-600/50 !from-emerald-950/90 !to-emerald-950 !ring-emerald-500/15' : ''">
-                              <span class="text-xl font-black leading-none tabular-nums">2×</span>
-                              <span v-if="myHitsFor(seg) >= 3" class="absolute right-0.5 top-0.5 text-[8px] text-emerald-400">✓</span>
-                            </button>
-                            <button type="button" @click="addCricketDart(seg, 3)"
-                                    :disabled="segClosedByAll(seg) || dartInput.darts.length >= 3"
-                                    class="relative flex items-center justify-center overflow-hidden rounded-xl border px-1 py-2.5 shadow-sm transition active:scale-[0.96] touch-manipulation select-none disabled:opacity-20
-                                           border-amber-400/45 bg-gradient-to-b from-amber-600/40 to-amber-950/95 text-amber-50 ring-1 ring-inset ring-amber-300/15 hover:from-amber-500/50"
-                                    :class="myHitsFor(seg) >= 3 ? '!border-emerald-600/50 !from-emerald-950/90 !to-emerald-950 !ring-emerald-500/15' : ''">
-                              <span class="text-xl font-black leading-none tabular-nums">3×</span>
-                              <span v-if="myHitsFor(seg) >= 3" class="absolute right-0.5 top-0.5 text-[8px] text-emerald-400">✓</span>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Bull block — always visible, above Miss -->
-                  <div v-if="cricketSdtHasBull"
-                       class="flex-shrink-0 rounded-2xl border border-[#1e3050] bg-gradient-to-b from-[#101c32] via-[#0a1424] to-[#060d14] p-2 shadow-lg ring-1 ring-white/[0.06]">
-                    <div class="mb-1.5 flex items-center justify-between gap-2 px-0.5">
-                      <span class="text-[9px] font-bold uppercase tracking-[0.18em] text-slate-500">Bull</span>
-                      <span class="rounded-xl px-2.5 py-1 text-xl font-black tabular-nums border border-rose-900/40 bg-[#1a0a0f] text-rose-300/90">25</span>
-                    </div>
-                    <div class="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-1.5">
-                      <button type="button" @click="addCricketDart(25, 1)"
-                              :disabled="segClosedByAll(25) || dartInput.darts.length >= 3"
-                              class="relative flex items-center justify-center overflow-hidden rounded-xl border px-1 py-2.5 shadow-sm transition active:scale-[0.96] touch-manipulation select-none disabled:opacity-20
-                                     border-emerald-700/45 bg-gradient-to-b from-emerald-800/50 to-emerald-950/95 text-emerald-100 ring-1 ring-inset ring-emerald-500/15 hover:from-emerald-700/55"
-                              :class="myHitsFor(25) >= 3 ? '!border-emerald-600/50 !from-emerald-950/90 !to-emerald-950' : ''">
-                        <span class="text-xl font-black tabular-nums leading-none">1×</span>
-                        <span v-if="myHitsFor(25) >= 3" class="absolute right-1 top-1 text-[8px] text-emerald-400">✓</span>
-                      </button>
-                      <button type="button" @click="addCricketDart(25, 2)"
-                              :disabled="segClosedByAll(25) || dartInput.darts.length >= 3"
-                              class="relative flex items-center justify-center overflow-hidden rounded-xl border px-1 py-2.5 shadow-md transition active:scale-[0.96] touch-manipulation select-none disabled:opacity-20
-                                     border-red-800/50 bg-gradient-to-b from-red-800/55 to-red-950/95 text-red-50 ring-1 ring-inset ring-red-500/20 hover:from-red-700/60"
-                              :class="myHitsFor(25) >= 3 ? '!border-emerald-600/50 !from-emerald-950/90 !to-emerald-950 !ring-emerald-500/30' : ''">
-                        <span class="text-2xl font-black tabular-nums leading-none">2×</span>
-                        <span v-if="myHitsFor(25) >= 3" class="absolute right-1 top-1 text-[8px] text-emerald-400">✓</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Miss -->
-                  <button type="button" @click="addCricketDart(0, 0)"
-                          :disabled="dartInput.darts.length >= 3"
-                          class="flex-shrink-0 w-full rounded-2xl text-xs font-black uppercase tracking-wide bg-[#1a0a0f] text-rose-300/90
-                                 hover:bg-[#2a1218] transition active:scale-95 touch-manipulation select-none
-                                 disabled:opacity-20 border border-rose-900/40 py-3">
-                    Miss
-                  </button>
-
-                  <div class="flex gap-2 flex-shrink-0 pt-1">
-                    <button type="button" @click="undo"
-                            class="flex-1 py-3.5 bg-[#162540] hover:bg-[#1e3050] text-slate-200 rounded-2xl
-                                   font-bold transition text-sm active:scale-[0.97] border border-[#1e3050] touch-manipulation">
-                      ↩ Atsaukt
-                    </button>
-                    <button type="button" @click="submitThrow"
-                            :disabled="dartInput.darts.length === 0 || submitting"
-                            class="flex-1 py-3.5 bg-amber-500 hover:bg-amber-400 text-black rounded-2xl
-                                   font-black transition disabled:opacity-40 text-sm
-                                   active:scale-[0.97] shadow-lg shadow-amber-950/30 touch-manipulation">
-                      {{ submitting ? '...' : 'Iesniegt →' }}
-                    </button>
-                  </div>
-
-                </div>
-              </template>
-
-            </div>
-
-          </div>
-
-          <!-- ── Mobile layout ── -->
-          <div class="lg:hidden grid flex-1 min-h-0 grid-rows-[auto_auto_minmax(0,1fr)_minmax(0,1fr)] overflow-hidden overscroll-none pb-[env(safe-area-inset-bottom)]">
-
-            <div class="flex-shrink-0 px-2 py-1.5 border-b border-[#162540] bg-[#0a1120]/90 flex items-center justify-between gap-1 flex-wrap">
-              <span class="text-amber-400 font-mono font-black text-xs tracking-wider truncate min-w-0">{{ state.room_code }}</span>
-              <div class="flex items-center gap-1 flex-shrink-0">
-                <span class="text-slate-500 text-[10px] tabular-nums">
-                  L{{ state.current_leg }}/{{ legsConfigTotal }}<template v-if="setsConfigTotal > 1">·S{{ state.current_set }}/{{ setsConfigTotal }}</template>
-                </span>
-                <template v-if="(isMatchActive || isSuspended) && auth.user">
-                  <button type="button" @click="exitGameSaving"
-                          class="px-1.5 py-0.5 rounded text-[9px] font-bold border border-slate-600/50 text-slate-400 active:bg-[#162540] touch-manipulation">
-                    Prom
-                  </button>
-                  <button v-if="isMatchActive" type="button" @click="showAbandonConfirm = true"
-                          class="px-1.5 py-0.5 rounded text-[9px] font-black border border-rose-800/40 text-rose-400 active:bg-rose-950/30 touch-manipulation">
-                    Stop
-                  </button>
-                </template>
-              </div>
-            </div>
-
-            <div v-if="isMatchActive && showTurnTimeoutWaitingBanner"
-                 class="shrink-0 px-2 py-1.5 bg-amber-950/50 border-b border-amber-700/40 text-center text-[10px] font-semibold text-amber-100 leading-snug">
-              {{ t('game.turnTimer.waitingOpponentChoice') }}
-            </div>
-            <div v-else-if="turnTimerRowVisible"
-                 class="shrink-0 flex items-center gap-2 px-2 py-1.5 border-b border-[#162540] bg-[#0d1526]/95">
-              <div class="flex-1 min-w-0 h-1.5 rounded-full bg-[#1e3050] overflow-hidden">
-                <div class="h-full rounded-full bg-gradient-to-r from-amber-700 to-amber-400 transition-[width] duration-500 ease-linear"
-                     :style="{ width: turnTimerProgress + '%' }"></div>
-              </div>
-              <span class="text-[11px] font-mono font-black tabular-nums text-amber-400 w-11 text-right shrink-0">{{ formatTurnClock(turnTimerRemainingSec) }}</span>
-            </div>
-
-            <div class="flex-shrink-0 px-2 pt-1.5 pb-1 grid gap-1"
-                 :class="players.length >= 3 ? 'grid-cols-3' : 'grid-cols-2'">
-              <div v-for="player in players" :key="player.id"
-                   class="rounded-xl px-2 py-1.5 transition-all duration-300 min-w-0"
-                   :class="Number(player.id) === Number(state.current_player?.id)
-                     ? 'bg-[#1a2540] border border-amber-500/35'
-                     : 'bg-[#0f1c30] border border-[#162540]'">
-                <div class="flex items-center gap-0.5 min-w-0 mb-0.5">
-                  <span v-if="Number(player.id) === Number(state.current_player?.id)"
-                        class="text-amber-400 text-[10px] flex-shrink-0">▶</span>
-                  <span class="text-[11px] font-bold truncate leading-tight flex-1"
-                        :class="Number(player.id) === Number(state.current_player?.id) ? 'text-amber-300' : 'text-slate-500'">
-                    {{ player.name }}
-                  </span>
-                  <!-- Score badge -->
-                  <span class="flex-shrink-0 font-black tabular-nums leading-none text-xs ml-0.5"
-                        :class="player.legs_won > 0
-                          ? (Number(player.id) === Number(state.current_player?.id) ? 'text-amber-400' : 'text-slate-300')
-                          : 'text-slate-700'">
-                    <template v-if="state.legs_config?.sets > 1">{{ player.sets_won }}S·{{ player.legs_won }}L</template>
-                    <template v-else>{{ player.legs_won }}<span class="text-slate-700">/{{ legsToWin }}</span></template>
-                  </span>
-                </div>
-                <div class="flex items-end justify-between gap-1">
-                  <span class="text-lg font-black tabular-nums leading-none"
-                        :class="player.cricket?.all_closed ? 'text-emerald-400' : 'text-slate-100'">
-                    {{ player.cricket?.points ?? 0 }}
-                  </span>
-                  <div class="flex items-end gap-1.5">
-                    <div class="flex flex-col items-end min-w-0" :title="t('game.cricketAvgHint')">
-                      <span class="text-[7px] font-black uppercase text-amber-500 leading-none mb-px">{{ t('game.cricketAvgShort') }}</span>
-                      <span class="text-sm font-black tabular-nums text-amber-100 leading-none">{{ player.avg_pts ?? '—' }}</span>
-                    </div>
-                    <div class="flex gap-0.5 flex-shrink-0 pb-0.5">
-                      <div v-for="i in legsToWin" :key="i"
-                           class="w-1 h-1 rounded-full border transition-all"
-                           :class="i <= player.legs_won ? 'bg-amber-400 border-amber-400' : 'border-[#1e3050]'"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Scoreboard (pagaidu: orientācijas tests) -->
-            <div v-if="gameFieldOrientationProbe"
-                 class="min-h-0 mx-2 mb-1 rounded-lg overflow-hidden border border-dashed border-amber-500/35 bg-[#0a1120]/90 flex flex-col items-center justify-center shadow-inner py-6 px-2">
-              <div class="text-center space-y-2">
-                <div class="text-[8px] font-black uppercase tracking-widest text-slate-500">Layout</div>
-                <div class="text-3xl font-black leading-tight"
-                     :class="layoutKind === 'landscape' ? 'text-sky-400' : layoutKind === 'portrait' ? 'text-amber-400' : 'text-emerald-400'">
-                  {{ layoutLabel }}
-                </div>
-                <div class="text-slate-500 text-[11px] font-mono tabular-nums">{{ layoutWidth }}×{{ layoutHeight }} · {{ layoutAspect }}</div>
-              </div>
-            </div>
-            <div v-else class="min-h-0 mx-2 mb-1 rounded-lg overflow-hidden border border-[#162540] bg-[#0f1c30]/95 flex flex-col shadow-inner">
-              <div class="flex-shrink-0 border-b border-[#162540] py-1 px-0.5 bg-[#0a1120]/60"
-                   :style="scorecardGridStyle">
-                <div v-for="p in leftPlayers" :key="'lhm-'+p.id"
-                     class="text-center text-[10px] font-bold truncate px-0.5 leading-tight"
-                     :class="Number(p.id) === Number(state.current_player?.id) ? 'text-amber-400' : 'text-slate-500'">
-                  {{ p.name }}
-                </div>
-                <div class="text-center text-[8px] text-slate-500 font-black uppercase tracking-wider leading-tight px-0.5">Lauks</div>
-                <div v-for="p in rightPlayers" :key="'rhm-'+p.id"
-                     class="text-center text-[10px] font-bold truncate px-0.5 leading-tight"
-                     :class="Number(p.id) === Number(state.current_player?.id) ? 'text-amber-400' : 'text-slate-500'">
-                  {{ p.name }}
-                </div>
-              </div>
-              <div class="flex-1 min-h-0 flex flex-col overflow-y-auto">
-                <div v-for="(seg, idx) in cricketSdtSegments" :key="seg"
-                     class="flex-1 min-h-0 basis-0 border-b border-[#162540]/40 last:border-b-0 transition-all duration-300"
-                     :class="[idx % 2 === 0 ? 'bg-[#0a1120]/25' : '', segClosedByAll(seg) ? 'opacity-30' : '']"
-                     :style="scorecardRowGridStyle">
-                  <div v-for="p in leftPlayers" :key="'lmm-'+p.id+'-'+seg"
-                       class="flex items-center justify-center min-h-0 min-w-0 border-r border-[#162540]/30 p-px">
-                    <CricketMarkCell :hits="hitsFor(p.id, seg)" :closed="segClosedByAll(seg)" size="board-sm" />
-                  </div>
-                  <div class="flex items-center justify-center min-h-0 min-w-0 px-px rounded mx-px my-px shadow-inner"
-                       :class="segClosedByAll(seg)
-                         ? 'bg-[#0a1120]/95 border border-[#1e3050]'
-                         : 'border border-rose-900/40 bg-[#1a0a0f]'">
-                    <div class="flex flex-col items-center justify-center leading-none gap-px">
-                      <span class="font-black tabular-nums select-none text-[clamp(0.65rem,2.4vmin,0.95rem)]"
-                            :class="segClosedByAll(seg) ? 'text-slate-500 line-through' : 'text-rose-300/90'">
-                        {{ seg === 25 ? '25' : seg }}
-                      </span>
-                      <span v-if="seg === 25 && !segClosedByAll(seg)"
-                            class="text-[6px] font-bold uppercase tracking-wider text-rose-400/80 leading-none">bull</span>
-                    </div>
-                  </div>
-                  <div v-for="p in rightPlayers" :key="'rmm-'+p.id+'-'+seg"
-                       class="flex items-center justify-center min-h-0 min-w-0 border-l border-[#162540]/30 p-px">
-                    <CricketMarkCell :hits="hitsFor(p.id, seg)" :closed="segClosedByAll(seg)" size="board-sm" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Mobile input area -->
-            <div class="min-h-0 flex flex-col overflow-y-auto overscroll-y-contain border-t border-[#162540] bg-[#0a1120]
-                        px-2 pt-1.5 pb-[max(0.35rem,env(safe-area-inset-bottom))]">
-
-              <div v-if="waitingForTurnUi" class="flex-1 min-h-0 flex flex-col items-center justify-center gap-2 py-2">
-                <span class="text-slate-500 text-[10px] uppercase tracking-widest">Gaida</span>
-                <span class="text-slate-100 font-bold text-sm text-center px-2">{{ state.current_player?.name }}</span>
-                <div class="flex gap-1">
-                  <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-bounce" style="animation-delay:0ms"></span>
-                  <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-bounce" style="animation-delay:150ms"></span>
-                  <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-bounce" style="animation-delay:300ms"></span>
-                </div>
-              </div>
-
-              <template v-else>
-
-                <!-- Segment rows + Miss column side by side -->
-                <div class="flex-shrink-0 flex gap-0.5 mb-0.5">
-
-                  <!-- Left: segment rows + bull -->
-                  <div class="flex-1 flex flex-col gap-0.5 min-w-0">
-                    <div v-for="seg in cricketSdtNonBull" :key="'mr'+seg"
-                         class="grid gap-0.5 items-stretch"
-                         style="grid-template-columns: 1.5rem 1fr 1fr 1fr; min-height: 1.75rem">
-                      <div class="flex items-center justify-center text-[11px] font-black tabular-nums leading-none rounded-md border px-0.5 min-w-0"
-                           :class="segClosedByAll(seg)
-                             ? 'text-slate-600 line-through opacity-40 border-[#1e3050] bg-[#0a1120]'
-                             : myHitsFor(seg) >= 3
-                             ? 'text-emerald-300 border-emerald-800/40 bg-emerald-950/50'
-                             : 'text-rose-300/90 border-rose-900/40 bg-[#1a0a0f]'">
-                        {{ seg }}
-                      </div>
-                      <button type="button" @click="addCricketDart(seg, 1)"
-                              :disabled="segClosedByAll(seg) || dartInput.darts.length >= 3"
-                              class="relative flex items-center justify-center rounded-md border font-black text-sm transition active:scale-[0.96] touch-manipulation select-none disabled:opacity-20
-                                     border-slate-500/35 bg-gradient-to-b from-slate-600/40 to-slate-900/90 text-white"
-                              :class="myHitsFor(seg) >= 3 ? '!border-emerald-600/40 !from-emerald-950/80 !to-emerald-950' : ''">
-                        1×
-                        <span v-if="myHitsFor(seg) >= 3" class="absolute right-0.5 top-0.5 text-[6px] text-emerald-400">✓</span>
-                      </button>
-                      <button type="button" @click="addCricketDart(seg, 2)"
-                              :disabled="segClosedByAll(seg) || dartInput.darts.length >= 3"
-                              class="relative flex items-center justify-center rounded-md border font-black text-sm transition active:scale-[0.96] touch-manipulation select-none disabled:opacity-20
-                                     border-sky-500/40 bg-gradient-to-b from-sky-700/40 to-sky-950/90 text-sky-100"
-                              :class="myHitsFor(seg) >= 3 ? '!border-emerald-600/40 !from-emerald-950/80 !to-emerald-950' : ''">
-                        2×
-                        <span v-if="myHitsFor(seg) >= 3" class="absolute right-0.5 top-0.5 text-[6px] text-emerald-400">✓</span>
-                      </button>
-                      <button type="button" @click="addCricketDart(seg, 3)"
-                              :disabled="segClosedByAll(seg) || dartInput.darts.length >= 3"
-                              class="relative flex items-center justify-center rounded-md border font-black text-sm transition active:scale-[0.96] touch-manipulation select-none disabled:opacity-20
-                                     border-amber-500/40 bg-gradient-to-b from-amber-700/35 to-amber-950/90 text-amber-100"
-                              :class="myHitsFor(seg) >= 3 ? '!border-emerald-600/40 !from-emerald-950/80 !to-emerald-950' : ''">
-                        3×
-                        <span v-if="myHitsFor(seg) >= 3" class="absolute right-0.5 top-0.5 text-[6px] text-emerald-400">✓</span>
-                      </button>
-                    </div>
-
-                    <!-- Bull row -->
-                    <div v-if="cricketSdtHasBull"
-                         class="grid gap-0.5 items-stretch"
-                         style="grid-template-columns: 1.5rem 1fr 2fr; min-height: 1.75rem">
-                      <div class="flex items-center justify-center text-[11px] font-black rounded-md border px-0.5"
-                           :class="segClosedByAll(25)
-                             ? 'text-slate-600 opacity-40 border-[#1e3050] bg-[#0a1120]'
-                             : myHitsFor(25) >= 3
-                             ? 'text-emerald-300 border-emerald-800/40 bg-emerald-950/50'
-                             : 'text-rose-300/90 border-rose-900/40 bg-[#1a0a0f]'">B</div>
-                      <button type="button" @click="addCricketDart(25, 1)"
-                              :disabled="segClosedByAll(25) || dartInput.darts.length >= 3"
-                              class="relative flex items-center justify-center rounded-md border font-black text-sm transition active:scale-[0.96] touch-manipulation select-none disabled:opacity-20
-                                     border-emerald-700/45 bg-gradient-to-b from-emerald-800/45 to-emerald-950/95 text-emerald-100"
-                              :class="myHitsFor(25) >= 3 ? '!border-emerald-600/40 !from-emerald-950/80 !to-emerald-950' : ''">
-                        1×
-                        <span v-if="myHitsFor(25) >= 3" class="absolute right-0.5 top-0.5 text-[6px] text-emerald-400">✓</span>
-                      </button>
-                      <button type="button" @click="addCricketDart(25, 2)"
-                              :disabled="segClosedByAll(25) || dartInput.darts.length >= 3"
-                              class="relative flex items-center justify-center rounded-md border font-black text-sm transition active:scale-[0.96] touch-manipulation select-none disabled:opacity-20
-                                     border-red-800/50 bg-gradient-to-b from-red-800/50 to-red-950/95 text-red-50"
-                              :class="myHitsFor(25) >= 3 ? '!border-emerald-600/40 !from-emerald-950/80 !to-emerald-950' : ''">
-                        2×
-                        <span v-if="myHitsFor(25) >= 3" class="absolute right-1 top-0.5 text-[6px] text-emerald-400">✓</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Right: Miss vertical button -->
-                  <button type="button" @click="addCricketDart(0, 0)"
-                          :disabled="dartInput.darts.length >= 3"
-                          class="flex-shrink-0 w-7 self-stretch flex items-center justify-center rounded-md border
-                                 bg-[#1a0a0f] border-rose-900/40 touch-manipulation disabled:opacity-20
-                                 active:scale-[0.97] transition">
-                    <span class="text-rose-300/90 font-black text-[9px] uppercase tracking-widest"
-                          style="writing-mode: vertical-rl; transform: rotate(180deg)">Miss</span>
-                  </button>
-                </div>
-
-                <!-- Undo / Submit -->
-                <div class="grid grid-cols-2 gap-1.5 flex-shrink-0 mb-1">
-                  <button type="button" @click="undo"
-                          class="py-1.5 bg-[#162540] hover:bg-[#1e3050] text-slate-200 rounded-xl font-bold text-xs
-                                 active:scale-[0.98] border border-[#1e3050] touch-manipulation">
-                    ↩ Atsaukt
-                  </button>
-                  <button type="button" @click="submitThrow"
-                          :disabled="dartInput.darts.length === 0 || submitting"
-                          class="py-1.5 bg-amber-500 hover:bg-amber-400 text-black rounded-xl font-black text-xs transition disabled:opacity-40
-                                 active:scale-[0.98] shadow-md shadow-amber-950/25 touch-manipulation">
-                    {{ submitting ? '...' : 'Iesniegt →' }}
-                  </button>
-                </div>
-
-                <!-- Dart display — fills remaining space -->
-                <div class="flex-1 min-h-0 flex gap-2 items-stretch overflow-hidden">
-                  <div v-for="(d, i) in dartInput.darts" :key="i"
-                       class="flex-1 min-w-0 min-h-0 bg-[#0d1a2e] border border-amber-500/25 rounded-xl
-                              flex flex-col items-center justify-center gap-0.5 relative overflow-hidden">
-                    <div class="font-mono font-black text-amber-400 leading-none tabular-nums
-                                text-[clamp(1.1rem,6vw,2rem)]">{{ dartLabel(d) }}</div>
-                    <div class="text-slate-500 text-[10px] tabular-nums leading-none">{{ dartValue(d) || 0 }}</div>
-                    <button type="button" @click="removeDart(i)"
-                            class="absolute top-1 right-1 w-5 h-5 rounded-full bg-rose-950/80 border border-rose-700/40
-                                   text-rose-400 text-[9px] flex items-center justify-center active:bg-rose-800 touch-manipulation">✕</button>
-                  </div>
-                  <div v-for="i in (3 - dartInput.darts.length)" :key="'ep'+i"
-                       class="flex-1 min-w-0 min-h-0 border border-dashed border-[#1a2a42] rounded-xl
-                              flex items-center justify-center text-[#1e3050] font-mono text-xl"></div>
-                </div>
-              </template>
-
-            </div>
-
-          </div>
-
+        <div v-else-if="isCricket" class="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+          <CricketGameAdaptiveLayout
+            :layout-kind="layoutKind"
+            :layout-width="layoutWidth"
+            :layout-height="layoutHeight"
+            :state="state"
+            :players="players"
+            :left-players="leftPlayers"
+            :right-players="rightPlayers"
+            :cricket-sdt-segments="cricketSdtSegments"
+            :cricket-sdt-non-bull="cricketSdtNonBull"
+            :cricket-sdt-has-bull="cricketSdtHasBull"
+            :cricket-pad-split="cricketPadSplit"
+            :legs-config-total="legsConfigTotal"
+            :sets-config-total="setsConfigTotal"
+            :legs-to-win="legsToWin"
+            :is-match-active="isMatchActive"
+            :is-suspended="isSuspended"
+            :auth="auth"
+            :dart-input="dartInput"
+            :submitting="submitting"
+            :waiting-for-turn-ui="waitingForTurnUi"
+            :show-turn-timeout-waiting-banner="showTurnTimeoutWaitingBanner"
+            :turn-timer-row-visible="turnTimerRowVisible"
+            :turn-timer-progress="turnTimerProgress"
+            :turn-timer-remaining-sec="turnTimerRemainingSec"
+            :scorecard-grid-style="scorecardGridStyle"
+            :scorecard-row-grid-style="scorecardRowGridStyle"
+            :hits-for="hitsFor"
+            :seg-closed-by-all="segClosedByAll"
+            :my-hits-for="myHitsFor"
+            :dart-label="dartLabel"
+            :dart-value="dartValue"
+            :format-turn-clock="formatTurnClock"
+            :add-cricket-dart="addCricketDart"
+            :remove-dart="removeDart"
+            :submit-throw="submitThrow"
+            :undo="undo"
+            :exit-game-saving="exitGameSaving"
+            :on-show-abandon="revealAbandonConfirm"
+          />
         </div>
 
         <!-- ════════════════ X01 ════════════════ -->
@@ -1697,18 +1122,7 @@ export default {
 
           <div class="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6 min-h-0">
 
-            <div v-if="gameFieldOrientationProbe"
-                 class="lg:col-span-2 min-h-0 order-2 lg:order-1 flex flex-col items-center justify-center rounded-xl border border-dashed border-amber-500/35 bg-[#0a1120]/80 py-10 sm:py-16 px-4">
-              <div class="text-center space-y-3">
-                <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Layout probe (X01)</div>
-                <div class="text-4xl sm:text-5xl font-black tracking-tight leading-none"
-                     :class="layoutKind === 'landscape' ? 'text-sky-400' : layoutKind === 'portrait' ? 'text-amber-400' : 'text-emerald-400'">
-                  {{ layoutLabel }}
-                </div>
-                <div class="text-slate-500 text-sm font-mono tabular-nums">{{ layoutWidth }} × {{ layoutHeight }} · {{ layoutAspect }}</div>
-              </div>
-            </div>
-            <div v-else class="lg:col-span-2 min-h-0 overflow-y-auto flex flex-col gap-2 sm:gap-4 order-2 lg:order-1">
+            <div class="lg:col-span-2 min-h-0 overflow-y-auto flex flex-col gap-2 sm:gap-4 order-2 lg:order-1">
 
               <div v-for="player in players" :key="player.id"
                    class="border-2 rounded-lg sm:rounded-xl p-2.5 sm:p-4 transition-all duration-300 shrink-0"

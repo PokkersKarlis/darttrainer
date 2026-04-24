@@ -191,6 +191,12 @@ class GameStateManager
 
         $activeSegments = $config['cricket_segments'] ?? CricketEngine::STANDARD_SEGMENTS;
 
+        // Cricket: aprēķinām vidējo visiem spēlētājiem vienā caurlaidē (lai nav N× smags aprēķins).
+        $cricketAvgPtsByPlayer = [];
+        if ($gameType === 'cricket') {
+            $cricketAvgPtsByPlayer = $this->calcCricketAvgPtsForPlayers($match);
+        }
+
         $visitsByPlayer = [];
         if ($gameType === 'x01' && $currentLeg) {
             foreach ($room->activePlayers as $p) {
@@ -212,7 +218,7 @@ class GameStateManager
             }
         }
 
-        $playersData = $room->activePlayers->map(function (RoomPlayer $player) use ($match, $currentLeg, $gameType, $config, $cricketStates, $activeSegments, $visitsByPlayer) {
+        $playersData = $room->activePlayers->map(function (RoomPlayer $player) use ($match, $currentLeg, $gameType, $config, $cricketStates, $activeSegments, $visitsByPlayer, $cricketAvgPtsByPlayer) {
             $data = [
                 'id'           => $player->id,
                 'name'         => $player->display_name,
@@ -243,8 +249,12 @@ class GameStateManager
                         $cricketData[$key] = $state->getSegmentHits($seg);
                     }
                     $data['cricket'] = $cricketData;
-                    $data['avg_pts'] = $this->calcCricketAvgPts($match, $player->id);
                 }
+            }
+
+            // Cricket “vidējais” jābūt visiem spēlētājiem, arī ja kādam nav ielasīts stāvoklis (drošībai).
+            if ($gameType === 'cricket') {
+                $data['avg_pts'] = $cricketAvgPtsByPlayer[(int) $player->id] ?? 0.0;
             }
 
             return $data;
@@ -507,14 +517,38 @@ class GameStateManager
                     $mult = (int) $dart->multiplier;
 
                     if ($tid === $roomPlayerId) {
-                        $totalEffective += $this->cricket->statHitMultiplierBeforeApply(
-                            $hits,
-                            $playerIds,
-                            $activeSegments,
-                            $tid,
-                            $seg,
-                            $mult
-                        );
+                        // “Vidējais” spēles laukumā skaita trāpījumu reizes (S=1,D=2,T=3),
+                        // nevis “cik šautriņas trāpīja”.
+                        // Tāpēc ieskaitām:
+                        // - slēgšanas trāpījumus (līdz 3) = statHitMultiplierBeforeApply
+                        // - punktu trāpījumus pēc slēgšanas, ja segments vēl nav “dead” visiem.
+                        $validAmount = 0;
+                        if ($mult > 0 && $seg > 0 && in_array($seg, $activeSegments, true)) {
+                            $myHitsBefore = (int) ($hits[$tid][$seg] ?? 0);
+                            $allClosedBefore = true;
+                            foreach ($playerIds as $pid) {
+                                if ((int) ($hits[$pid][$seg] ?? 0) < CricketEngine::HITS_TO_CLOSE) {
+                                    $allClosedBefore = false;
+                                    break;
+                                }
+                            }
+
+                            if ($myHitsBefore >= CricketEngine::HITS_TO_CLOSE && !$allClosedBefore) {
+                                // Punktu metiens (segments jau slēgts man, bet vēl atvērts kādam citam)
+                                $validAmount = $mult;
+                            } else {
+                                // Slēgšanas metiens (tikai tik, cik patiešām vajag līdz 3)
+                                $validAmount = $this->cricket->statHitMultiplierBeforeApply(
+                                    $hits,
+                                    $playerIds,
+                                    $activeSegments,
+                                    $tid,
+                                    $seg,
+                                    $mult
+                                );
+                            }
+                        }
+                        $totalEffective += $validAmount;
                     }
 
                     $this->cricket->applyDartToHitMap($hits, $tid, $seg, $mult, $activeSegments);
@@ -523,6 +557,107 @@ class GameStateManager
         }
 
         return round($totalEffective / $turns, 1);
+    }
+
+    /**
+     * Cricket “avg_pts” visiem spēlētājiem.
+     * Skaita trāpījumu reizes (S=1,D=2,T=3), kur derīgums atbilst spēles loģikai:
+     * - slēgšanas trāpījumi (līdz 3) skaitās pēc statHitMultiplierBeforeApply
+     * - ja spēlētājam segments jau slēgts, bet vēl nav “dead” visiem, tad skaitās pilns multiplikators (punktu metiens)
+     *
+     * @return array<int, float> [room_player_id => avg_pts]
+     */
+    private function calcCricketAvgPtsForPlayers(GameMatch $match): array
+    {
+        $match->loadMissing('room');
+
+        $room           = $match->room;
+        $config         = $room->game_config ?? [];
+        $activeSegments = $config['cricket_segments'] ?? CricketEngine::STANDARD_SEGMENTS;
+        $playerIds      = $room->activePlayers()->pluck('id')->values()->all();
+
+        // Turns count per player (match-wide)
+        $turnCounts = Turn::where('match_id', $match->id)
+            ->whereIn('player_id', $playerIds)
+            ->where('is_undone', false)
+            ->selectRaw('player_id, COUNT(*) as c')
+            ->groupBy('player_id')
+            ->pluck('c', 'player_id')
+            ->toArray();
+
+        $totals = [];
+        foreach ($playerIds as $pid) {
+            $totals[(int) $pid] = 0.0;
+        }
+
+        $legs = Leg::where('match_id', $match->id)
+            ->orderBy('set_number')
+            ->orderBy('leg_number')
+            ->get();
+
+        foreach ($legs as $leg) {
+            // Hit map reset per leg
+            $hits = [];
+            foreach ($playerIds as $pid) {
+                foreach ($activeSegments as $seg) {
+                    $hits[$pid][$seg] = 0;
+                }
+            }
+
+            $legTurns = Turn::where('leg_id', $leg->id)
+                ->where('is_undone', false)
+                ->orderBy('id')
+                ->with(['darts' => fn ($q) => $q->orderBy('dart_number')])
+                ->get();
+
+            foreach ($legTurns as $turn) {
+                $tid = (int) $turn->player_id;
+                foreach ($turn->darts as $dart) {
+                    $seg  = (int) $dart->segment;
+                    $mult = (int) $dart->multiplier;
+
+                    if (array_key_exists($tid, $totals)) {
+                        $validAmount = 0;
+                        if ($mult > 0 && $seg > 0 && in_array($seg, $activeSegments, true)) {
+                            $myHitsBefore = (int) ($hits[$tid][$seg] ?? 0);
+
+                            $allClosedBefore = true;
+                            foreach ($playerIds as $pid) {
+                                if ((int) ($hits[$pid][$seg] ?? 0) < CricketEngine::HITS_TO_CLOSE) {
+                                    $allClosedBefore = false;
+                                    break;
+                                }
+                            }
+
+                            if ($myHitsBefore >= CricketEngine::HITS_TO_CLOSE && !$allClosedBefore) {
+                                $validAmount = $mult;
+                            } else {
+                                $validAmount = $this->cricket->statHitMultiplierBeforeApply(
+                                    $hits,
+                                    $playerIds,
+                                    $activeSegments,
+                                    $tid,
+                                    $seg,
+                                    $mult
+                                );
+                            }
+                        }
+
+                        $totals[$tid] += $validAmount;
+                    }
+
+                    $this->cricket->applyDartToHitMap($hits, $tid, $seg, $mult, $activeSegments);
+                }
+            }
+        }
+
+        $out = [];
+        foreach ($playerIds as $pid) {
+            $turns = (int) ($turnCounts[$pid] ?? 0);
+            $out[(int) $pid] = $turns > 0 ? round(((float) $totals[(int) $pid]) / $turns, 1) : 0.0;
+        }
+
+        return $out;
     }
 
     private function calcRemaining(Leg $leg, int $playerId, array $config): int
