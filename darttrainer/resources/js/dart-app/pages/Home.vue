@@ -157,12 +157,13 @@ function continueActiveRoom(room) {
 }
 
 function goLobbyCricket() {
-  if (showGuestCta.value) {
-    router.push('/login');
-    return;
-  }
+  if (showGuestCta.value) return router.push('/login');
   if (needsEmailVerify.value) {
     window._dartToast?.(t('auth.verifyEmailToContinue'), 'error');
+    return;
+  }
+  if (!canPlayGames.value) {
+    window._dartToast?.(t('nav.gamesTeaserHint'), 'error');
     return;
   }
   router.push('/lobby/cricket');
@@ -190,6 +191,10 @@ function toggleLearn() {
 
 function pickStartMode(mode) {
   startMenuOpen.value = false;
+  if (showGuestCta.value) {
+    router.push('/login');
+    return;
+  }
   if (needsEmailVerify.value) {
     window._dartToast?.(t('auth.verifyEmailToContinue'), 'error');
     return;
@@ -1030,6 +1035,23 @@ onUnmounted(() => {
             </div>
           </div>
         </div>
+        <div class="dh-mi-w" style="border-color: rgba(245, 158, 11, 0.25); background: rgba(245, 158, 11, 0.08)">
+          <span class="dh-mi-wsp" aria-hidden="true" style="color:#f59e0b">ℹ</span>
+          <div>
+            <div class="dh-mi-wh" style="color:#f5a623">
+              {{ t('home.x01DevTitle') }}
+            </div>
+            <p class="dh-mi-wp" style="color:#e8eaf0">
+              {{ t('home.x01DevBody') }}
+            </p>
+            <div class="dh-mi-wx">
+              <a :href="discordUrl" class="dh-mi-wa" target="_blank" rel="noopener noreferrer">{{
+                t('nav.discord')
+              }}</a>
+              <a class="dh-mi-wb" href="mailto:bugs@traindart.com">bugs@traindart.com</a>
+            </div>
+          </div>
+        </div>
         <div v-if="needsEmailVerify" class="dh-email-verify">
           <EmailVerifyBanner :resend-busy="resendBusy" @resend="resendVerificationFromHome" />
         </div>
@@ -1199,11 +1221,13 @@ onUnmounted(() => {
             :key="'m-' + g.id"
             type="button"
             class="dh-mo-b"
+            :disabled="!canPlayGames || needsEmailVerify"
+            :title="needsEmailVerify ? t('auth.verifyEmailToContinue') : !canPlayGames ? t('nav.gamesTeaserHint') : ''"
             :style="{
               border: `1px solid ${activeGame === g.id ? g.color + '80' : '#1e2738'}`,
               background: activeGame === g.id ? g.color + '1f' : '#131720',
             }"
-            @click="activeGame = g.id"
+            @click="activeGame = g.id; pickStartMode(g.id)"
           >
             <div
               class="dh-mo-ico2"
