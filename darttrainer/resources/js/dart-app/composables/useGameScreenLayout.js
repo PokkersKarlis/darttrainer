@@ -16,7 +16,14 @@ function readCssViewportSize() {
 
 function classifyAspect(w, h) {
   const r = w / h;
+  // “Square” dizainu izmantojam tikai tiešām kvadrātiskos izmēros.
+  // Uz planšetēm / desktop logiem (piem., 800–939px platumā) `visualViewport` dažreiz
+  // dod gandrīz 1:1 attiecību, kas izraisa nevēlamu pārslēgšanos uz square.
+  // Šādos gadījumos gribam saglabāt Landscape dizainu.
   if (r >= SQUARE_RATIO_MIN && r <= SQUARE_RATIO_MAX) {
+    if (w >= 800) {
+      return { kind: 'landscape', label: 'Landscape' };
+    }
     return { kind: 'square', label: 'Square' };
   }
   if (r > SQUARE_RATIO_MAX) {

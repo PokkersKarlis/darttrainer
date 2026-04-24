@@ -250,174 +250,152 @@ function segLabel(seg) {
 
     <!-- ── NOKLUSĒJUMA (ainava / square) ──────────────────────────────── -->
     <template v-else>
-      <div class="flex shrink-0 items-center justify-between gap-2">
-        <span class="text-[10px] font-black uppercase tracking-widest text-slate-500">Šīs kārtas</span>
-        <div class="flex gap-1" aria-hidden="true">
-          <span
-            v-for="i in 3"
-            :key="i"
-            class="h-1.5 w-1.5 rounded-full transition-all"
-            :class="i <= dartInput.darts.length ? 'bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,.5)]' : 'bg-[#1e3050]'"
-          />
+      <!-- Header (landscape prototype style) -->
+      <div class="flex shrink-0 items-center justify-between" style="margin-bottom:10px">
+        <div class="text-[10px] font-bold uppercase tracking-[0.14em] text-[#3a4a63]">ŠĪS KĀRTAS</div>
+        <div class="flex items-center gap-1.5">
+          <div class="text-[11px] font-semibold text-[#7b8ba8]">{{ state.current_player?.name }}</div>
+          <div class="rounded-full border border-[#252d3d] bg-[#131720] px-[7px] py-[2px] text-[10px] font-bold text-[#7b8ba8]">
+            {{ dartInput.darts.length }}/3
+          </div>
         </div>
       </div>
 
-      <div class="flex shrink-0 gap-2">
+      <!-- Dart slots (fixed height; no resizing) -->
+      <div class="flex shrink-0 gap-[5px]" style="margin-bottom:12px">
         <div
           v-for="(d, i) in dartInput.darts"
-          :key="i"
-          class="group relative flex min-h-[3.5rem] min-w-0 flex-1 flex-col justify-center rounded-xl border border-[#162540] bg-[#0f1c30] px-1.5 py-2 text-center touch-manipulation"
+          :key="'sd-' + i"
+          class="relative flex flex-1 items-center justify-center overflow-hidden rounded-[7px] border px-2 text-center"
+          :style="{
+            height: '34px',
+            background: (d.segment === 0 || d.multiplier === 0) ? '#252d3d' : '#f5a62318',
+            borderColor: (d.segment === 0 || d.multiplier === 0) ? '#3a4a63' : '#f5a62345',
+          }"
         >
-          <div class="truncate font-mono text-sm font-black text-amber-400 sm:text-base">{{ dartLabel(d) }}</div>
-          <div class="text-[11px] tabular-nums text-slate-500">{{ dartValue(d) > 0 ? dartValue(d) : '—' }}</div>
+          <span class="truncate text-[11px] font-bold" :style="{ color: (d.segment === 0 || d.multiplier === 0) ? '#7b8ba8' : '#f5a623' }">
+            {{ dartLabel(d).toUpperCase() }}
+          </span>
           <button
             type="button"
-            class="absolute -right-1 -top-1 flex h-7 w-7 items-center justify-center rounded-full bg-red-700 text-xs text-white shadow-md transition hover:bg-red-600 sm:h-6 sm:w-6"
+            class="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-700 text-[10px] font-black text-white shadow-md transition hover:bg-red-600 active:scale-90 touch-manipulation"
             @click="removeDart(i)"
           >✕</button>
         </div>
         <div
           v-for="i in 3 - dartInput.darts.length"
-          :key="'e' + i"
-          class="flex min-h-[3.5rem] flex-1 items-center justify-center rounded-xl border border-dashed border-[#1e3050] bg-[#060d18]/80 font-mono text-xs text-[#1e3050]"
-        >—</div>
+          :key="'se-' + i"
+          class="flex flex-1 items-center justify-center rounded-[7px] border border-dashed border-[#1e2738] text-center"
+          style="height:34px"
+        >
+          <span class="text-[9px] font-bold text-[#2e3a50]">BULTA {{ dartInput.darts.length + i }}</span>
+        </div>
       </div>
 
-      <div class="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-0.5">
-        <div class="grid grid-cols-2 gap-x-2 gap-y-2">
-          <div class="flex flex-col gap-2">
-            <div
-              v-for="seg in cricketPadSplit.left"
-              :key="'il' + seg"
-              class="rounded-2xl border border-slate-500/25 bg-gradient-to-b from-[#101c32] via-[#0a1424] to-[#060d14] p-2 shadow-lg shadow-black/25 ring-1 ring-white/[0.06]"
-            >
-              <div class="mb-1.5 flex items-center justify-between gap-2">
-                <span class="text-[9px] font-bold uppercase tracking-[0.18em] text-slate-500">Lauks</span>
-                <span class="min-w-[2.25rem] rounded-xl border border-rose-900/40 bg-[#1a0a0f] px-2.5 py-1 text-center text-xl font-black tabular-nums text-rose-300/90">{{ seg }}</span>
-              </div>
-              <div class="grid grid-cols-3 gap-1.5">
-                <button
-                  v-for="m in 3"
-                  :key="m"
-                  type="button"
-                  class="relative flex select-none items-center justify-center overflow-hidden rounded-xl border px-1 py-2.5 shadow-sm ring-1 ring-inset transition active:scale-[0.96] touch-manipulation disabled:opacity-20"
-                  :class="[
-                    myHitsFor(seg) >= 3
-                      ? '!border-emerald-600/50 !from-emerald-950/90 !to-emerald-950 !ring-emerald-500/15'
-                      : m === 3
-                        ? 'border-amber-400/45 bg-gradient-to-b from-amber-600/40 to-amber-950/95 text-amber-50 ring-amber-300/15 hover:from-amber-500/50'
-                        : m === 2
-                          ? 'border-sky-400/40 bg-gradient-to-b from-sky-600/45 to-sky-950/95 text-sky-50 ring-sky-300/15 hover:from-sky-500/55'
-                          : 'border-slate-400/35 bg-gradient-to-b from-slate-600/50 to-slate-950/95 text-white ring-white/10 hover:from-slate-500/55',
-                  ]"
-                  :disabled="segClosedByAll(seg) || dartInput.darts.length >= 3"
-                  @click="addCricketDart(seg, m)"
-                >
-                  <span class="text-xl font-black leading-none tabular-nums">{{ m }}×</span>
-                  <span v-if="myHitsFor(seg) >= 3" class="absolute right-0.5 top-0.5 text-[8px] text-emerald-400">✓</span>
-                </button>
-              </div>
+      <!-- Fields grid 2×N (prototype style) -->
+      <div class="grid min-h-0 flex-1 grid-cols-2 gap-[7px]" style="grid-auto-rows: minmax(0,1fr)">
+        <div
+          v-for="seg in allNonBullSegs"
+          :key="'df-' + seg"
+          class="flex min-h-0 flex-col gap-[5px] rounded-[9px] border p-[8px]"
+          :style="{
+            background: segClosedByAll(seg) ? '#09100f' : '#131720',
+            borderColor: segClosedByAll(seg) ? '#131720' : '#252d3d',
+            opacity: segClosedByAll(seg) ? 0.35 : 1,
+          }"
+        >
+          <div class="flex items-center justify-between" style="margin-bottom:1px">
+            <span class="text-[10px] font-bold uppercase tracking-[0.05em] text-[#7b8ba8]">Lauks</span>
+            <div class="flex items-center gap-1">
+              <CricketXMarkCell :hits="myHitsFor(seg)" :dimmed="segClosedByAll(seg)" :size="14" />
+              <span class="text-[14px] font-extrabold tabular-nums tracking-[-0.5px] text-[#f5a623]">{{ segLabel(seg) }}</span>
             </div>
           </div>
-          <div class="flex flex-col gap-2">
-            <div
-              v-for="seg in cricketPadSplit.right"
-              :key="'ir' + seg"
-              class="rounded-2xl border border-slate-500/25 bg-gradient-to-b from-[#101c32] via-[#0a1424] to-[#060d14] p-2 shadow-lg shadow-black/25 ring-1 ring-white/[0.06]"
-            >
-              <div class="mb-1.5 flex items-center justify-between gap-2">
-                <span class="text-[9px] font-bold uppercase tracking-[0.18em] text-slate-500">Lauks</span>
-                <span class="min-w-[2.25rem] rounded-xl border border-rose-900/40 bg-[#1a0a0f] px-2.5 py-1 text-center text-xl font-black tabular-nums text-rose-300/90">{{ seg }}</span>
-              </div>
-              <div class="grid grid-cols-3 gap-1.5">
-                <button
-                  v-for="m in 3"
-                  :key="m"
-                  type="button"
-                  class="relative flex select-none items-center justify-center overflow-hidden rounded-xl border px-1 py-2.5 shadow-sm ring-1 ring-inset transition active:scale-[0.96] touch-manipulation disabled:opacity-20"
-                  :class="[
-                    myHitsFor(seg) >= 3
-                      ? '!border-emerald-600/50 !from-emerald-950/90 !to-emerald-950 !ring-emerald-500/15'
-                      : m === 3
-                        ? 'border-amber-400/45 bg-gradient-to-b from-amber-600/40 to-amber-950/95 text-amber-50 ring-amber-300/15 hover:from-amber-500/50'
-                        : m === 2
-                          ? 'border-sky-400/40 bg-gradient-to-b from-sky-600/45 to-sky-950/95 text-sky-50 ring-sky-300/15 hover:from-sky-500/55'
-                          : 'border-slate-400/35 bg-gradient-to-b from-slate-600/50 to-slate-950/95 text-white ring-white/10 hover:from-slate-500/55',
-                  ]"
-                  :disabled="segClosedByAll(seg) || dartInput.darts.length >= 3"
-                  @click="addCricketDart(seg, m)"
-                >
-                  <span class="text-xl font-black leading-none tabular-nums">{{ m }}×</span>
-                  <span v-if="myHitsFor(seg) >= 3" class="absolute right-0.5 top-0.5 text-[8px] text-emerald-400">✓</span>
-                </button>
-              </div>
-            </div>
+
+          <div class="flex gap-1">
+            <button
+              v-for="m in 3"
+              :key="'dfm-' + seg + '-' + m"
+              type="button"
+              class="flex flex-1 select-none items-center justify-center rounded-[6px] py-[7px] text-[12px] font-bold transition active:scale-[0.97] touch-manipulation disabled:opacity-40"
+              :style="{
+                background: (dartInput.darts.length >= 3 || segClosedByAll(seg)) ? '#0b0e14' : (m === 3 ? '#2a1e0a' : '#1a2030'),
+                color: (dartInput.darts.length >= 3 || segClosedByAll(seg)) ? '#2e3a50' : (m === 3 ? '#f5a623' : '#c0c8d8'),
+              }"
+              :disabled="dartInput.darts.length >= 3 || segClosedByAll(seg)"
+              @click="addCricketDart(seg, m)"
+            >{{ m }}×</button>
           </div>
         </div>
       </div>
 
-      <!-- Bull (default) -->
+      <!-- Bull block -->
       <div
         v-if="cricketSdtHasBull"
-        class="shrink-0 rounded-2xl border border-[#1e3050] bg-gradient-to-b from-[#101c32] via-[#0a1424] to-[#060d14] p-2 shadow-lg ring-1 ring-white/[0.06]"
+        class="shrink-0 rounded-[9px] border border-[#252d3d] bg-[#131720] p-[8px]"
+        style="margin-top:8px"
       >
-        <div class="mb-1.5 flex items-center justify-between gap-2 px-0.5">
-          <span class="text-[9px] font-bold uppercase tracking-[0.18em] text-slate-500">Bull</span>
-          <span class="rounded-xl border border-rose-900/40 bg-[#1a0a0f] px-2.5 py-1 text-xl font-black tabular-nums text-rose-300/90">25</span>
+        <div class="flex items-center justify-between" style="margin-bottom:5px">
+          <span class="text-[10px] font-bold uppercase tracking-[0.08em] text-[#7b8ba8]">Bull</span>
+          <div class="flex items-center gap-1">
+            <CricketXMarkCell :hits="myHitsFor(25)" :dimmed="segClosedByAll(25)" :size="14" />
+            <span class="text-[14px] font-extrabold text-[#ff5252]">25</span>
+          </div>
         </div>
-        <div class="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-1.5">
+        <div class="flex gap-1">
           <button
             type="button"
-            class="relative flex select-none items-center justify-center overflow-hidden rounded-xl border border-emerald-700/45 bg-gradient-to-b from-emerald-800/50 to-emerald-950/95 px-1 py-2.5 text-emerald-100 shadow-sm ring-1 ring-inset ring-emerald-500/15 transition hover:from-emerald-700/55 active:scale-[0.96] touch-manipulation disabled:opacity-20"
-            :class="myHitsFor(25) >= 3 ? '!border-emerald-600/50 !from-emerald-950/90 !to-emerald-950' : ''"
-            :disabled="segClosedByAll(25) || dartInput.darts.length >= 3"
+            class="flex flex-1 select-none items-center justify-center rounded-[6px] py-2 text-[12px] font-bold transition active:scale-[0.97] touch-manipulation disabled:opacity-40"
+            :style="{
+              background: (dartInput.darts.length >= 3 || segClosedByAll(25)) ? '#0b0e14' : '#1a2030',
+              color: (dartInput.darts.length >= 3 || segClosedByAll(25)) ? '#2e3a50' : '#c0c8d8',
+            }"
+            :disabled="dartInput.darts.length >= 3 || segClosedByAll(25)"
             @click="addCricketDart(25, 1)"
-          >
-            <span class="text-xl font-black tabular-nums leading-none">1×</span>
-            <span v-if="myHitsFor(25) >= 3" class="absolute right-1 top-1 text-[8px] text-emerald-400">✓</span>
-          </button>
+          >1×</button>
           <button
             type="button"
-            class="relative flex select-none items-center justify-center overflow-hidden rounded-xl border border-red-800/50 bg-gradient-to-b from-red-800/55 to-red-950/95 px-1 py-2.5 text-red-50 shadow-md ring-1 ring-inset ring-red-500/20 transition hover:from-red-700/60 active:scale-[0.96] touch-manipulation disabled:opacity-20"
-            :class="myHitsFor(25) >= 3 ? '!border-emerald-600/50 !from-emerald-950/90 !to-emerald-950 !ring-emerald-500/30' : ''"
-            :disabled="segClosedByAll(25) || dartInput.darts.length >= 3"
+            class="flex flex-1 select-none items-center justify-center rounded-[6px] py-2 text-[12px] font-bold transition active:scale-[0.97] touch-manipulation disabled:opacity-40"
+            :style="{
+              background: (dartInput.darts.length >= 3 || segClosedByAll(25)) ? '#0b0e14' : '#200808',
+              color: (dartInput.darts.length >= 3 || segClosedByAll(25)) ? '#2e3a50' : '#ff5252',
+            }"
+            :disabled="dartInput.darts.length >= 3 || segClosedByAll(25)"
             @click="addCricketDart(25, 2)"
-          >
-            <span class="text-2xl font-black tabular-nums leading-none">2×</span>
-            <span v-if="myHitsFor(25) >= 3" class="absolute right-1 top-1 text-[8px] text-emerald-400">✓</span>
-          </button>
+          >2×</button>
         </div>
       </div>
 
-      <!-- Miss (default) -->
+      <!-- MISS -->
       <button
         type="button"
-        class="shrink-0 w-full select-none rounded-2xl border border-rose-900/40 bg-[#1a0a0f] py-3 text-xs font-black uppercase tracking-wide text-rose-300/90 transition hover:bg-[#2a1218] active:scale-95 touch-manipulation disabled:opacity-20"
+        class="shrink-0 w-full rounded-[8px] border border-[#252d3d] bg-[#0b0e14] py-[10px] text-[12px] font-bold uppercase tracking-[0.08em] text-[#7b8ba8] transition active:scale-[0.98] touch-manipulation disabled:opacity-40"
+        style="margin-top:7px"
         :disabled="dartInput.darts.length >= 3"
         @click="addCricketDart(0, 0)"
-      >Miss</button>
+      >MISS</button>
 
-      <!-- Pogas (default) -->
-      <div class="flex shrink-0 gap-2 pt-1">
+      <!-- Actions -->
+      <div class="flex shrink-0 gap-[7px]" style="margin-top:8px">
         <button
           type="button"
-          class="flex-1 inline-flex items-center justify-center gap-1.5 rounded-2xl border border-[#1e3050] bg-[#162540] py-3.5 text-sm font-bold text-slate-200 transition hover:bg-[#1e3050] active:scale-[0.97] touch-manipulation"
+          class="flex flex-1 items-center justify-center rounded-[8px] border bg-[#131720] py-[11px] text-[12px] font-semibold transition active:scale-[0.98] touch-manipulation"
+          :style="{
+            borderColor: dartInput.darts.length === 0 ? '#131720' : '#252d3d',
+            color: dartInput.darts.length === 0 ? '#252d3d' : '#7b8ba8',
+          }"
           @click="undo"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none"
-               stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"
-               class="w-4 h-4 shrink-0">
-            <path d="M7.5 5H13a4 4 0 0 1 0 8H7"/>
-            <polyline points="4 5 7.5 2 7.5 8"/>
-          </svg>
-          Atsaukt
-        </button>
+        >← Atsaukt</button>
         <button
           type="button"
-          class="flex-1 rounded-2xl bg-amber-500 py-3.5 text-sm font-black text-black shadow-lg shadow-amber-950/30 transition hover:bg-amber-400 active:scale-[0.97] touch-manipulation disabled:opacity-40"
+          class="flex flex-[2] items-center justify-center rounded-[8px] border-none py-[11px] text-[13px] font-bold transition active:scale-[0.98] touch-manipulation disabled:opacity-60"
+          :style="{
+            background: dartInput.darts.length > 0 && !submitting ? 'linear-gradient(135deg,#f5a623,#f5c842)' : '#252d3d',
+            color: dartInput.darts.length > 0 && !submitting ? '#0b0e14' : '#3a4a63',
+          }"
           :disabled="dartInput.darts.length === 0 || submitting"
           @click="submitThrow"
-        >{{ submitting ? '...' : 'Iesniegt →' }}</button>
+        >{{ submitting ? '...' : 'Ierakstīt →' }}</button>
       </div>
     </template>
 

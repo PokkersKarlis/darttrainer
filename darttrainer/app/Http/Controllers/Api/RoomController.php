@@ -118,6 +118,14 @@ class RoomController extends Controller
         /** @var list<array{guest_name: string, user_id: int|null}> $localPlayers */
         $localPlayers = [];
 
+        $deviceKey = null;
+        if ($playMode === 'online') {
+            $deviceKey = (string) $request->cookie('dt_device', '');
+            if ($deviceKey === '') {
+                $deviceKey = Str::uuid()->toString();
+            }
+        }
+
         if ($playMode === 'local') {
             $roster = $request->input('local_roster', []);
             if (!is_array($roster) || count($roster) < 1) {
@@ -155,6 +163,7 @@ class RoomController extends Controller
         RoomPlayer::create([
             'room_id'    => $room->id,
             'user_id'    => $hostId,
+            'device_key' => $deviceKey,
             'guest_name' => Auth::user()?->name ?? 'Host',
             'order'      => 0,
             'team'       => 0,
@@ -170,7 +179,12 @@ class RoomController extends Controller
             ]);
         }
 
-        return response()->json($this->roomResource($room->fresh(['players.user'])), 201);
+        $resp = response()->json($this->roomResource($room->fresh(['players.user'])), 201);
+        if ($playMode === 'online' && $deviceKey) {
+            $resp->cookie('dt_device', $deviceKey, 60 * 24 * 365);
+        }
+
+        return $resp;
     }
 
     /**
@@ -246,12 +260,27 @@ class RoomController extends Controller
         }
 
         // Prevent duplicate join
-        $existing = $room->players()
-            ->where('user_id', Auth::id())
-            ->exists();
+        $deviceKey = (string) $request->cookie('dt_device', '');
+        if ($deviceKey === '') {
+            $deviceKey = Str::uuid()->toString();
+        }
+
+        $existing = $room->players()->where('user_id', Auth::id())->first();
 
         if ($existing) {
-            return response()->json($this->roomResource($room->load('players.user')));
+            // Ja jau esi telpā, bet no citas ierīces/sesijas, neļaujam pievienoties paralēli.
+            if ($existing->device_key && $existing->device_key !== $deviceKey) {
+                return response()->json(['error' => 'Tu jau esi pievienojies šai telpai no citas ierīces/loga.'], 409);
+            }
+
+            if (!$existing->device_key) {
+                $existing->device_key = $deviceKey;
+                $existing->save();
+            }
+
+            $resp = response()->json($this->roomResource($room->load('players.user')));
+            $resp->cookie('dt_device', $deviceKey, 60 * 24 * 365);
+            return $resp;
         }
 
         $order = $room->players()->max('order') + 1;
@@ -259,12 +288,15 @@ class RoomController extends Controller
         RoomPlayer::create([
             'room_id'    => $room->id,
             'user_id'    => Auth::id(),
+            'device_key' => $deviceKey,
             'guest_name' => $data['guest_name'] ?? (Auth::user()?->name ?? 'Guest'),
             'order'      => $order,
             'team'       => $order % 2,
         ]);
 
-        return response()->json($this->roomResource($room->fresh(['players.user'])));
+        $resp = response()->json($this->roomResource($room->fresh(['players.user'])));
+        $resp->cookie('dt_device', $deviceKey, 60 * 24 * 365);
+        return $resp;
     }
 
     public function show(GameRoom $room): JsonResponse
@@ -308,9 +340,17 @@ class RoomController extends Controller
 
         $firstPlayer = $room->activePlayers()->orderBy('order')->first();
 
+        $localDeviceKey = null;
+        if ($room->isLocalPlay()) {
+            $localDeviceKey = (string) $request->cookie('dt_local_device', '');
+            if ($localDeviceKey === '') {
+                $localDeviceKey = Str::uuid()->toString();
+            }
+        }
+
         $match = GameMatch::create([
             'room_id'           => $room->id,
-            'local_session_id'  => $room->isLocalPlay() ? session()->getId() : null,
+            'local_session_id'  => $room->isLocalPlay() ? $localDeviceKey : null,
             'current_player_id' => $firstPlayer->id,
             'current_leg'       => 1,
             'current_set'       => 1,
@@ -332,10 +372,17 @@ class RoomController extends Controller
             $this->stateManager->bumpTurnDeadline($match, GameStateManager::TURN_TIMER_MAIN_SECONDS);
         }
 
-        return response()->json([
+        $resp = response()->json([
             'match_id' => $match->id,
             'state'    => $this->stateManager->buildSnapshot($match->fresh()),
         ]);
+
+        if ($room->isLocalPlay() && $localDeviceKey) {
+            // 1 gads; HttpOnly, lai JS nevar nolasīt.
+            $resp->cookie('dt_local_device', $localDeviceKey, 60 * 24 * 365);
+        }
+
+        return $resp;
     }
 
     public function leave(GameRoom $room): JsonResponse

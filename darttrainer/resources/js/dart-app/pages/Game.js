@@ -69,6 +69,10 @@ export default {
 
     const turnTimer = Vue.computed(() => state.value?.turn_timer ?? null);
     const useTurnTimer = Vue.computed(() => !!state.value?.use_turn_timer);
+    const hasTurnTimer = Vue.computed(() => {
+      const tt = turnTimer.value;
+      return !!(tt?.deadline_at || tt?.pending);
+    });
 
     const turnTimerRemainingSec = Vue.computed(() => {
       const tt = turnTimer.value;
@@ -86,13 +90,13 @@ export default {
     });
 
     const turnTimerRowVisible = Vue.computed(() => {
-      if (!useTurnTimer.value || !isMatchActive.value) return false;
+      if (!hasTurnTimer.value || !isMatchActive.value) return false;
       const tt = turnTimer.value;
       return !!(tt?.deadline_at && !tt.pending);
     });
 
     const showTurnTimeoutWaitingBanner = Vue.computed(() => {
-      if (!useTurnTimer.value || !isMatchActive.value || !turnTimer.value?.pending) return false;
+      if (!hasTurnTimer.value || !isMatchActive.value || !turnTimer.value?.pending) return false;
       const uid = auth.user?.id;
       const cpu = state.value?.current_player?.user_id;
       if (uid == null || cpu == null) return false;
@@ -100,12 +104,14 @@ export default {
     });
 
     const showTurnTimeoutOpponentModal = Vue.computed(() => {
-      if (!useTurnTimer.value || !isMatchActive.value || !turnTimer.value?.pending) return false;
+      if (!hasTurnTimer.value || !isMatchActive.value || !turnTimer.value?.pending) return false;
       const uid = auth.user?.id;
       const cpu = state.value?.current_player?.user_id;
       if (uid == null || cpu == null) return false;
       return Number(cpu) !== Number(uid);
     });
+
+
 
     function formatTurnClock(sec) {
       const s = Math.max(0, Number(sec) || 0);
@@ -495,7 +501,6 @@ export default {
     async function submitThrow() {
       if (dartInput.darts.length === 0) return;
       submitting.value = true;
-      console.log(dartInput.darts);
       const thrown = [...dartInput.darts];
       const snapshotPlayers = [...players.value];
       const throwerId = state.value?.current_player?.id;

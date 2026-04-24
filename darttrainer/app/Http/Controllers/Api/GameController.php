@@ -29,8 +29,21 @@ class GameController extends Controller
     public function state(Request $request, GameMatch $match): JsonResponse|Response
     {
         $this->authorizeMatchAccess($match);
-        $etag = $this->matchEtag($match);
         $ifNoneMatch = $request->header('If-None-Match');
+
+        // Turn taimeris var izraisīt "laika" stāvokļa maiņu (pending), pat ja DB vēl nav mainīts.
+        // Ja termiņš ir pārsniegts, vispirms aprēķinām timeout, lai ETag/304 loģika nepaslēpj modāli līdz reload.
+        if (GameStateManager::turnTimerSchemaReady()
+            && $this->stateManager->useTurnTimerForMatch($match)
+            && $match->status === 'active'
+            && $match->turn_deadline_at
+            && !$match->turn_timeout_pending
+            && now()->gt($match->turn_deadline_at)) {
+            $this->stateManager->evaluateTurnTimeout($match);
+            $match->refresh();
+        }
+
+        $etag = $this->matchEtag($match);
 
         if ($ifNoneMatch && trim($ifNoneMatch) === $etag) {
             return response()->noContent(304, ['ETag' => $etag]);
@@ -49,7 +62,7 @@ class GameController extends Controller
         }
 
         $match->refresh();
-        if (GameStateManager::turnTimerSchemaReady() && $match->turn_timeout_pending) {
+        if (GameStateManager::turnTimerSchemaReady() && $this->stateManager->useTurnTimerForMatch($match) && $match->turn_timeout_pending) {
             return response()->json(['error' => 'Gaida pretinieka izvēli pēc gājiena laika.'], 409);
         }
 
@@ -111,7 +124,7 @@ class GameController extends Controller
         if ($match->status !== 'active') {
             return response()->json(['error' => 'Spēle nav aktīva.'], 409);
         }
-        if (GameStateManager::turnTimerSchemaReady() && $match->turn_timeout_pending) {
+        if (GameStateManager::turnTimerSchemaReady() && $this->stateManager->useTurnTimerForMatch($match) && $match->turn_timeout_pending) {
             return response()->json(['error' => 'Gaida pretinieka izvēli pēc gājiena laika.'], 409);
         }
 
@@ -599,23 +612,58 @@ class GameController extends Controller
             abort(404);
         }
 
-        $allowed = $room->players()->where('user_id', (int) $userId)->exists();
+        $playerRow = $room->players()->where('user_id', (int) $userId)->first();
+        $allowed = (bool) $playerRow;
         // Neatklājam spēles eksistenci: ja nav dalībnieks, izliekamies ka nav atrasts.
         if (!$allowed) {
             abort(404);
         }
 
-        // Lokālā spēle: atļauta tikai no tās pašas ierīces/sesijas, kas sāka maču.
-        if ($room->isLocalPlay()) {
-            $sid = session()->getId();
-            if ($match->local_session_id && $match->local_session_id !== $sid) {
+        // Tiešsaistes spēle: piesienam pie vienas "ierīces atslēgas" cookie, lai ar inkognito logu nepieslēdzas paralēli.
+        if (!$room->isLocalPlay()) {
+            $deviceKey = (string) request()->cookie('dt_device', '');
+            if ($deviceKey === '') {
                 abort(404);
             }
-            // Backfill veciem mačiem (ja kolonna ir NULL) — piesienam pirmajai ierīcei, kas ielādē.
-            if (!$match->local_session_id) {
-                $match->local_session_id = $sid;
-                $match->save();
+            if ($playerRow && $playerRow->device_key) {
+                if ($playerRow->device_key !== $deviceKey) {
+                    abort(404);
+                }
+            } elseif ($playerRow) {
+                // Backfill veciem ierakstiem, kur ierīces atslēga bija tukša.
+                $playerRow->device_key = $deviceKey;
+                $playerRow->save();
             }
+        }
+
+        // Lokālā spēle: atļauta tikai no tās pašas ierīces/sesijas, kas sāka maču.
+        if ($room->isLocalPlay()) {
+            $deviceKey = (string) request()->cookie('dt_local_device', '');
+            $sessionId = session()->getId();
+
+            // Ja nav ierīces atslēgas, lokālā spēle nav pieejama (incognito u.c.).
+            if ($deviceKey === '') {
+                abort(404);
+            }
+
+            // Saderībai ar veciem mačiem, kur glabājās session id:
+            // - ja glabātais id sakrīt ar session id, atļaujam un pārrakstām uz deviceKey
+            // - ja nesakrīt ne ar ko, liedzam
+            if ($match->local_session_id) {
+                if ($match->local_session_id === $deviceKey) {
+                    return;
+                }
+                if ($match->local_session_id === $sessionId) {
+                    $match->local_session_id = $deviceKey;
+                    $match->save();
+                    return;
+                }
+                abort(404);
+            }
+
+            // Backfill veciem mačiem (ja kolonna ir NULL) — piesienam ierīces atslēgai.
+            $match->local_session_id = $deviceKey;
+            $match->save();
         }
     }
 

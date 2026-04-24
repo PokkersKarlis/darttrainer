@@ -52,6 +52,8 @@ const t = (k) => locale.t(k);
 
 const isPortrait = computed(() => props.layoutKind === 'portrait');
 const isSquare = computed(() => props.layoutKind === 'square');
+const isLandscape = computed(() => props.layoutKind === 'landscape');
+const headerCompact = computed(() => isPortrait.value || isLandscape.value);
 
 const baseW = computed(() => (isPortrait.value ? 430 : isSquare.value ? 800 : 1280));
 const baseH = computed(() => (isPortrait.value ? 932 : isSquare.value ? 800 : 720));
@@ -59,12 +61,23 @@ const baseH = computed(() => (isPortrait.value ? 932 : isSquare.value ? 800 : 72
 const canvasScale = computed(() => {
   const w = Math.max(1, props.layoutWidth || 1);
   const h = Math.max(1, props.layoutHeight || 1);
+  // Vienmēr “contain” (bez apgriešanas).
+  // Landscape pilnam ekrānam mēs aizpildām stage ar 100% un centrējam iekšējo canvas ar translate().
   return Math.min(w / baseW.value, h / baseH.value);
 });
 
 /** Ārējā kaste = vizuālais izmērs pēc scale (citādi flex joprojām rezervē BASE_W×BASE_H). */
 const stageStyle = computed(() => {
   const s = canvasScale.value;
+  if (isLandscape.value) {
+    return {
+      width: '100%',
+      height: '100%',
+      flex: '1 1 0%',
+      minWidth: 0,
+      minHeight: 0,
+    };
+  }
   return {
     width: `${baseW.value * s}px`,
     height: `${baseH.value * s}px`,
@@ -72,17 +85,43 @@ const stageStyle = computed(() => {
   };
 });
 
+const canvasOffset = computed(() => {
+  if (!isLandscape.value) return { x: 0, y: 0 };
+  const w = Math.max(1, props.layoutWidth || 1);
+  const h = Math.max(1, props.layoutHeight || 1);
+  const s = canvasScale.value;
+  return {
+    x: Math.max(0, Math.round((w - baseW.value * s) / 2)),
+    y: Math.max(0, Math.round((h - baseH.value * s) / 2)),
+  };
+});
+
 /** Iekšējais dizaina laukums — fiksēti px, mērogojas no augšējā kreisā stūra kā HTML prototipos. */
 const canvasInnerStyle = computed(() => ({
   width: `${baseW.value}px`,
   height: `${baseH.value}px`,
-  transform: `scale(${canvasScale.value})`,
+  transform: `translate(${canvasOffset.value.x}px, ${canvasOffset.value.y}px) scale(${canvasScale.value})`,
   transformOrigin: 'top left',
 }));
 
 const topBarH = computed(() => (isPortrait.value ? 48 : isSquare.value ? 46 : 48));
 const inputW = computed(() => (isPortrait.value ? '100%' : isSquare.value ? '268px' : '320px'));
 const centerW = computed(() => (isPortrait.value ? '80px' : isSquare.value ? '120px' : '180px'));
+
+// Landscape (1280×720) proportions from provided HTML prototype
+const LANDSCAPE_PLAYER_H = 76;
+const LANDSCAPE_SUBHDR_H = 28;
+const LANDSCAPE_PADDING_Y = 20;
+const landscapeRowH = computed(() => {
+  if (!isLandscape.value) return 0;
+  const rows = Math.max(1, props.cricketSdtSegments?.length || 1);
+  const tableH = baseH.value - topBarH.value - LANDSCAPE_PLAYER_H - LANDSCAPE_SUBHDR_H - LANDSCAPE_PADDING_Y;
+  return tableH / rows;
+});
+const landscapeMarkSize = computed(() => {
+  if (!isLandscape.value) return 44;
+  return Math.max(20, Math.min(56, Math.round(landscapeRowH.value * 0.54)));
+});
 
 /** Portreta apakšējā ievades josla — fiksēti dizaina px (kā prototipā INPUT_H ≈ 310). */
 const PORTRAIT_INPUT_BLOCK = 310;
@@ -101,8 +140,15 @@ function segLabel(seg) {
     class="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[#040609]"
     :data-cricket-canvas="layoutKind"
   >
-    <div class="flex min-h-0 min-w-0 flex-1 items-center justify-center overflow-hidden">
-      <div class="relative shrink-0 overflow-hidden rounded-sm shadow-2xl shadow-black/40" :style="stageStyle">
+    <div
+      class="flex min-h-0 min-w-0 flex-1 overflow-hidden"
+      :class="isLandscape ? 'items-stretch justify-stretch' : 'items-center justify-center'"
+    >
+      <div
+        class="relative overflow-hidden rounded-sm shadow-2xl shadow-black/40"
+        :class="isLandscape ? 'flex-1 min-h-0 min-w-0' : 'shrink-0'"
+        :style="stageStyle"
+      >
         <div
           class="absolute left-0 top-0 flex flex-col overflow-hidden bg-[#0b0e14] font-sans text-[#e8eaf0]"
           :style="canvasInnerStyle"
@@ -132,9 +178,9 @@ function segLabel(seg) {
                 <circle cx="12" cy="12" r="2" />
               </svg>
             </div>
-            <span v-if="!isPortrait" class="text-[12px] font-bold">traindart</span>
+            <span v-if="!headerCompact" class="text-[12px] font-bold">traindart</span>
           </div>
-          <div v-if="!isPortrait" class="h-4 w-px shrink-0 bg-[#1e2738]" />
+          <div v-if="!headerCompact" class="h-4 w-px shrink-0 bg-[#1e2738]" />
           <span class="min-w-0 flex-1 truncate text-[13px] font-bold">Cricket</span>
           <div class="flex shrink-0 gap-1.5">
             <div
@@ -154,10 +200,14 @@ function segLabel(seg) {
             </div>
           </div>
           <div class="ml-auto flex shrink-0 items-center gap-2">
-            <span class="hidden max-w-[8rem] truncate font-mono text-[9px] text-[#3a4a63] sm:inline" :title="layoutKind + ' · ' + layoutWidth + '×' + layoutHeight">
+            <span
+              v-if="!headerCompact"
+              class="hidden max-w-[8rem] truncate font-mono text-[9px] text-[#3a4a63] sm:inline"
+              :title="layoutKind + ' · ' + layoutWidth + '×' + layoutHeight"
+            >
               {{ state.room_code }}
             </span>
-            <div v-if="!isPortrait" class="hidden items-center gap-3 lg:flex">
+            <div v-if="!headerCompact" class="hidden items-center gap-3 lg:flex">
               <div class="flex items-center gap-1.5">
                 <CricketMarkCell :hits="1" :closed="false" size="board-sm" />
                 <span class="text-[9px] text-[#7b8ba8]">1×</span>
@@ -193,29 +243,7 @@ function segLabel(seg) {
           </div>
         </div>
 
-        <div
-          v-if="isMatchActive && showTurnTimeoutWaitingBanner"
-          class="shrink-0 border-b border-amber-700/40 bg-amber-950/50 px-2 py-2 text-center text-[10px] font-semibold leading-snug text-amber-100"
-        >
-          {{ t('game.turnTimer.waitingOpponentChoice') }}
-        </div>
-        <div
-          v-else-if="turnTimerRowVisible"
-          class="flex shrink-0 items-center gap-2 border-b border-[#162540] bg-[#0d1526]/95 px-2 py-1.5"
-        >
-          <span class="hidden text-[10px] font-black uppercase tracking-widest text-slate-500 md:inline">{{
-            t('game.turnTimer.label')
-          }}</span>
-          <div class="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-[#1e3050]">
-            <div
-              class="h-full rounded-full bg-gradient-to-r from-amber-700 via-amber-500 to-amber-300 transition-[width] duration-500 ease-linear"
-              :style="{ width: turnTimerProgress + '%' }"
-            />
-          </div>
-          <span class="w-12 shrink-0 text-right font-mono text-[11px] font-black tabular-nums text-amber-400">{{
-            formatTurnClock(turnTimerRemainingSec)
-          }}</span>
-        </div>
+        <!-- Turn timer: moved onto active player's card (new design) -->
 
         <!-- PORTRAIT -->
         <template v-if="isPortrait">
@@ -234,6 +262,22 @@ function segLabel(seg) {
                 <span v-if="isCurrent(player.id)" class="h-2 w-2 shrink-0 rounded-full bg-[#f5a623]" />
                 <span class="truncate text-[14px] font-bold" :class="isCurrent(player.id) ? 'text-[#f5a623]' : 'text-[#8ea0bf]'">{{
                   player.name
+                }}</span>
+              </div>
+
+              <!-- Timer above active player block -->
+              <div
+                v-if="isMatchActive && isCurrent(player.id) && turnTimerRowVisible"
+                class="mb-1.5 flex items-center gap-2"
+              >
+                <div class="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-[#1e3050]">
+                  <div
+                    class="h-full rounded-full bg-gradient-to-r from-amber-700 via-amber-500 to-amber-300 transition-[width] duration-500 ease-linear"
+                    :style="{ width: turnTimerProgress + '%' }"
+                  />
+                </div>
+                <span class="w-[3.5rem] shrink-0 text-right font-mono text-[11px] font-black tabular-nums text-amber-400">{{
+                  formatTurnClock(turnTimerRemainingSec)
                 }}</span>
               </div>
               <div class="text-[36px] font-black leading-none tracking-tight text-[#e8eaf0]">{{ player.cricket?.points ?? 0 }}</div>
@@ -345,175 +389,351 @@ function segLabel(seg) {
         <!-- LANDSCAPE + SQUARE -->
         <div v-else class="flex min-h-0 flex-1 overflow-hidden">
           <div class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-            <div class="flex shrink-0 gap-0 px-2 pt-2" :class="isSquare ? 'px-2' : 'px-2.5'">
-              <div class="min-w-0 flex-1 pr-1">
-                <div
-                  v-for="p in leftPlayers"
-                  :key="'lc-' + p.id"
-                  class="relative mb-1 overflow-hidden rounded-[10px] border px-4 py-3 last:mb-0"
-                  :class="isCurrent(p.id) ? 'border-[#f5a62348] bg-[#1b2232]' : 'border-[#1e2738] bg-[#131720]'"
-                >
-                  <div
-                    v-if="isCurrent(p.id)"
-                    class="absolute left-0 right-0 top-0 h-0.5 bg-gradient-to-r from-[#f5a623] to-[#f5c842]"
-                  />
-                  <div class="mb-1 flex items-center gap-2">
-                    <span v-if="isCurrent(p.id)" class="h-1.5 w-1.5 shrink-0 rounded-full bg-[#f5a623]" />
-                    <span class="truncate text-sm font-semibold" :class="isCurrent(p.id) ? 'text-[#f5a623]' : 'text-[#7b8ba8]'">{{ p.name }}</span>
-                  </div>
-                  <div class="text-[38px] font-extrabold leading-none tracking-tight text-[#e8eaf0]">{{ p.cricket?.points ?? 0 }}</div>
-                  <div class="mt-1 flex items-end justify-between gap-2">
-                    <div class="flex flex-col gap-0.5" :title="t('game.cricketAvgHint')">
-                      <span class="text-[9px] font-bold uppercase tracking-wide text-amber-500/90">{{ t('game.cricketAvgShort') }}</span>
-                      <span class="text-base font-black tabular-nums text-amber-100">{{ p.avg_pts ?? '—' }}</span>
-                    </div>
-                    <div class="flex flex-col items-end gap-1">
-                      <div class="flex gap-0.5">
-                        <div
-                          v-for="i in legsToWin"
-                          :key="i"
-                          class="h-1.5 w-1.5 rounded-full border transition-all"
-                          :class="i <= (p.legs_won || 0) ? 'border-amber-400 bg-amber-400' : 'border-[#1e3050]'"
-                        />
-                      </div>
-                      <div class="text-right text-[11px] text-[#7b8ba8]">
-                        <span class="font-bold text-[#e8eaf0]">{{ p.sets_won ?? 0 }}</span> S
-                        <span class="mx-1 font-bold text-[#e8eaf0]">{{ p.legs_won ?? 0 }}</span> L
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div
-                class="flex shrink-0 items-center justify-center text-[9px] font-bold uppercase tracking-widest text-[#2e3a50]"
-                :style="{ width: centerW }"
-              >
-                LAUKS
-              </div>
-              <div class="min-w-0 flex-1 pl-1">
-                <div
-                  v-for="p in rightPlayers"
-                  :key="'rc-' + p.id"
-                  class="relative mb-1 overflow-hidden rounded-[10px] border px-4 py-3 last:mb-0"
-                  :class="isCurrent(p.id) ? 'border-[#f5a62348] bg-[#1b2232]' : 'border-[#1e2738] bg-[#131720]'"
-                >
-                  <div
-                    v-if="isCurrent(p.id)"
-                    class="absolute left-0 right-0 top-0 h-0.5 bg-gradient-to-r from-[#f5a623] to-[#f5c842]"
-                  />
-                  <div class="mb-1 flex items-center gap-2">
-                    <span v-if="isCurrent(p.id)" class="h-1.5 w-1.5 shrink-0 rounded-full bg-[#f5a623]" />
-                    <span class="truncate text-sm font-semibold" :class="isCurrent(p.id) ? 'text-[#f5a623]' : 'text-[#7b8ba8]'">{{ p.name }}</span>
-                  </div>
-                  <div class="text-[38px] font-extrabold leading-none tracking-tight text-[#e8eaf0]">{{ p.cricket?.points ?? 0 }}</div>
-                  <div class="mt-1 flex items-end justify-between gap-2">
-                    <div class="flex flex-col gap-0.5" :title="t('game.cricketAvgHint')">
-                      <span class="text-[9px] font-bold uppercase tracking-wide text-amber-500/90">{{ t('game.cricketAvgShort') }}</span>
-                      <span class="text-base font-black tabular-nums text-amber-100">{{ p.avg_pts ?? '—' }}</span>
-                    </div>
-                    <div class="flex flex-col items-end gap-1">
-                      <div class="flex gap-0.5">
-                        <div
-                          v-for="i in legsToWin"
-                          :key="i"
-                          class="h-1.5 w-1.5 rounded-full border transition-all"
-                          :class="i <= (p.legs_won || 0) ? 'border-amber-400 bg-amber-400' : 'border-[#1e3050]'"
-                        />
-                      </div>
-                      <div class="text-right text-[11px] text-[#7b8ba8]">
-                        <span class="font-bold text-[#e8eaf0]">{{ p.sets_won ?? 0 }}</span> S
-                        <span class="mx-1 font-bold text-[#e8eaf0]">{{ p.legs_won ?? 0 }}</span> L
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="flex shrink-0 px-2 pb-1 pt-0.5">
-              <div class="flex-1 text-center text-[9px] font-semibold uppercase tracking-wide text-[#1e2738]">trāpījumi</div>
-              <div class="shrink-0" :style="{ width: centerW }" />
-              <div class="flex-1 text-center text-[9px] font-semibold uppercase tracking-wide text-[#1e2738]">trāpījumi</div>
-            </div>
-            <div class="flex min-h-0 flex-1 flex-col overflow-hidden px-2 pb-2">
-              <div class="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-[#162540] bg-[#0f1c30]/90 shadow-inner">
-                <div class="shrink-0 border-b border-[#162540] bg-[#0a1120]/60 py-2" :style="scorecardGridStyle">
+            <!-- Landscape prototype block (Square keeps the existing dense grid) -->
+            <template v-if="isLandscape">
+              <!-- Player cards -->
+              <div class="flex shrink-0 gap-0 px-[10px] pt-[10px]">
+                <div class="min-w-0 flex-1 pr-1">
                   <div
                     v-for="p in leftPlayers"
-                    :key="'lh-' + p.id"
-                    class="truncate px-1 text-center text-xs font-bold"
-                    :class="isCurrent(p.id) ? 'text-amber-400' : 'text-slate-500'"
+                    :key="'lc2-' + p.id"
+                    class="relative flex items-center gap-[14px] overflow-hidden rounded-[10px] border px-[18px] py-[11px] last:mb-0"
+                    :class="isCurrent(p.id) ? 'bg-[#1b2232]' : 'bg-[#131720]'"
+                    :style="{ borderWidth: '1.5px', borderColor: isCurrent(p.id) ? '#f5a62348' : '#1e2738' }"
                   >
-                    {{ p.name }}
-                  </div>
-                  <div class="text-center text-[10px] font-black uppercase tracking-widest text-slate-500">Lauks</div>
-                  <div
-                    v-for="p in rightPlayers"
-                    :key="'rh-' + p.id"
-                    class="truncate px-1 text-center text-xs font-bold"
-                    :class="isCurrent(p.id) ? 'text-amber-400' : 'text-slate-500'"
-                  >
-                    {{ p.name }}
-                  </div>
-                </div>
-                <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
-                  <div
-                    v-for="(seg, idx) in cricketSdtSegments"
-                    :key="'sr-' + seg"
-                    class="min-h-0 min-w-0 flex-1 basis-0 border-b border-[#162540]/40 transition-all last:border-b-0"
-                    :class="[idx % 2 === 0 ? 'bg-[#0a1120]/25' : '', segClosedByAll(seg) ? 'opacity-25' : '']"
-                    :style="scorecardRowGridStyle"
-                  >
-                    <div
-                      v-for="p in leftPlayers"
-                      :key="'lm-' + p.id + '-' + seg"
-                      class="flex min-h-0 min-w-0 items-center justify-center border-r border-[#162540]/30 p-1"
-                    >
-                      <CricketMarkCell :hits="hitsFor(p.id, seg)" :closed="segClosedByAll(seg)" size="board" />
-                    </div>
-                    <div
-                      class="mx-0.5 my-0.5 flex min-h-0 min-w-0 items-center justify-center rounded-lg px-1 shadow-inner"
-                      :class="
-                        segClosedByAll(seg) ? 'border border-[#1e3050] bg-[#0a1120]/95' : 'border border-rose-900/40 bg-[#1a0a0f]'
-                      "
-                    >
-                      <div class="flex flex-col items-center justify-center gap-0.5 py-0.5 leading-none">
-                        <span
-                          class="select-none font-black tabular-nums"
-                          :class="[
-                            isSquare ? 'text-[20px]' : 'text-[22px]',
-                            segClosedByAll(seg) ? 'text-slate-500 line-through' : 'text-rose-300/90',
-                          ]"
-                          >{{ segLabel(seg) }}</span
-                        >
-                        <span v-if="seg === 25 && !segClosedByAll(seg)" class="text-[8px] font-bold uppercase tracking-widest text-rose-400/80"
-                          >bull</span
-                        >
+                    <div v-if="isCurrent(p.id)" class="absolute left-0 right-0 top-0 h-[2px] bg-gradient-to-r from-[#f5a623] to-[#f5c842]" />
+                    <div class="min-w-0 flex-1">
+                      <div class="mb-[6px] flex items-center gap-2">
+                        <div v-if="isCurrent(p.id)" class="h-[7px] w-[7px] shrink-0 rounded-full bg-[#f5a623]" />
+                        <div class="truncate text-[14px] font-semibold" :class="isCurrent(p.id) ? 'text-[#f5a623]' : 'text-[#7b8ba8]'">{{ p.name }}</div>
+                      </div>
+                      <div v-if="isMatchActive && isCurrent(p.id) && turnTimerRowVisible" class="mb-[6px] flex items-center gap-2">
+                        <div class="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-[#1e3050]">
+                          <div
+                            class="h-full rounded-full bg-gradient-to-r from-amber-700 via-amber-500 to-amber-300 transition-[width] duration-500 ease-linear"
+                            :style="{ width: turnTimerProgress + '%' }"
+                          />
+                        </div>
+                        <span class="w-[3.5rem] shrink-0 text-right font-mono text-[11px] font-black tabular-nums text-amber-400">{{
+                          formatTurnClock(turnTimerRemainingSec)
+                        }}</span>
+                      </div>
+                      <div class="flex items-baseline gap-[10px]">
+                        <span class="text-[38px] font-extrabold leading-none tracking-[-2px] text-[#e8eaf0]">{{ p.cricket?.points ?? 0 }}</span>
+                      </div>
+                      <div class="mt-1 flex items-center justify-between text-[10px] text-[#7b8ba8]" :title="t('game.cricketAvgHint')">
+                        <span class="font-bold uppercase tracking-wide text-amber-600/90">{{ t('game.cricketAvgShort') }}</span>
+                        <span class="font-mono font-black text-amber-100/90">{{ p.avg_pts ?? '—' }}</span>
                       </div>
                     </div>
+                    <div class="flex flex-col items-end gap-[5px]">
+                      <div class="text-[11px] text-[#7b8ba8]">
+                        <span class="font-bold text-[#e8eaf0]">{{ p.sets_won ?? 0 }}</span> sets&nbsp;
+                        <span class="font-bold text-[#e8eaf0]">{{ p.legs_won ?? 0 }}</span> legs
+                      </div>
+                      <div
+                        class="rounded-full px-2 py-[2px] text-[10px] font-bold uppercase tracking-[0.06em]"
+                        :class="isCurrent(p.id) ? 'border border-[#f5a62335] bg-[#f5a62318] text-[#f5a623]' : 'border border-[#1e2738] bg-[#0b0e14] text-[#3a4a63]'"
+                      >
+                        {{ isCurrent(p.id) ? '● AKTĪVS' : '○ GAIDA' }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex shrink-0 items-center justify-center" :style="{ width: centerW }">
+                  <span class="text-[9px] font-bold uppercase tracking-[0.14em] text-[#2e3a50]">LAUKS</span>
+                </div>
+                <div class="min-w-0 flex-1 pl-1">
+                  <div
+                    v-for="p in rightPlayers"
+                    :key="'rc2-' + p.id"
+                    class="relative flex items-center gap-[14px] overflow-hidden rounded-[10px] border px-[18px] py-[11px] last:mb-0"
+                    :class="isCurrent(p.id) ? 'bg-[#1b2232]' : 'bg-[#131720]'"
+                    :style="{ borderWidth: '1.5px', borderColor: isCurrent(p.id) ? '#f5a62348' : '#1e2738' }"
+                  >
+                    <div v-if="isCurrent(p.id)" class="absolute left-0 right-0 top-0 h-[2px] bg-gradient-to-r from-[#f5a623] to-[#f5c842]" />
+                    <div class="min-w-0 flex-1">
+                      <div class="mb-[6px] flex items-center gap-2">
+                        <div v-if="isCurrent(p.id)" class="h-[7px] w-[7px] shrink-0 rounded-full bg-[#f5a623]" />
+                        <div class="truncate text-[14px] font-semibold" :class="isCurrent(p.id) ? 'text-[#f5a623]' : 'text-[#7b8ba8]'">{{ p.name }}</div>
+                      </div>
+                      <div v-if="isMatchActive && isCurrent(p.id) && turnTimerRowVisible" class="mb-[6px] flex items-center gap-2">
+                        <div class="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-[#1e3050]">
+                          <div
+                            class="h-full rounded-full bg-gradient-to-r from-amber-700 via-amber-500 to-amber-300 transition-[width] duration-500 ease-linear"
+                            :style="{ width: turnTimerProgress + '%' }"
+                          />
+                        </div>
+                        <span class="w-[3.5rem] shrink-0 text-right font-mono text-[11px] font-black tabular-nums text-amber-400">{{
+                          formatTurnClock(turnTimerRemainingSec)
+                        }}</span>
+                      </div>
+                      <div class="flex items-baseline gap-[10px]">
+                        <span class="text-[38px] font-extrabold leading-none tracking-[-2px] text-[#e8eaf0]">{{ p.cricket?.points ?? 0 }}</span>
+                      </div>
+                      <div class="mt-1 flex items-center justify-between text-[10px] text-[#7b8ba8]" :title="t('game.cricketAvgHint')">
+                        <span class="font-bold uppercase tracking-wide text-amber-600/90">{{ t('game.cricketAvgShort') }}</span>
+                        <span class="font-mono font-black text-amber-100/90">{{ p.avg_pts ?? '—' }}</span>
+                      </div>
+                    </div>
+                    <div class="flex flex-col items-end gap-[5px]">
+                      <div class="text-[11px] text-[#7b8ba8]">
+                        <span class="font-bold text-[#e8eaf0]">{{ p.sets_won ?? 0 }}</span> sets&nbsp;
+                        <span class="font-bold text-[#e8eaf0]">{{ p.legs_won ?? 0 }}</span> legs
+                      </div>
+                      <div
+                        class="rounded-full px-2 py-[2px] text-[10px] font-bold uppercase tracking-[0.06em]"
+                        :class="isCurrent(p.id) ? 'border border-[#f5a62335] bg-[#f5a62318] text-[#f5a623]' : 'border border-[#1e2738] bg-[#0b0e14] text-[#3a4a63]'"
+                      >
+                        {{ isCurrent(p.id) ? '● AKTĪVS' : '○ GAIDA' }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Column sub-headers -->
+              <div class="flex shrink-0 px-[10px] pt-[6px]">
+                <div class="flex-1 text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-[#252d3d]">trāpījumi</div>
+                <div class="shrink-0" :style="{ width: centerW }" />
+                <div class="flex-1 text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-[#252d3d]">trāpījumi</div>
+              </div>
+
+              <!-- Table -->
+              <div class="flex min-h-0 flex-1 overflow-hidden px-[10px] pb-[10px] pt-[4px]">
+                <!-- Player 1 marks -->
+                <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
+                  <div
+                    v-for="seg in cricketSdtSegments"
+                    :key="'lrow-' + seg"
+                    class="flex items-center justify-center border-b border-[#131720] last:border-b-0"
+                    :style="{ height: landscapeRowH + 'px' }"
+                  >
+                    <CricketXMarkCell :hits="hitsFor(leftPlayers[0]?.id, seg)" :dimmed="segClosedByAll(seg)" :size="landscapeMarkSize" />
+                  </div>
+                </div>
+
+                <!-- Center field numbers -->
+                <div class="flex shrink-0 flex-col overflow-hidden" :style="{ width: centerW }">
+                  <div
+                    v-for="seg in cricketSdtSegments"
+                    :key="'crow-' + seg"
+                    class="flex items-center justify-center border-b border-[#0f1218] last:border-b-0"
+                    :style="{ height: landscapeRowH + 'px' }"
+                  >
                     <div
-                      v-for="p in rightPlayers"
-                      :key="'rm-' + p.id + '-' + seg"
-                      class="flex min-h-0 min-w-0 items-center justify-center border-l border-[#162540]/30 p-1"
+                      class="flex flex-col items-center justify-center rounded-lg border"
+                      :class="segClosedByAll(seg) ? 'opacity-45' : ''"
+                      :style="{
+                        width: '78px',
+                        height: Math.round(landscapeRowH * 0.7) + 'px',
+                        background: segClosedByAll(seg) ? '#0e1118' : (seg === 25 ? '#200a0a' : '#1a2030'),
+                        borderColor: segClosedByAll(seg) ? '#151b26' : (seg === 25 ? '#ff525235' : '#252d3d'),
+                      }"
                     >
-                      <CricketMarkCell :hits="hitsFor(p.id, seg)" :closed="segClosedByAll(seg)" size="board" />
+                      <div
+                        class="font-extrabold leading-none"
+                        :style="{ fontSize: '22px', letterSpacing: '-0.5px', color: segClosedByAll(seg) ? '#3a4a63' : (seg === 25 ? '#ff5252' : '#f5a623') }"
+                      >
+                        {{ segLabel(seg) }}
+                      </div>
+                      <div
+                        v-if="seg === 25"
+                        class="mt-[1px] text-[8px] font-bold uppercase tracking-[0.08em]"
+                        :style="{ color: segClosedByAll(seg) ? '#3a4a63' : '#ff525288' }"
+                      >
+                        BULL
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Player 2 marks -->
+                <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
+                  <div
+                    v-for="seg in cricketSdtSegments"
+                    :key="'rrow-' + seg"
+                    class="flex items-center justify-center border-b border-[#131720] last:border-b-0"
+                    :style="{ height: landscapeRowH + 'px' }"
+                  >
+                    <CricketXMarkCell :hits="hitsFor(rightPlayers[0]?.id, seg)" :dimmed="segClosedByAll(seg)" :size="landscapeMarkSize" />
+                  </div>
+                </div>
+              </div>
+            </template>
+
+            <!-- Square (keep existing grid layout) -->
+            <template v-else>
+              <div class="flex shrink-0 gap-0 px-2 pt-2" :class="isSquare ? 'px-2' : 'px-2.5'">
+                <div class="min-w-0 flex-1 pr-1">
+                  <div
+                    v-for="p in leftPlayers"
+                    :key="'lc-' + p.id"
+                    class="relative mb-1 overflow-hidden rounded-[10px] border px-4 py-3 last:mb-0"
+                    :class="isCurrent(p.id) ? 'border-[#f5a62348] bg-[#1b2232]' : 'border-[#1e2738] bg-[#131720]'"
+                  >
+                    <div
+                      v-if="isCurrent(p.id)"
+                      class="absolute left-0 right-0 top-0 h-0.5 bg-gradient-to-r from-[#f5a623] to-[#f5c842]"
+                    />
+                    <div class="mb-1 flex items-center gap-2">
+                      <span v-if="isCurrent(p.id)" class="h-1.5 w-1.5 shrink-0 rounded-full bg-[#f5a623]" />
+                      <span class="truncate text-sm font-semibold" :class="isCurrent(p.id) ? 'text-[#f5a623]' : 'text-[#7b8ba8]'">{{ p.name }}</span>
+                    </div>
+                    <div class="text-[38px] font-extrabold leading-none tracking-tight text-[#e8eaf0]">{{ p.cricket?.points ?? 0 }}</div>
+                    <div class="mt-1 flex items-end justify-between gap-2">
+                      <div class="flex flex-col gap-0.5" :title="t('game.cricketAvgHint')">
+                        <span class="text-[9px] font-bold uppercase tracking-wide text-amber-500/90">{{ t('game.cricketAvgShort') }}</span>
+                        <span class="text-base font-black tabular-nums text-amber-100">{{ p.avg_pts ?? '—' }}</span>
+                      </div>
+                      <div class="flex flex-col items-end gap-1">
+                        <div class="flex gap-0.5">
+                          <div
+                            v-for="i in legsToWin"
+                            :key="i"
+                            class="h-1.5 w-1.5 rounded-full border transition-all"
+                            :class="i <= (p.legs_won || 0) ? 'border-amber-400 bg-amber-400' : 'border-[#1e3050]'"
+                          />
+                        </div>
+                        <div class="text-right text-[11px] text-[#7b8ba8]">
+                          <span class="font-bold text-[#e8eaf0]">{{ p.sets_won ?? 0 }}</span> S
+                          <span class="mx-1 font-bold text-[#e8eaf0]">{{ p.legs_won ?? 0 }}</span> L
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
                 <div
-                  class="flex shrink-0 flex-wrap gap-x-4 gap-y-1 border-t border-[#162540] bg-[#0a1120]/40 px-3 py-1.5 text-[11px] text-slate-500"
+                  class="flex shrink-0 items-center justify-center text-[9px] font-bold uppercase tracking-widest text-[#2e3a50]"
+                  :style="{ width: centerW }"
                 >
-                  <span><span class="font-mono font-black text-slate-400">0</span> nav</span>
-                  <span><span class="font-mono font-black text-sky-400/90">1</span> viens</span>
-                  <span><span class="font-mono font-black text-amber-400/90">2</span> divi</span>
-                  <span class="inline-flex items-center gap-1.5">
-                    <span class="inline-flex h-4 w-4 flex-shrink-0 items-center justify-center text-emerald-400/95">
-                      <CricketClosedCheck :boosted="false" />
-                    </span>
-                    slēgts
-                  </span>
+                  LAUKS
+                </div>
+                <div class="min-w-0 flex-1 pl-1">
+                  <div
+                    v-for="p in rightPlayers"
+                    :key="'rc-' + p.id"
+                    class="relative mb-1 overflow-hidden rounded-[10px] border px-4 py-3 last:mb-0"
+                    :class="isCurrent(p.id) ? 'border-[#f5a62348] bg-[#1b2232]' : 'border-[#1e2738] bg-[#131720]'"
+                  >
+                    <div
+                      v-if="isCurrent(p.id)"
+                      class="absolute left-0 right-0 top-0 h-0.5 bg-gradient-to-r from-[#f5a623] to-[#f5c842]"
+                    />
+                    <div class="mb-1 flex items-center gap-2">
+                      <span v-if="isCurrent(p.id)" class="h-1.5 w-1.5 shrink-0 rounded-full bg-[#f5a623]" />
+                      <span class="truncate text-sm font-semibold" :class="isCurrent(p.id) ? 'text-[#f5a623]' : 'text-[#7b8ba8]'">{{ p.name }}</span>
+                    </div>
+                    <div class="text-[38px] font-extrabold leading-none tracking-tight text-[#e8eaf0]">{{ p.cricket?.points ?? 0 }}</div>
+                    <div class="mt-1 flex items-end justify-between gap-2">
+                      <div class="flex flex-col gap-0.5" :title="t('game.cricketAvgHint')">
+                        <span class="text-[9px] font-bold uppercase tracking-wide text-amber-500/90">{{ t('game.cricketAvgShort') }}</span>
+                        <span class="text-base font-black tabular-nums text-amber-100">{{ p.avg_pts ?? '—' }}</span>
+                      </div>
+                      <div class="flex flex-col items-end gap-1">
+                        <div class="flex gap-0.5">
+                          <div
+                            v-for="i in legsToWin"
+                            :key="i"
+                            class="h-1.5 w-1.5 rounded-full border transition-all"
+                            :class="i <= (p.legs_won || 0) ? 'border-amber-400 bg-amber-400' : 'border-[#1e3050]'"
+                          />
+                        </div>
+                        <div class="text-right text-[11px] text-[#7b8ba8]">
+                          <span class="font-bold text-[#e8eaf0]">{{ p.sets_won ?? 0 }}</span> S
+                          <span class="mx-1 font-bold text-[#e8eaf0]">{{ p.legs_won ?? 0 }}</span> L
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+              <div class="flex shrink-0 px-2 pb-1 pt-0.5">
+                <div class="flex-1 text-center text-[9px] font-semibold uppercase tracking-wide text-[#1e2738]">trāpījumi</div>
+                <div class="shrink-0" :style="{ width: centerW }" />
+                <div class="flex-1 text-center text-[9px] font-semibold uppercase tracking-wide text-[#1e2738]">trāpījumi</div>
+              </div>
+              <div class="flex min-h-0 flex-1 flex-col overflow-hidden px-2 pb-2">
+                <div class="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-[#162540] bg-[#0f1c30]/90 shadow-inner">
+                  <div class="shrink-0 border-b border-[#162540] bg-[#0a1120]/60 py-2" :style="scorecardGridStyle">
+                    <div
+                      v-for="p in leftPlayers"
+                      :key="'lh-' + p.id"
+                      class="truncate px-1 text-center text-xs font-bold"
+                      :class="isCurrent(p.id) ? 'text-amber-400' : 'text-slate-500'"
+                    >
+                      {{ p.name }}
+                    </div>
+                    <div class="text-center text-[10px] font-black uppercase tracking-widest text-slate-500">Lauks</div>
+                    <div
+                      v-for="p in rightPlayers"
+                      :key="'rh-' + p.id"
+                      class="truncate px-1 text-center text-xs font-bold"
+                      :class="isCurrent(p.id) ? 'text-amber-400' : 'text-slate-500'"
+                    >
+                      {{ p.name }}
+                    </div>
+                  </div>
+                  <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
+                    <div
+                      v-for="(seg, idx) in cricketSdtSegments"
+                      :key="'sr-' + seg"
+                      class="min-h-0 min-w-0 flex-1 basis-0 border-b border-[#162540]/40 transition-all last:border-b-0"
+                      :class="[idx % 2 === 0 ? 'bg-[#0a1120]/25' : '', segClosedByAll(seg) ? 'opacity-25' : '']"
+                      :style="scorecardRowGridStyle"
+                    >
+                      <div
+                        v-for="p in leftPlayers"
+                        :key="'lm-' + p.id + '-' + seg"
+                        class="flex min-h-0 min-w-0 items-center justify-center border-r border-[#162540]/30 p-1"
+                      >
+                        <CricketMarkCell :hits="hitsFor(p.id, seg)" :closed="segClosedByAll(seg)" size="board" />
+                      </div>
+                      <div
+                        class="mx-0.5 my-0.5 flex min-h-0 min-w-0 items-center justify-center rounded-lg px-1 shadow-inner"
+                        :class="
+                          segClosedByAll(seg) ? 'border border-[#1e3050] bg-[#0a1120]/95' : 'border border-rose-900/40 bg-[#1a0a0f]'
+                        "
+                      >
+                        <div class="flex flex-col items-center justify-center gap-0.5 py-0.5 leading-none">
+                          <span
+                            class="select-none font-black tabular-nums"
+                            :class="[
+                              isSquare ? 'text-[20px]' : 'text-[22px]',
+                              segClosedByAll(seg) ? 'text-slate-500 line-through' : 'text-rose-300/90',
+                            ]"
+                            >{{ segLabel(seg) }}</span
+                          >
+                          <span v-if="seg === 25 && !segClosedByAll(seg)" class="text-[8px] font-bold uppercase tracking-widest text-rose-400/80"
+                            >bull</span
+                          >
+                        </div>
+                      </div>
+                      <div
+                        v-for="p in rightPlayers"
+                        :key="'rm-' + p.id + '-' + seg"
+                        class="flex min-h-0 min-w-0 items-center justify-center border-l border-[#162540]/30 p-1"
+                      >
+                        <CricketMarkCell :hits="hitsFor(p.id, seg)" :closed="segClosedByAll(seg)" size="board" />
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    class="flex shrink-0 flex-wrap gap-x-4 gap-y-1 border-t border-[#162540] bg-[#0a1120]/40 px-3 py-1.5 text-[11px] text-slate-500"
+                  >
+                    <span><span class="font-mono font-black text-slate-400">0</span> nav</span>
+                    <span><span class="font-mono font-black text-sky-400/90">1</span> viens</span>
+                    <span><span class="font-mono font-black text-amber-400/90">2</span> divi</span>
+                    <span class="inline-flex items-center gap-1.5">
+                      <span class="inline-flex h-4 w-4 flex-shrink-0 items-center justify-center text-emerald-400/95">
+                        <CricketClosedCheck :boosted="false" />
+                      </span>
+                      slēgts
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </template>
           </div>
           <div
             class="flex min-h-0 shrink-0 flex-col overflow-hidden border-l border-[#1e2738] bg-[#0c1018]"

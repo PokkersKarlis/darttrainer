@@ -10,7 +10,7 @@ class RoomPlayer extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'room_id', 'user_id', 'guest_name', 'order', 'team', 'is_spectator',
+        'room_id', 'user_id', 'device_key', 'guest_name', 'order', 'team', 'is_spectator',
     ];
 
     protected $casts = [
