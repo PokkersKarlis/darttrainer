@@ -157,12 +157,12 @@ function continueActiveRoom(room) {
 }
 
 function goLobbyCricket() {
-  if (needsEmailVerify.value) {
-    window._dartToast?.(t('auth.verifyEmailToContinue'), 'error');
+  if (showGuestCta.value) {
+    router.push('/login');
     return;
   }
-  if (!canPlayGames.value) {
-    window._dartToast?.(t('nav.gamesTeaserHint'), 'error');
+  if (needsEmailVerify.value) {
+    window._dartToast?.(t('auth.verifyEmailToContinue'), 'error');
     return;
   }
   router.push('/lobby/cricket');
@@ -195,10 +195,6 @@ function pickStartMode(mode) {
     return;
   }
   if (mode === 'cricket') {
-    if (!canPlayGames.value) {
-      router.push('/register');
-      return;
-    }
     goLobbyCricket();
     return;
   }
@@ -421,7 +417,8 @@ onUnmounted(() => {
             <button
               type="button"
               :class="['dth-sb-row', { 'dth-sb-row--on': isSbActive('cricket') }]"
-              :disabled="!canPlayGames"
+              :disabled="needsEmailVerify"
+              :title="needsEmailVerify ? t('auth.verifyEmailToContinue') : ''"
               @click="goLobbyCricket"
             >
               <HomeStrokeIcon name="cricket" :size="16" color="currentColor" />
