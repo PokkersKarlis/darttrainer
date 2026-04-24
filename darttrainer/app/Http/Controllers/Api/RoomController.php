@@ -260,12 +260,17 @@ class RoomController extends Controller
         }
 
         // Prevent duplicate join
+        $existing = $room->players()->where('user_id', Auth::id())->first();
+
+        // Ierīces atslēga (cookie). Ja spēlētājs jau ir telpā, bet cookie nav (piem., veca telpa pirms dt_device
+        // ieviešanas vai lietotājs iztīrījis cookie), paņemam atslēgu no DB un uzliekam cookie atpakaļ.
         $deviceKey = (string) $request->cookie('dt_device', '');
+        if ($existing && $deviceKey === '' && $existing->device_key) {
+            $deviceKey = (string) $existing->device_key;
+        }
         if ($deviceKey === '') {
             $deviceKey = Str::uuid()->toString();
         }
-
-        $existing = $room->players()->where('user_id', Auth::id())->first();
 
         if ($existing) {
             // Ja jau esi telpā, bet no citas ierīces/sesijas, neļaujam pievienoties paralēli.

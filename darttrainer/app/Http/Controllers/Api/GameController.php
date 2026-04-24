@@ -65,15 +65,6 @@ class GameController extends Controller
         }
 
         $match->refresh();
-        // Ja termiņš ir pārsniegts, ieslēdzam pending uzreiz (nepaļaujamies tikai uz polling/state),
-        // lai spēlētājs nevar iesniegt metienu un "noņemt" pretiniekam modāli.
-        if (GameStateManager::turnTimerSchemaReady() && $this->stateManager->useTurnTimerForMatch($match)) {
-            $this->stateManager->evaluateTurnTimeout($match);
-            $match->refresh();
-        }
-        if (GameStateManager::turnTimerSchemaReady() && $this->stateManager->useTurnTimerForMatch($match) && $match->turn_timeout_pending) {
-            return response()->json(['error' => 'Gaida pretinieka izvēli pēc gājiena laika.'], 409);
-        }
 
         $data = $request->validate([
             'darts'              => 'required|array|min:1|max:3',
@@ -132,13 +123,6 @@ class GameController extends Controller
         $match->refresh();
         if ($match->status !== 'active') {
             return response()->json(['error' => 'Spēle nav aktīva.'], 409);
-        }
-        if (GameStateManager::turnTimerSchemaReady() && $this->stateManager->useTurnTimerForMatch($match)) {
-            $this->stateManager->evaluateTurnTimeout($match);
-            $match->refresh();
-        }
-        if (GameStateManager::turnTimerSchemaReady() && $this->stateManager->useTurnTimerForMatch($match) && $match->turn_timeout_pending) {
-            return response()->json(['error' => 'Gaida pretinieka izvēli pēc gājiena laika.'], 409);
         }
 
         $leg = $match->currentLeg()->first();

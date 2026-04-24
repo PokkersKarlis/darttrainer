@@ -256,7 +256,6 @@ function sbFriends() {
     return;
   }
   if (needsEmailVerify.value) {
-    window._dartToast?.(t('auth.verifyEmailToContinue'), 'error');
     return;
   }
   router.push('/friends');
@@ -267,7 +266,6 @@ function sbStats() {
     return;
   }
   if (needsEmailVerify.value) {
-    window._dartToast?.(t('auth.verifyEmailToContinue'), 'error');
     return;
   }
   router.push('/stats');
@@ -768,9 +766,10 @@ onUnmounted(() => {
                 <button
                   type="button"
                   class="dth-btn dth-btn--accent dth-btn--sm dth-btn--full"
-                  @click="router.push('/login')"
+                  :disabled="needsEmailVerify && !showGuestCta"
+                  @click="showGuestCta ? router.push('/login') : null"
                 >
-                  {{ t('home.signInCta') }}
+                  {{ showGuestCta ? t('home.signInCta') : t('auth.verifyEmailToContinue') }}
                 </button>
               </div>
             </template>

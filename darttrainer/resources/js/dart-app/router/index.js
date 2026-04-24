@@ -16,12 +16,12 @@ const routes = [
   {
     path: '/login',
     component: load(() => import('../pages/Login.vue')),
-    meta: { titleKey: 'shell.login', public: true },
+    meta: { titleKey: 'shell.login', public: true, guestOnly: true },
   },
   {
     path: '/register',
     component: load(() => import('../pages/Register.vue')),
-    meta: { titleKey: 'shell.register', public: true },
+    meta: { titleKey: 'shell.register', public: true, guestOnly: true },
   },
   {
     path: '/lobby',
@@ -40,8 +40,8 @@ const routes = [
     props: { gameKind: 'x01' },
     meta: { titleKey: 'nav.lobbyX01' },
   },
-  { path: '/friends', component: load(() => import('../pages/Friends.vue')), meta: { titleKey: 'nav.friends' } },
-  { path: '/stats', component: load(() => import('../pages/Statistics.vue')), meta: { titleKey: 'stats.title' } },
+  { path: '/friends', component: load(() => import('../pages/Friends.vue')), meta: { titleKey: 'nav.friends', requiresVerified: true } },
+  { path: '/stats', component: load(() => import('../pages/Statistics.vue')), meta: { titleKey: 'stats.title', requiresVerified: true } },
   { path: '/admin', component: load(() => import('../pages/Admin.js')), meta: { titleKey: 'nav.admin' } },
   {
     path: '/game/:matchId',
@@ -69,6 +69,10 @@ router.beforeEach(async (to) => {
   if (!auth.hydrated) {
     await auth.init();
   }
+  // Ja lietotājs jau ir ielogojies, login/register lapas vairs nav pieejamas.
+  if (auth.user && to.matched.some((r) => r.meta && r.meta.guestOnly === true)) {
+    return '/';
+  }
   if (to.path === '/admin' && !auth.user?.is_admin) {
     return '/';
   }
@@ -77,6 +81,10 @@ router.beforeEach(async (to) => {
   }
   if (!auth.user && !routeIsPublic(to)) {
     return '/login';
+  }
+  // Friends/Stats ir redzamas tikai ar apstiprinātu e-pastu.
+  if (auth.user && !auth.user.email_verified_at && to.matched.some((r) => r.meta && r.meta.requiresVerified === true)) {
+    return '/';
   }
   return true;
 });
