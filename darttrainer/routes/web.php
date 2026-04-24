@@ -51,5 +51,11 @@ Route::fallback(function () {
         abort(404);
     }
 
+    // Extra safety: never serve SPA for `/game/*` to guests/non-players via fallback.
+    $path = (string) request()->path();
+    if (str_starts_with($path, 'game/')) {
+        abort(404);
+    }
+
     return view('dart-spa');
 });
