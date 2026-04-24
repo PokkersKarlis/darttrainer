@@ -8,23 +8,34 @@ class StatisticsService
 {
     public function playerAverage(int $userId, string $gameType): float
     {
-        $totalScore = (float) DB::table('turns')
+        // Stats tiek rēķinātas no arhīva tabulām (pabeigtie mači), lai karstās tabulas var būt mazas/ātras.
+        $totalScore = (float) DB::table('turns_archive as turns')
             ->join('matches', 'matches.id', '=', 'turns.match_id')
             ->join('game_rooms', 'game_rooms.id', '=', 'matches.room_id')
             ->join('room_players', 'room_players.id', '=', 'turns.player_id')
             ->where('room_players.user_id', $userId)
             ->where('game_rooms.game_type', $gameType)
             ->where('turns.is_undone', false)
+            ->where('matches.status', 'finished')
+            ->whereNotNull('matches.finished_at')
+            ->where(function ($q) {
+                $q->where('matches.exclude_from_stats', false)->orWhereNull('matches.exclude_from_stats');
+            })
             ->sum('turns.total_scored');
 
-        $totalDarts = (int) DB::table('darts')
-            ->join('turns', 'turns.id', '=', 'darts.turn_id')
+        $totalDarts = (int) DB::table('darts_archive as darts')
+            ->join('turns_archive as turns', 'turns.id', '=', 'darts.turn_id')
             ->join('matches', 'matches.id', '=', 'turns.match_id')
             ->join('game_rooms', 'game_rooms.id', '=', 'matches.room_id')
             ->join('room_players', 'room_players.id', '=', 'turns.player_id')
             ->where('room_players.user_id', $userId)
             ->where('game_rooms.game_type', $gameType)
             ->where('turns.is_undone', false)
+            ->where('matches.status', 'finished')
+            ->whereNotNull('matches.finished_at')
+            ->where(function ($q) {
+                $q->where('matches.exclude_from_stats', false)->orWhereNull('matches.exclude_from_stats');
+            })
             ->count();
         if ($totalDarts === 0) {
             return 0.0;
@@ -113,19 +124,29 @@ class StatisticsService
             })
             ->where('game_rooms.game_type', 'cricket')
             ->whereNotNull('legs.winner_player_id')
+            ->where('matches.status', 'finished')
+            ->whereNotNull('matches.finished_at')
+            ->where(function ($q) {
+                $q->where('matches.exclude_from_stats', false)->orWhereNull('matches.exclude_from_stats');
+            })
             ->selectRaw('legs.id, legs.winner_player_id, room_players.id as rp_id')
             ->get();
 
         $legsPlayed = $rows->count();
         $legsWon    = $rows->filter(fn ($r) => (int) $r->winner_player_id === (int) $r->rp_id)->count();
 
-        $avgPts = DB::table('cricket_state')
+        $avgPts = DB::table('cricket_state_archive as cricket_state')
             ->join('legs', 'legs.id', '=', 'cricket_state.leg_id')
             ->join('matches', 'matches.id', '=', 'legs.match_id')
             ->join('game_rooms', 'game_rooms.id', '=', 'matches.room_id')
             ->join('room_players', 'room_players.id', '=', 'cricket_state.player_id')
             ->where('room_players.user_id', $userId)
             ->where('game_rooms.game_type', 'cricket')
+            ->where('matches.status', 'finished')
+            ->whereNotNull('matches.finished_at')
+            ->where(function ($q) {
+                $q->where('matches.exclude_from_stats', false)->orWhereNull('matches.exclude_from_stats');
+            })
             ->avg('cricket_state.points');
 
         return [
@@ -146,6 +167,11 @@ class StatisticsService
             ->where('game_rooms.game_type', 'cricket')
             ->whereNotNull('legs.winner_player_id')
             ->whereNotNull('room_players.user_id')
+            ->where('matches.status', 'finished')
+            ->whereNotNull('matches.finished_at')
+            ->where(function ($q) {
+                $q->where('matches.exclude_from_stats', false)->orWhereNull('matches.exclude_from_stats');
+            })
             ->selectRaw('
                 users.id,
                 users.name,

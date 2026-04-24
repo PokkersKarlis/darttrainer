@@ -10,11 +10,13 @@ use App\Models\Leg;
 use App\Models\Turn;
 use App\Services\CricketEngine;
 use App\Services\GameStateManager;
+use App\Services\MatchArchiver;
 use App\Services\MatchReportService;
 use App\Services\X01Engine;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 
 class GameController extends Controller
@@ -24,6 +26,7 @@ class GameController extends Controller
         private readonly X01Engine $x01,
         private readonly CricketEngine $cricket,
         private readonly MatchReportService $matchReport,
+        private readonly MatchArchiver $archiver,
     ) {}
 
     public function state(Request $request, GameMatch $match): JsonResponse|Response
@@ -219,6 +222,8 @@ class GameController extends Controller
 
         $match->room->update(['status' => 'abandoned']);
 
+        $this->archiver->archiveIfTerminal($match);
+
         return response()->json($this->stateManager->buildSnapshot($match->fresh()));
     }
 
@@ -226,20 +231,58 @@ class GameController extends Controller
     {
         $this->authorizeMatchAccess($match);
 
-        $turns = Turn::where('match_id', $match->id)
-            ->with(['player', 'darts'])
-            ->orderBy('id')
-            ->get()
-            ->map(fn($t) => [
-                'id'          => $t->id,
-                'player'      => $t->player->display_name,
-                'leg'         => $t->leg_id,
-                'scored'      => $t->total_scored,
-                'is_bust'     => $t->is_bust,
-                'is_checkout' => $t->is_checkout,
-                'is_undone'   => $t->is_undone,
-                'darts'       => $t->darts->map(fn($d) => $d->getLabel())->toArray(),
-            ]);
+        // Pabeigtos mačos metieni var būt arhivēti.
+        if ($match->archived_at) {
+            $turns = DB::table('turns_archive as t')
+                ->join('room_players as rp', 'rp.id', '=', 't.player_id')
+                ->where('t.match_id', $match->id)
+                ->orderBy('t.id')
+                ->get([
+                    't.id', 't.leg_id', 't.total_scored', 't.is_bust', 't.is_checkout', 't.is_undone',
+                    'rp.guest_name',
+                ])
+                ->map(function ($t) {
+                    $darts = DB::table('darts_archive')
+                        ->where('turn_id', (int) $t->id)
+                        ->orderBy('dart_number')
+                        ->get(['segment', 'multiplier'])
+                        ->map(function ($d) {
+                            $seg = (int) $d->segment;
+                            $mul = (int) $d->multiplier;
+                            if ($seg === 0 || $mul === 0) return 'MISS';
+                            if ($seg === 25) return $mul === 2 ? 'DBULL' : 'BULL';
+                            return ($mul === 3 ? 'T' : ($mul === 2 ? 'D' : '')) . $seg;
+                        })
+                        ->values()
+                        ->all();
+
+                    return [
+                        'id'          => (int) $t->id,
+                        'player'      => (string) ($t->guest_name ?? 'Player'),
+                        'leg'         => (int) $t->leg_id,
+                        'scored'      => (int) $t->total_scored,
+                        'is_bust'     => (bool) $t->is_bust,
+                        'is_checkout' => (bool) $t->is_checkout,
+                        'is_undone'   => (bool) $t->is_undone,
+                        'darts'       => $darts,
+                    ];
+                });
+        } else {
+            $turns = Turn::where('match_id', $match->id)
+                ->with(['player', 'darts'])
+                ->orderBy('id')
+                ->get()
+                ->map(fn($t) => [
+                    'id'          => $t->id,
+                    'player'      => $t->player->display_name,
+                    'leg'         => $t->leg_id,
+                    'scored'      => $t->total_scored,
+                    'is_bust'     => $t->is_bust,
+                    'is_checkout' => $t->is_checkout,
+                    'is_undone'   => $t->is_undone,
+                    'darts'       => $t->darts->map(fn($d) => $d->getLabel())->toArray(),
+                ]);
+        }
 
         return response()->json(['turns' => $turns]);
     }
@@ -250,6 +293,26 @@ class GameController extends Controller
     public function protocol(GameMatch $match): JsonResponse
     {
         $this->authorizeMatchAccess($match);
+
+        // Ja mačs ir pabeigts/pārtraukts, dodam gatavu snapshot (ātri, bez smagiem join).
+        if (in_array($match->status, ['finished', 'abandoned'], true)) {
+            $snap = DB::table('match_protocols')->where('match_id', $match->id)->value('payload');
+            if ($snap) {
+                $decoded = json_decode($snap, true);
+                if (is_array($decoded)) {
+                    return response()->json($decoded);
+                }
+            }
+            // Ja snapshot vēl nav (vecs mačs), uzģenerējam un arhivējam.
+            $this->archiver->archiveIfTerminal($match);
+            $snap2 = DB::table('match_protocols')->where('match_id', $match->id)->value('payload');
+            if ($snap2) {
+                $decoded2 = json_decode($snap2, true);
+                if (is_array($decoded2)) {
+                    return response()->json($decoded2);
+                }
+            }
+        }
 
         $match->load(['room.activePlayers.user', 'winner']);
 

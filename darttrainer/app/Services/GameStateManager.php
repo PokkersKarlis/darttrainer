@@ -22,6 +22,7 @@ class GameStateManager
     public function __construct(
         private readonly X01Engine $x01,
         private readonly CricketEngine $cricket,
+        private readonly MatchArchiver $archiver,
     ) {}
 
     /**
@@ -419,6 +420,9 @@ class GameStateManager
 
         $match->room->status = 'finished';
         $match->room->save();
+
+        // Pabeigtam mačam: izveido protokola snapshot + arhivē metienus/statistiku.
+        $this->archiver->archiveIfTerminal($match);
     }
 
     private function countMatchLegsWon(GameMatch $match, int $roomPlayerId): int
@@ -769,12 +773,18 @@ class GameStateManager
             $room = $match->room;
 
             $this->clearTurnTimerState($match);
-            $match->delete();
+            // Nelietojam "purge": saglabājam protokolu/statistiku, bet atzīmējam kā abandoned.
+            $match->status = 'abandoned';
+            $match->finished_at = now();
+            $match->updated_at = now();
+            $match->save();
 
             if ($room) {
                 $room->status = 'abandoned';
                 $room->save();
             }
+
+            $this->archiver->archiveIfTerminal($match);
         });
     }
 }

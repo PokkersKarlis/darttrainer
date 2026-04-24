@@ -46,6 +46,52 @@ export default {
     const userModalBusy = Vue.ref(false);
     let userFilterTimer = null;
 
+    const ipCountryByIp = Vue.reactive({});
+    const ipGeoBusyByIp = Vue.reactive({});
+
+    function isPrivateIp(ip) {
+      const s = String(ip || '').trim();
+      if (!s) return true;
+      if (s === '127.0.0.1' || s === '::1' || s === 'localhost') return true;
+      if (s.startsWith('10.') || s.startsWith('192.168.') || s.startsWith('169.254.')) return true;
+      // 172.16.0.0 – 172.31.255.255
+      if (s.startsWith('172.')) {
+        const parts = s.split('.');
+        const n = Number(parts[1]);
+        if (n >= 16 && n <= 31) return true;
+      }
+      return false;
+    }
+
+    function flagEmoji(countryCode) {
+      const cc = String(countryCode || '').trim().toUpperCase();
+      if (!/^[A-Z]{2}$/.test(cc)) return '';
+      const A = 0x1F1E6;
+      const c1 = cc.charCodeAt(0) - 65;
+      const c2 = cc.charCodeAt(1) - 65;
+      return String.fromCodePoint(A + c1, A + c2);
+    }
+
+    async function resolveIpCountry(ip) {
+      const key = String(ip || '').trim();
+      if (!key || isPrivateIp(key)) return;
+      if (ipCountryByIp[key] || ipGeoBusyByIp[key]) return;
+      ipGeoBusyByIp[key] = true;
+      try {
+        // Light external lookup with implicit caching in-memory.
+        const r = await fetch(`https://ipapi.co/${encodeURIComponent(key)}/country/`, { cache: 'force-cache' });
+        if (!r.ok) return;
+        const cc = (await r.text()).trim().toUpperCase();
+        if (/^[A-Z]{2}$/.test(cc)) {
+          ipCountryByIp[key] = cc;
+        }
+      } catch (_) {
+        // ignore
+      } finally {
+        ipGeoBusyByIp[key] = false;
+      }
+    }
+
     function copyText(label, text) {
       const s = String(text ?? '');
       if (navigator.clipboard?.writeText) {
@@ -61,6 +107,11 @@ export default {
       try {
         const { data } = await AdminPanel.overview();
         overview.value = data;
+        const ips = (data?.sessions || [])
+          .map(s => s?.ip_address)
+          .filter(Boolean);
+        const uniq = Array.from(new Set(ips));
+        uniq.slice(0, 50).forEach(ip => resolveIpCountry(ip));
       } catch (e) {
         if (e.response?.status === 403) {
           window._dartToast?.(t('admin.forbidden'), 'error');
@@ -275,6 +326,7 @@ export default {
       openBanModal, openUnbanModal, openRevokeModal, closeUserModal, submitUserModal,
       copyText, fmtTs, fmtIso,
       openInspectMatch, openInspectRoom, openDanger, execDanger, closeInspect,
+      ipCountryByIp, flagEmoji,
     };
   },
 
@@ -538,6 +590,40 @@ export default {
             </div>
           </details>
 
+          <!-- DB tables -->
+          <details class="mb-8 rounded-xl" style="background:#131720;border:1px solid #1e2738">
+            <summary class="px-4 py-3 cursor-pointer text-sm font-bold rounded-xl" style="color:#7b8ba8">{{ t('admin.dbTitle') }}</summary>
+            <div v-if="overview.db" class="px-4 pb-4" style="border-top:1px solid #1e2738">
+              <div class="pt-3 text-sm" style="color:#3a4a63">
+                <span class="font-mono">{{ overview.db.driver || '—' }}</span>
+                <span v-if="overview.db.database" class="ml-2 font-mono">{{ overview.db.database }}</span>
+                <span class="ml-3" style="color:#7b8ba8">{{ t('admin.dbTotal') }}: {{ ((overview.db.total_bytes || 0) / (1024*1024)).toFixed(1) }} MB</span>
+              </div>
+
+              <div class="rounded-xl overflow-x-auto mt-3" style="background:#0f1520;border:1px solid #1e2738">
+                <table class="w-full text-sm min-w-[560px]">
+                  <thead>
+                    <tr style="background:#0b0e14">
+                      <th class="text-left py-2.5 px-4 text-[10px] font-bold uppercase tracking-[0.1em]" style="color:#3a4a63">{{ t('admin.dbTable') }}</th>
+                      <th class="text-right py-2.5 px-4 text-[10px] font-bold uppercase tracking-[0.1em]" style="color:#3a4a63">{{ t('admin.dbRows') }}</th>
+                      <th class="text-right py-2.5 px-4 text-[10px] font-bold uppercase tracking-[0.1em]" style="color:#3a4a63">{{ t('admin.dbSize') }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="r in (overview.db.tables || [])" :key="r.name" style="border-top:1px solid #1e2738">
+                      <td class="py-2.5 px-4 font-mono text-xs" style="color:#e8eaf0">{{ r.name }}</td>
+                      <td class="py-2.5 px-4 text-right font-mono text-xs" style="color:#7b8ba8">{{ r.rows }}</td>
+                      <td class="py-2.5 px-4 text-right font-mono text-xs" style="color:#f5a623">{{ (r.size_bytes / (1024*1024)).toFixed(2) }} MB</td>
+                    </tr>
+                    <tr v-if="!(overview.db.tables && overview.db.tables.length)">
+                      <td colspan="3" class="py-8 text-center text-sm" style="color:#3a4a63">{{ t('stats.noData') }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </details>
+
           <!-- Sessions -->
           <p class="text-[10px] font-bold uppercase tracking-[0.1em] mb-3" style="color:#3a4a63">{{ t('admin.sessionsTitle') }}</p>
           <div class="rounded-xl overflow-hidden mb-8" style="background:#131720;border:1px solid #1e2738">
@@ -554,7 +640,12 @@ export default {
               <tbody>
                 <tr v-for="s in overview.sessions" :key="s.session_id" style="border-top:1px solid #1e2738">
                   <td class="py-2.5 px-4 font-medium" style="color:#e8eaf0">{{ s.user_name || ('#' + s.user_id) }}</td>
-                  <td class="py-2.5 px-4 font-mono text-xs" style="color:#7b8ba8">{{ s.ip_address || '—' }}</td>
+                  <td class="py-2.5 px-4 font-mono text-xs" style="color:#7b8ba8">
+                    <span v-if="s.ip_address && ipCountryByIp[s.ip_address]" class="mr-2" :title="ipCountryByIp[s.ip_address]">
+                      {{ flagEmoji(ipCountryByIp[s.ip_address]) }}
+                    </span>
+                    {{ s.ip_address || '—' }}
+                  </td>
                   <td class="py-2.5 px-4 text-right text-xs" style="color:#3a4a63">{{ fmtTs(s.last_activity) }}</td>
                 </tr>
               </tbody>

@@ -7,6 +7,7 @@ use App\Models\AdminAuditLog;
 use App\Models\GameMatch;
 use App\Models\GameRoom;
 use App\Models\User;
+use App\Services\MatchArchiver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,6 +15,8 @@ use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
+    public function __construct(private readonly MatchArchiver $archiver) {}
+
     public function overview(): JsonResponse
     {
         $since = now()->subMinutes(30)->getTimestamp();
@@ -122,6 +125,8 @@ class AdminController extends Controller
             ->values()
             ->all();
 
+        $db = $this->dbOverview();
+
         return response()->json([
             'users_total'    => User::query()->count(),
             'active_players' => $activePlayers,
@@ -132,12 +137,60 @@ class AdminController extends Controller
             'active_rooms'   => $activeRooms,
             'top_sessions'   => $topSessionsRows,
             'analytics'      => $analytics,
+            'db'             => $db,
             'build'          => [
                 'app_version'      => config('app.version'),
                 'laravel_version'  => app()->version(),
                 'last_migrations'  => $lastMigrations,
             ],
         ]);
+    }
+
+    /** @return array<string, mixed> */
+    private function dbOverview(): array
+    {
+        try {
+            $conn = DB::connection();
+            $driver = (string) $conn->getDriverName();
+            $dbName = method_exists($conn, 'getDatabaseName') ? (string) $conn->getDatabaseName() : '';
+
+            if ($driver !== 'mysql' || $dbName === '') {
+                return ['driver' => $driver, 'database' => $dbName, 'tables' => [], 'total_bytes' => 0];
+            }
+
+            $rows = DB::select(
+                'SELECT table_name, table_rows, data_length, index_length
+                 FROM information_schema.tables
+                 WHERE table_schema = ?
+                 ORDER BY (data_length + index_length) DESC',
+                [$dbName]
+            );
+
+            $tables = [];
+            $total = 0;
+            foreach ($rows as $r) {
+                $data = (int) ($r->data_length ?? 0);
+                $idx  = (int) ($r->index_length ?? 0);
+                $size = $data + $idx;
+                $total += $size;
+                $tables[] = [
+                    'name'        => (string) ($r->table_name ?? ''),
+                    'rows'        => (int) ($r->table_rows ?? 0),
+                    'data_bytes'  => $data,
+                    'index_bytes' => $idx,
+                    'size_bytes'  => $size,
+                ];
+            }
+
+            return [
+                'driver'      => $driver,
+                'database'    => $dbName,
+                'tables'      => $tables,
+                'total_bytes' => $total,
+            ];
+        } catch (\Throwable $e) {
+            return ['driver' => 'unknown', 'database' => null, 'tables' => [], 'total_bytes' => 0];
+        }
     }
 
     public function users(Request $request): JsonResponse
@@ -422,6 +475,8 @@ class AdminController extends Controller
             $room->status = 'abandoned';
             $room->save();
         }
+
+        $this->archiver->archiveIfTerminal($match);
     }
 
     private function audit(string $action, ?int $targetUserId, array $metadata = []): void
