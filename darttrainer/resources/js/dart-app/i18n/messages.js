@@ -604,6 +604,7 @@ export const DART_I18N = {
     notFound: {
       title: 'Lapa nav atrasta',
       body: 'Šāda lapa neeksistē vai nav pieejama.',
+      back: 'Atpakaļ',
     },
   },
   en: {
@@ -659,6 +660,7 @@ export const DART_I18N = {
     notFound: {
       title: 'Page not found',
       body: 'This page does not exist or is not available.',
+      back: 'Go back',
     },
     home: {
       tagline: 'Train. Play. Win.',

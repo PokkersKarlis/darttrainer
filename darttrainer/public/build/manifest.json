@@ -3,22 +3,22 @@
     "file": "assets/index-BuNY4Ty6.js",
     "name": "index"
   },
-  "_useBodyShellClass-DNXhPCb0.js": {
-    "file": "assets/useBodyShellClass-DNXhPCb0.js",
+  "_useBodyShellClass-DCUSET5v.js": {
+    "file": "assets/useBodyShellClass-DCUSET5v.js",
     "name": "useBodyShellClass",
     "imports": [
       "resources/js/dart-app/main.vue"
     ]
   },
-  "_useCanvasBnav-CJVA2gno.js": {
-    "file": "assets/useCanvasBnav-CJVA2gno.js",
+  "_useCanvasBnav-Dkcdh_w9.js": {
+    "file": "assets/useCanvasBnav-Dkcdh_w9.js",
     "name": "useCanvasBnav",
     "imports": [
       "resources/js/dart-app/main.vue"
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-BZ8gwWWZ.css",
+    "file": "assets/app-BaM_5DAg.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -32,7 +32,7 @@
     ]
   },
   "resources/js/dart-app/main.vue": {
-    "file": "assets/main-DVdNKccV.js",
+    "file": "assets/main-Bf5M8fLV.js",
     "name": "main",
     "src": "resources/js/dart-app/main.vue",
     "isEntry": true,
@@ -55,12 +55,12 @@
       "resources/js/dart-app/pages/NotFound.vue"
     ],
     "css": [
-      "assets/main-DOSJgOEu.css",
-      "assets/app-BZ8gwWWZ.css"
+      "assets/main-B7CfllP4.css",
+      "assets/app-BaM_5DAg.css"
     ]
   },
   "resources/js/dart-app/pages/Admin.js": {
-    "file": "assets/Admin-CvIvjuL1.js",
+    "file": "assets/Admin-DjQhwd8H.js",
     "name": "Admin",
     "src": "resources/js/dart-app/pages/Admin.js",
     "isDynamicEntry": true,
@@ -69,56 +69,56 @@
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/app-BZ8gwWWZ.css"
+      "assets/app-BaM_5DAg.css"
     ]
   },
   "resources/js/dart-app/pages/Friends.vue": {
-    "file": "assets/Friends-Cce5A8Of.js",
+    "file": "assets/Friends-BqfrxPDV.js",
     "name": "Friends",
     "src": "resources/js/dart-app/pages/Friends.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/dart-app/main.vue",
-      "_useCanvasBnav-CJVA2gno.js",
+      "_useCanvasBnav-Dkcdh_w9.js",
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/Friends-CCnK9YsW.css",
-      "assets/app-BZ8gwWWZ.css"
+      "assets/Friends-DRKunl_0.css",
+      "assets/app-BaM_5DAg.css"
     ]
   },
   "resources/js/dart-app/pages/Game.js": {
-    "file": "assets/Game-D5zhmlQj.js",
+    "file": "assets/Game-Bh0jIRex.js",
     "name": "Game",
     "src": "resources/js/dart-app/pages/Game.js",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/dart-app/main.vue",
-      "_useBodyShellClass-DNXhPCb0.js",
+      "_useBodyShellClass-DCUSET5v.js",
       "resources/js/dart-app/store/game.js",
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/app-BZ8gwWWZ.css"
+      "assets/app-BaM_5DAg.css"
     ]
   },
   "resources/js/dart-app/pages/Home.vue": {
-    "file": "assets/Home-CFXEg1kC.js",
+    "file": "assets/Home-BT9q6ft_.js",
     "name": "Home",
     "src": "resources/js/dart-app/pages/Home.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/dart-app/main.vue",
-      "_useCanvasBnav-CJVA2gno.js",
+      "_useCanvasBnav-Dkcdh_w9.js",
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/Home-Csrkoq9h.css",
-      "assets/app-BZ8gwWWZ.css"
+      "assets/Home-Cw6ezjUp.css",
+      "assets/app-BaM_5DAg.css"
     ]
   },
   "resources/js/dart-app/pages/Login.vue": {
-    "file": "assets/Login-Mq6sAMX5.js",
+    "file": "assets/Login-DvWjh4Wv.js",
     "name": "Login",
     "src": "resources/js/dart-app/pages/Login.vue",
     "isDynamicEntry": true,
@@ -127,12 +127,12 @@
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/Login-Bfs2nat4.css",
-      "assets/app-BZ8gwWWZ.css"
+      "assets/Login-B_dPF498.css",
+      "assets/app-BaM_5DAg.css"
     ]
   },
   "resources/js/dart-app/pages/NotFound.vue": {
-    "file": "assets/NotFound-DWCbSIcy.js",
+    "file": "assets/NotFound-C74o3qf-.js",
     "name": "NotFound",
     "src": "resources/js/dart-app/pages/NotFound.vue",
     "isDynamicEntry": true,
@@ -141,11 +141,11 @@
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/app-BZ8gwWWZ.css"
+      "assets/app-BaM_5DAg.css"
     ]
   },
   "resources/js/dart-app/pages/Privacy.vue": {
-    "file": "assets/Privacy-Hs3q06qi.js",
+    "file": "assets/Privacy-ejBZf_S5.js",
     "name": "Privacy",
     "src": "resources/js/dart-app/pages/Privacy.vue",
     "isDynamicEntry": true,
@@ -154,11 +154,11 @@
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/app-BZ8gwWWZ.css"
+      "assets/app-BaM_5DAg.css"
     ]
   },
   "resources/js/dart-app/pages/Register.vue": {
-    "file": "assets/Register-CqTjKWXH.js",
+    "file": "assets/Register-D740n6Kh.js",
     "name": "Register",
     "src": "resources/js/dart-app/pages/Register.vue",
     "isDynamicEntry": true,
@@ -167,27 +167,27 @@
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/Register-ClR8d0Vn.css",
-      "assets/app-BZ8gwWWZ.css"
+      "assets/Register-C9y3Dq8p.css",
+      "assets/app-BaM_5DAg.css"
     ]
   },
   "resources/js/dart-app/pages/Statistics.vue": {
-    "file": "assets/Statistics-CWUkJjnU.js",
+    "file": "assets/Statistics-BXPr2-UM.js",
     "name": "Statistics",
     "src": "resources/js/dart-app/pages/Statistics.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/dart-app/main.vue",
-      "_useCanvasBnav-CJVA2gno.js",
+      "_useCanvasBnav-Dkcdh_w9.js",
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/Statistics-B-uyZn6Y.css",
-      "assets/app-BZ8gwWWZ.css"
+      "assets/Statistics-DGsAUv9e.css",
+      "assets/app-BaM_5DAg.css"
     ]
   },
   "resources/js/dart-app/pages/X01Training.js": {
-    "file": "assets/X01Training-zUtgn8-M.js",
+    "file": "assets/X01Training-DaeV_Dh1.js",
     "name": "X01Training",
     "src": "resources/js/dart-app/pages/X01Training.js",
     "isDynamicEntry": true,
@@ -196,25 +196,25 @@
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/app-BZ8gwWWZ.css"
+      "assets/app-BaM_5DAg.css"
     ]
   },
   "resources/js/dart-app/pages/lobby/LobbyApp.vue": {
-    "file": "assets/LobbyApp-Bp3frHZc.js",
+    "file": "assets/LobbyApp-C3sduM0_.js",
     "name": "LobbyApp",
     "src": "resources/js/dart-app/pages/lobby/LobbyApp.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/dart-app/main.vue",
-      "_useBodyShellClass-DNXhPCb0.js",
+      "_useBodyShellClass-DCUSET5v.js",
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/app-BZ8gwWWZ.css"
+      "assets/app-BaM_5DAg.css"
     ]
   },
   "resources/js/dart-app/store/game.js": {
-    "file": "assets/game-Clejp_tC.js",
+    "file": "assets/game-CbZ13Abp.js",
     "name": "game",
     "src": "resources/js/dart-app/store/game.js",
     "isDynamicEntry": true,
@@ -223,7 +223,7 @@
       "_index-BuNY4Ty6.js"
     ],
     "css": [
-      "assets/app-BZ8gwWWZ.css"
+      "assets/app-BaM_5DAg.css"
     ]
   }
 }
