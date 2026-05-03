@@ -75,12 +75,10 @@ export function installApiInterceptors(getAuthStore) {
         if (typeof window._dartToast === 'function') {
           window._dartToast(msg, 'error');
         }
-        // Ja nav drošas kļūdas ziņas (t.i. rādam fallback), visticamāk ir negaidīts stāvoklis.
-        // Šādā gadījumā aizvedam lietotāju uz sākumlapu.
-        if (!safe) {
-          try {
-            window.location.assign('/');
-          } catch (_) {}
+        // Iepriekš šeit bija window.location.assign('/') — tas varēja izraisīt bezgalīgu
+        // pārlādēšanu, ja saknes lapa pati trigero kļūdu. Tagad tikai logojam konsole.
+        if (!safe && import.meta.env.DEV) {
+          console.warn('[DartTrainer] Negaidīta API kļūda bez drošas ziņas:', err);
         }
       }
 

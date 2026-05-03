@@ -16,7 +16,7 @@ class RegistrationTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertViewIs('dart-spa');
+            ->assertSee('<div id="app"></div>', false);
     }
 
     public function test_new_users_can_register(): void

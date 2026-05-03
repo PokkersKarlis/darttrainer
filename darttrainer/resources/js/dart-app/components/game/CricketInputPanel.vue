@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import CricketXMarkCell from '../CricketXMarkCell.js';
+import CricketXMarkCell from '../CricketXMarkCell.vue';
 
 const props = defineProps({
   state:              { type: Object,   required: true },

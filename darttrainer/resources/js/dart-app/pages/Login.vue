@@ -2,7 +2,7 @@
 import { reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore, useLocaleStore } from '../store/index.js';
-import DtButton from '../components/ui/DtButton.js';
+import DtButton from '../components/ui/DtButton.vue';
 
 defineOptions({ name: 'LoginPage' });
 

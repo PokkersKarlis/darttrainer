@@ -1,8 +1,8 @@
 <script setup>
 import { computed } from 'vue';
-import CricketMarkCell from '../CricketMarkCell.js';
-import CricketXMarkCell from '../CricketXMarkCell.js';
-import CricketClosedCheck from '../CricketClosedCheck.js';
+import CricketMarkCell from '../CricketMarkCell.vue';
+import CricketXMarkCell from '../CricketXMarkCell.vue';
+import CricketClosedCheck from '../CricketClosedCheck.vue';
 import CricketInputPanel from './CricketInputPanel.vue';
 import { useLocaleStore } from '../../store/locale.js';
 

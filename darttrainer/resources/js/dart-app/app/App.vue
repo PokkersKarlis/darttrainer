@@ -1,15 +1,17 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, provide } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../store/auth.js';
 import { useLocaleStore } from '../store/locale.js';
 import { useFriendsStore } from '../store/friends.js';
 import { dartSafeDisplayMessage } from '../utils/safeDisplay.js';
 import EmailVerifyBanner from '../components/shell/EmailVerifyBanner.vue';
-import FriendsIncomingModal from '../components/shell/FriendsIncomingModal.js';
+import FriendsIncomingModal from '../components/shell/FriendsIncomingModal.vue';
 import { applySocialMeta } from '../utils/socialMeta.js';
 import HomeCanvasLayout from '../components/layout/HomeCanvasLayout.vue';
 import CookieConsent from '../components/CookieConsent.vue';
+import { api } from '../api/client.js';
+import { useAppResume, isOffline } from '../composables/useAppResume.js';
 
 const APP_NAME = 'DartTrainer';
 
@@ -21,7 +23,29 @@ const friends = useFriendsStore();
 const toasts = ref([]);
 const resendBusy = ref(false);
 
+// Globālais app lifecycle: visibilitychange + online/offline handlers.
+useAppResume();
+
 const t = (key) => locale.t(key);
+
+// ── Provide/Inject: ļauj bērnkomponentiem izsaukt toast bez window globālā ──
+/**
+ * @param {string} message
+ * @param {'success'|'error'} type
+ */
+function showToast(message, type = 'success') {
+  const id = Date.now();
+  const text = dartSafeDisplayMessage(message) || (type === 'error' ? 'Kļūda' : 'OK');
+  toasts.value.push({ id, message: text, type });
+  setTimeout(() => {
+    toasts.value = toasts.value.filter((x) => x.id !== id);
+  }, 3500);
+}
+
+provide('showToast', showToast);
+
+// Atpakaļ-saderība: interceptori un citi moduļi joprojām lieto window._dartToast.
+window._dartToast = showToast;
 
 const needsEmailVerify = computed(
   () => auth.hydrated && !!auth.user && !auth.user.email_verified_at,
@@ -30,34 +54,31 @@ const needsEmailVerify = computed(
 /** Aktīvā spēle: pilnekrāna saturs bez globālā header/footer, sānjoslas u.c. */
 const gameFocus = computed(() => !!route.meta.gameFocus);
 
-/** Sākumlapa: pašai sava “canvas chrome” iekš `Home.vue`. */
+/** Sākumlapa: pašai sava "canvas chrome" iekš `Home.vue`. */
 const isHome = computed(() => route.path === '/');
 
 /** Cricket lobby: pilnekrāna telpa bez HomeCanvasLayout (nav globālā header/sidebar/bnav). */
 const isCricketLobby = computed(() => route.path === '/lobby/cricket');
 
-window._dartToast = (message, type = 'success') => {
-  const id = Date.now();
-  let text =
-    typeof dartSafeDisplayMessage === 'function' ? dartSafeDisplayMessage(message) : '';
-  if (!text && message != null && typeof message !== 'object') {
-    text = String(message).replace(/\0/g, '').trim().slice(0, 4000);
+// ── Title update: viena kopīga funkcija (agrāk bija dublikāts 3 vietās) ──
+function updatePageTitle() {
+  try {
+    const key = route.meta?.titleKey;
+    document.title =
+      key && typeof key === 'string' ? `${locale.t(key)} · ${APP_NAME}` : APP_NAME;
+  } catch (_) {
+    document.title = APP_NAME;
   }
-  if (!text) text = type === 'error' ? 'Kļūda' : 'OK';
-  toasts.value.push({ id, message: text, type });
-  setTimeout(() => {
-    toasts.value = toasts.value.filter((x) => x.id !== id);
-  }, 3500);
-};
+}
 
 async function resendVerification() {
   if (!auth.user || resendBusy.value) return;
   resendBusy.value = true;
   try {
     await auth.resendVerificationEmail();
-    window._dartToast?.(t('auth.resendSent'), 'success');
+    showToast(t('auth.resendSent'), 'success');
   } catch (_) {
-    window._dartToast?.(t('common.error'), 'error');
+    showToast(t('common.error'), 'error');
   } finally {
     resendBusy.value = false;
   }
@@ -70,7 +91,7 @@ async function consumeVerifiedRedirectParam() {
 
     if (searchParams.get('already_verified') === '1') {
       await auth.refreshMe();
-      window._dartToast?.(t('auth.emailAlreadyVerified'), 'success');
+      showToast(t('auth.emailAlreadyVerified'), 'success');
       searchParams.delete('already_verified');
       const qs = searchParams.toString();
       const nextPath = window.location.pathname + (qs ? `?${qs}` : '');
@@ -100,7 +121,7 @@ async function consumeVerifiedRedirectParam() {
       : auth.user
         ? t('auth.emailVerifiedToast')
         : t('auth.emailVerifiedPleaseLogin');
-    window._dartToast?.(msg, 'success');
+    showToast(msg, 'success');
     if (fromHash) {
       window.location.hash = '';
       return;
@@ -114,16 +135,19 @@ async function consumeVerifiedRedirectParam() {
 
 onMounted(async () => {
   locale.initFromStorage();
-  /* init() no main — mutex; šeit gaidām, pēc tam ?verified=1 apstrāde ar svaigiem /auth/me datiem, lai bānera vairs nav */
+
+  // CSRF cookie + auth sesija — UI redzams uzreiz, dati nāk fonā.
+  void api.get('/csrf-cookie', { skipErrorToast: true }).catch(() => {});
   await auth.init();
   await consumeVerifiedRedirectParam();
+
+  updatePageTitle();
   try {
-    const key = route.meta?.titleKey;
-    document.title =
-      key && typeof key === 'string' ? `${locale.t(key)} · ${APP_NAME}` : APP_NAME;
     applySocialMeta(router.currentRoute.value);
   } catch (_) {}
 });
+
+// ── Watchers ──
 
 watch(
   () => auth.user,
@@ -137,10 +161,8 @@ watch(
 watch(
   () => locale.locale,
   () => {
+    updatePageTitle();
     try {
-      const key = route.meta?.titleKey;
-      document.title =
-        key && typeof key === 'string' ? `${locale.t(key)} · ${APP_NAME}` : APP_NAME;
       applySocialMeta(router.currentRoute.value);
     } catch (_) {}
   },
@@ -159,6 +181,13 @@ watch(
       },
     ]"
   >
+    <!-- Offline / reconnecting indikators -->
+    <transition name="fade">
+      <div v-if="isOffline" class="dt-offline-banner">
+        {{ t('common.offline') }}
+      </div>
+    </transition>
+
     <!-- `/`: Home.vue jau satur visu sidebar/header/layout. -->
     <template v-if="isHome">
       <router-view />
@@ -182,7 +211,7 @@ watch(
       <router-view class="flex min-h-0 flex-1 flex-col" />
     </div>
 
-    <!-- Visas pārējās lapas: Home “canvas” layout (sidebar + header + ads) -->
+    <!-- Visas pārējās lapas: Home "canvas" layout (sidebar + header + ads) -->
     <HomeCanvasLayout v-else :title-key="route.meta?.titleKey || ''">
       <EmailVerifyBanner
         v-if="needsEmailVerify"
@@ -250,3 +279,21 @@ watch(
     <CookieConsent />
   </div>
 </template>
+
+<style scoped>
+.dt-offline-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10000;
+  padding: 6px 12px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #fff;
+  background: linear-gradient(90deg, #b91c1c, #dc2626);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+</style>

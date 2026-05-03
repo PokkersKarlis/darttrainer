@@ -2,6 +2,15 @@ import { defineStore } from 'pinia';
 import { Game } from '../api/client.js';
 import { DART_I18N } from '../i18n/messages.js';
 import { useAuthStore } from './auth.js';
+import { onAppResume, onAppPause } from '../composables/useAppResume.js';
+
+/** Vai onAppResume jau reģistrēts (store ir singleton, reģistrē vienu reizi). */
+let _resumeRegistered = false;
+
+/** Secīgu neveiksmju skaits polling pieprasījumos (exponential backoff). */
+let _consecutiveFailures = 0;
+/** Max backoff — neveiksmīgi pieprasījumi nepalēninās polling vairāk par šo. */
+const MAX_BACKOFF_POLLS = 5;
 
 export const useGameStore = defineStore('game', {
   state: () => ({
@@ -9,6 +18,10 @@ export const useGameStore = defineStore('game', {
     roomCode: null,
     state: null,
     polling: null,
+    /** Intervāls (ms), ko lietoja startPolling — vajadzīgs atsākšanai. */
+    pollingInterval: 1100,
+    /** Vai polling bija aktīvs pirms pauzes (visibilitychange). */
+    wasPolling: false,
     lastUpdated: null,
     lastEtag: null,
     error: null,
@@ -51,7 +64,10 @@ export const useGameStore = defineStore('game', {
           skipErrorToast: true,
         });
 
-        if (response.status === 304) return;
+        if (response.status === 304) {
+          _consecutiveFailures = 0;
+          return;
+        }
         if (response.status === 404) {
           if (this.matchGoneHandled) return;
           this.matchGoneHandled = true;
@@ -71,23 +87,90 @@ export const useGameStore = defineStore('game', {
           this.roomCode = data.room_code;
         }
         if (etag) this.lastEtag = etag;
+        // Veiksmīgs pieprasījums — atiestatām backoff.
+        _consecutiveFailures = 0;
+        this.error = null;
       } catch (e) {
-        this.error = 'Nevar ielādēt spēles stāvokli.';
+        _consecutiveFailures = Math.min(_consecutiveFailures + 1, MAX_BACKOFF_POLLS);
+        // Rādām kļūdu tikai pēc vairākām neveiksmēm (netraucē ar vienreizēju timeout).
+        if (_consecutiveFailures >= 3) {
+          this.error = 'Nevar ielādēt spēles stāvokli.';
+        }
       }
     },
 
+
     startPolling(intervalMs = 1100) {
       this.stopPolling();
-      this.polling = setInterval(() => {
-        if (!this.isFinished) this.fetchState();
-        else this.stopPolling();
-      }, intervalMs);
+      this.pollingInterval = intervalMs;
+      this.wasPolling = true;
+      _consecutiveFailures = 0;
+      this._schedulePoll();
+
+      // Reģistrējam pause/resume callback vienu reizi (store singleton).
+      if (!_resumeRegistered) {
+        _resumeRegistered = true;
+        onAppPause(() => this.pausePolling());
+        onAppResume(() => this._onResume());
+      }
+    },
+
+    /**
+     * Iekšējā poll plānošana ar adaptīvu intervālu (backoff pie kļūdām).
+     */
+    _schedulePoll() {
+      if (this.polling) clearTimeout(this.polling);
+      // Adaptīvs intervāls: baseInterval * 2^failures (max ~35s).
+      const delay = Math.min(
+        this.pollingInterval * Math.pow(2, _consecutiveFailures),
+        35000,
+      );
+      this.polling = setTimeout(async () => {
+        if (!this.isFinished && this.matchId) {
+          await this.fetchState();
+          this._schedulePoll();
+        } else {
+          this.stopPolling();
+        }
+      }, delay);
     },
 
     stopPolling() {
       if (this.polling) {
-        clearInterval(this.polling);
+        clearTimeout(this.polling);
         this.polling = null;
+      }
+      this.wasPolling = false;
+      _consecutiveFailures = 0;
+    },
+
+    /**
+     * Apturēt polling, saglabājot wasPolling=true (visibilitychange hidden).
+     * Atsākšanu veic _onResume(). Neizmanto stopPolling(), jo tas nodzēš wasPolling.
+     */
+    pausePolling() {
+      if (this.polling) {
+        clearTimeout(this.polling);
+        this.polling = null;
+        // wasPolling paliek true — _onResume to izmantos atsākšanai.
+        this.wasPolling = true;
+      }
+    },
+
+    /**
+     * Izsaukts no useAppResume pēc pamošanās.
+     * Uzreiz pieprasām svaigu stāvokli un atsākam polling.
+     */
+    async _onResume() {
+      if (!this.matchId || this.isFinished) return;
+      // ETag atiestatīts — pēc ilgas pauzes gandrīz noteikti ir jauni dati.
+      this.lastEtag = null;
+      this.error = null;
+      _consecutiveFailures = 0;
+      await this.fetchState();
+      // Atsākam polling, ja tas bija aktīvs pirms pauzes.
+      if (this.wasPolling && !this.polling && !this.isFinished) {
+        this._schedulePoll();
       }
     },
 

@@ -1,5 +1,5 @@
 <script setup>
-import DtButton from '../ui/DtButton.js';
+import DtButton from '../ui/DtButton.vue';
 import { useLocaleStore } from '../../store/index.js';
 
 defineOptions({ name: 'EmailVerifyBanner' });

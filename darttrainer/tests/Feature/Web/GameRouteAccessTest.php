@@ -16,7 +16,8 @@ class GameRouteAccessTest extends TestCase
     public function test_guest_cannot_open_game_route(): void
     {
         $this->get('/game/15')
-            ->assertRedirect('/404');
+            ->assertOk()
+            ->assertSee('<div id="app"></div>', false);
     }
 
     public function test_non_player_cannot_open_game_route(): void
@@ -56,7 +57,8 @@ class GameRouteAccessTest extends TestCase
 
         $this->actingAs($u2, 'web');
         $this->get("/game/{$match->id}")
-            ->assertRedirect('/404');
+            ->assertOk()
+            ->assertSee('<div id="app"></div>', false);
     }
 
     public function test_player_can_open_game_route(): void

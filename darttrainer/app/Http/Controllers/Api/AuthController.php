@@ -3,31 +3,21 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    public function register(Request $request): JsonResponse
+    public function register(RegisterRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'name'          => 'required|string|max:50',
-            'email'         => 'required|email|unique:users,email',
-            'password'      => 'required|string|min:8|confirmed',
-            'account_type'  => ['required', 'string', Rule::in([User::ACCOUNT_PLAYER, User::ACCOUNT_CLUB])],
-            'club_name'     => [
-                'nullable',
-                'string',
-                'max:120',
-                Rule::requiredIf(fn () => $request->input('account_type') === User::ACCOUNT_CLUB),
-            ],
-        ]);
+        $data = $request->validated();
 
         $user = User::create([
             'name'         => $data['name'],
@@ -49,12 +39,9 @@ class AuthController extends Controller
         ], 201);
     }
 
-    public function login(Request $request): JsonResponse
+    public function login(LoginRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'email'    => 'required|email',
-            'password' => 'required|string',
-        ]);
+        $data = $request->validated();
 
         if (! Auth::attempt($data, $request->boolean('remember'))) {
             throw ValidationException::withMessages([

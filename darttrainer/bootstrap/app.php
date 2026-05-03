@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Aiz starpproksa (nginx, Cloudflare, ALB): pareizs https + Host, lai OG/URL nav http:// iekšējais.
         $middleware->trustProxies(at: '*');
 
+        // Drošības headeri visiem pieprasījumiem (CSP, HSTS, X-Frame-Options u.c.)
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+
         // API: session + encrypted cookies + CSRF (SPA primes token via GET /api/csrf-cookie; axios sends X-XSRF-TOKEN)
         $middleware->api(prepend: [
             \Illuminate\Cookie\Middleware\EncryptCookies::class,

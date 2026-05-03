@@ -2,9 +2,9 @@
 import { computed } from 'vue';
 import { useAuthStore, useLocaleStore } from '../../store/index.js';
 import { useCookieConsent } from '../../composables/useCookieConsent.js';
-import ShellNavLink from './ShellNavLink.js';
-import ShellSidebarSectionLabel from './ShellSidebarSectionLabel.js';
-import ShellSidebarAdminLink from './ShellSidebarAdminLink.js';
+import ShellNavLink from './ShellNavLink.vue';
+import ShellSidebarSectionLabel from './ShellSidebarSectionLabel.vue';
+import ShellSidebarAdminLink from './ShellSidebarAdminLink.vue';
 import ShellSidebarGameTeasers from './ShellSidebarGameTeasers.vue';
 import { useCanPlayX01 } from '../../composables/useCanPlayX01.js';
 import { DARTTRAINER_DISCORD_URL } from '../../constants/discord.js';

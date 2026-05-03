@@ -1,3 +1,8 @@
 # Ignore all files and directories within the .idea directory
 .idea/
 .htaccess
+
+# Cursor / Claude / lokālais AI konteksts (necommitot)
+.cursor/
+.claude/
+AGENTS.md

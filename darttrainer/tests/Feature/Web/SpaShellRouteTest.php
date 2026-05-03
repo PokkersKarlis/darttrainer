@@ -14,7 +14,7 @@ class SpaShellRouteTest extends TestCase
         foreach (['/login', '/register'] as $path) {
             $this->get($path)
                 ->assertOk()
-                ->assertViewIs('dart-spa');
+                ->assertSee('<div id="app"></div>', false);
         }
     }
 
@@ -22,7 +22,7 @@ class SpaShellRouteTest extends TestCase
     {
         $this->get('/nonexistent-lobby-xyz-123')
             ->assertOk()
-            ->assertViewIs('dart-spa');
+            ->assertSee('<div id="app"></div>', false);
     }
 
     public function test_api_style_unknown_json_returns_404(): void

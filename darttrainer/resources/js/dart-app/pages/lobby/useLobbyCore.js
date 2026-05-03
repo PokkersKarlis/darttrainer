@@ -3,6 +3,7 @@ import * as Vue from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useBodyShellClass } from '../../composables/useBodyShellClass.js';
 import { useAuthStore, useLocaleStore } from '../../store/index.js';
+import { onAppPause, onAppResume } from '../../composables/useAppResume.js';
 
 /** @param {import('vue').Ref<'cricket'|'x01'>} gameKindRef */
 export function useLobbyCore(gameKindRef) {
@@ -410,8 +411,11 @@ export function useLobbyCore(gameKindRef) {
   const lobbyShellLocked = Vue.computed(() => checkingSetupMatch.value && !room.value);
 
   let roomPoll = null;
+  let roomPollWasActive = false;
+
   function startRoomPoll() {
     if (roomPoll) return;
+    roomPollWasActive = true;
     roomPoll = setInterval(async () => {
       if (!room.value) return;
       try {
@@ -429,7 +433,23 @@ export function useLobbyCore(gameKindRef) {
       clearInterval(roomPoll);
       roomPoll = null;
     }
+    roomPollWasActive = false;
   }
+
+  // Pauze/atsākšana, kad ekrāns aizmieg / atbloķējas.
+  onAppPause(() => {
+    if (roomPoll) {
+      clearInterval(roomPoll);
+      roomPoll = null;
+      // roomPollWasActive paliek true.
+    }
+  });
+  onAppResume(() => {
+    if (roomPollWasActive && !roomPoll && room.value) {
+      startRoomPoll();
+    }
+  });
+
   Vue.onUnmounted(() => {
     stopRoomPoll();
     if (refreshBlockedTimer) {

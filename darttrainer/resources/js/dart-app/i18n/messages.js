@@ -561,6 +561,8 @@ export const DART_I18N = {
     },
     common: {
       error: 'Kļūda',
+      offline: 'Nav interneta savienojuma',
+      reconnecting: 'Savienojas…',
     },
     friends: {
       title: 'Draugi',
@@ -1180,6 +1182,8 @@ export const DART_I18N = {
     },
     common: {
       error: 'Error',
+      offline: 'No internet connection',
+      reconnecting: 'Reconnecting…',
     },
     friends: {
       title: 'Friends',

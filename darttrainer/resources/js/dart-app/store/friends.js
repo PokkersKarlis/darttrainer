@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { Friends } from '../api/client.js';
 import { DART_I18N } from '../i18n/messages.js';
 import { useAuthStore } from './auth.js';
+import { onAppPause, onAppResume } from '../composables/useAppResume.js';
 
 function dartFriendMsg(key, name) {
   const loc = (typeof localStorage !== 'undefined' && localStorage.getItem('dt_locale')) || 'lv';
@@ -11,12 +12,16 @@ function dartFriendMsg(key, name) {
   return String(tpl).replace(/\{name\}/g, name);
 }
 
+let _friendsPauseResumeRegistered = false;
+
 export const useFriendsStore = defineStore('friends', {
   state: () => ({
     incoming: [],
     outgoing: [],
     outgoingStatusSeen: {},
     pollTimer: null,
+    /** Vai polling bija aktīvs pirms pauzes. */
+    _wasActive: false,
     modalOpen: false,
     busyId: null,
   }),
@@ -31,6 +36,7 @@ export const useFriendsStore = defineStore('friends', {
         clearInterval(this.pollTimer);
         this.pollTimer = null;
       }
+      this._wasActive = false;
       this.incoming = [];
       this.outgoing = [];
       this.outgoingStatusSeen = {};
@@ -39,8 +45,26 @@ export const useFriendsStore = defineStore('friends', {
 
     start() {
       this.stop();
+      this._wasActive = true;
       this.refresh();
       this.pollTimer = setInterval(() => this.refresh(), 12000);
+
+      // Reģistrē pause/resume vienu reizi.
+      if (!_friendsPauseResumeRegistered) {
+        _friendsPauseResumeRegistered = true;
+        onAppPause(() => {
+          if (this.pollTimer) {
+            clearInterval(this.pollTimer);
+            this.pollTimer = null;
+          }
+        });
+        onAppResume(() => {
+          if (this._wasActive && !this.pollTimer) {
+            this.refresh();
+            this.pollTimer = setInterval(() => this.refresh(), 12000);
+          }
+        });
+      }
     },
 
     openModal() {

@@ -42,21 +42,23 @@ const routes = [
   },
   { path: '/friends', component: load(() => import('../pages/Friends.vue')), meta: { titleKey: 'nav.friends', requiresVerified: true } },
   { path: '/stats', component: load(() => import('../pages/Statistics.vue')), meta: { titleKey: 'stats.title', requiresVerified: true } },
-  { path: '/admin', component: load(() => import('../pages/Admin.js')), meta: { titleKey: 'nav.admin' } },
+  { path: '/admin', component: load(() => import('../pages/Admin.vue')), meta: { titleKey: 'nav.admin' } },
   {
     path: '/game/:matchId',
-    component: load(() => import('../pages/Game.js')),
+    component: load(() => import('../pages/Game.vue')),
     props: true,
     meta: { titleKey: 'nav.lobby', gameFocus: true },
   },
   { path: '/privacy', component: load(() => import('../pages/Privacy.vue')), meta: { titleKey: 'privacy.title', public: true } },
-  { path: '/training/x01', component: load(() => import('../pages/X01Training.js')), meta: { titleKey: 'nav.x01solo' } },
+  { path: '/training/x01', component: load(() => import('../pages/X01Training.vue')), meta: { titleKey: 'nav.x01solo' } },
   { path: '/404', component: load(() => import('../pages/NotFound.vue')), meta: { titleKey: 'notFound.title', public: true } },
   { path: '/:pathMatch(.*)*', redirect: '/404', meta: { public: true } },
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  // SPA URL bez prefiksa — Laravel servē index.html no root `/`.
+  // Vite `base` ir `/dart-app/` tikai asset ceļiem (JS/CSS), nevis rūtēšanai.
+  history: createWebHistory('/'),
   routes,
 });
 
