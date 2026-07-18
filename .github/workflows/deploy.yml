@@ -1,16 +1,14 @@
-name: Build Verification
+name: Build & Deploy to cPanel
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
-
+  # Izslēdzam pull_request deployu, lai kods nesūtītos uz serveri pirms laika, kad kāds tikai taisa PR
+  
 jobs:
-  build-check:
-    name: Build Frontend
+  build-and-deploy:
+    name: Build Frontend & Deploy
     runs-on: ubuntu-latest
 
     steps:
@@ -43,3 +41,22 @@ jobs:
     - name: 📦 Compile Assets (Vite Build)
       working-directory: darttrainer
       run: npm run build
+
+    - name: 🚚 Deploy via Native Rsync to cPanel
+      run: |
+        # 1. Sagatavojam SSH vidi ar tavu cPanel atslēgu
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        
+        # 2. Pievienojam serveri uzticamajiem saimniekiem (known_hosts)
+        ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+        
+        # 3. Rsync komanda.
+        # Ievēro, ka sūtam saturu TIKAI no ./darttrainer/ mapes, kur viss tikko uzbūvējās,
+        # un izlaižam node_modules, lai nav jāsūta gigabaiti ar liekiem failiem.
+        rsync -avz -e "ssh -p ${{ secrets.SSH_PORT }}" \
+          --exclude='node_modules' \
+          --exclude='.git' \
+          --exclude='.github' \
+          ./darttrainer/ traindar@${{ secrets.SSH_HOST }}:/home/traindar/public_html/darttrainer/darttrainer/
