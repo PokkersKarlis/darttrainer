@@ -17,17 +17,23 @@ jobs:
     - name: 🚚 Get latest code
       uses: actions/checkout@v4
 
-    - name: 🟢 Setup Node.js
+    - name: 🟢 Setup Node.js (Node 24)
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
-        cache: 'npm' # Automātiski kešos node_modules paātrināšanai
+        node-version: '24'
+        cache: 'npm'
+        # Norādām, kur tieši atrodas package-lock.json fails:
+        cache-dependency-path: darttrainer/darttrainer/package-lock.json
 
     - name: 🛠️ Install Dependencies
+      # Ar working-directory liekam komandām izpildīties pareizajā mapē
+      working-directory: darttrainer/darttrainer
       run: npm ci
 
     - name: 🔬 Type-Check & Lint
+      working-directory: darttrainer/darttrainer
       run: npm run lint --if-present
 
     - name: 📦 Compile Assets (Vite Build)
-      run: npm run build 
+      working-directory: darttrainer/darttrainer
+      run: npm run build
