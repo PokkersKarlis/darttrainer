@@ -49,13 +49,17 @@ jobs:
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
         
-        # 2. Pievienojam serveri uzticamajiem saimniekiem (known_hosts)
-        ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+        # Noteicam portu: ja secrets.SSH_PORT nav definēts, izmantojam noklusēto 22
+        PORT="${{ secrets.SSH_PORT }}"
+        if [ -z "$PORT" ]; then
+          PORT="22"
+        fi
         
-        # 3. Rsync komanda.
-        # Ievēro, ka sūtam saturu TIKAI no ./darttrainer/ mapes, kur viss tikko uzbūvējās,
-        # un izlaižam node_modules, lai nav jāsūta gigabaiti ar liekiem failiem.
-        rsync -avz -e "ssh -p ${{ secrets.SSH_PORT }}" \
+        # 2. Pievienojam serveri uzticamajiem saimniekiem (known_hosts)
+        ssh-keyscan -p $PORT ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+        
+        # 3. Rsync komanda ar pareizo portu
+        rsync -avz -e "ssh -p $PORT" \
           --exclude='node_modules' \
           --exclude='.git' \
           --exclude='.github' \
