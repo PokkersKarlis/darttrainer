@@ -51,14 +51,13 @@ jobs:
 
     - name: 🚚 Deploy via Native Rsync to cPanel
       run: |
-        # Noteicam portu (ja secrets nav definēts, izmantojam 722)
+        # 1. Noteicam portu
         PORT="${{ secrets.SSH_PORT }}"
         if [ -z "$PORT" ]; then
           PORT="722"
         fi
         
-        # Izmantojam iepriekšējā solī droši uzstādīto atslēgu
-        # Rsync palaišana ar tīrāku logu izvadi (tikai statistika beigās)
+        # 2. Viens tīrs un elegants Rsync uz projekta mapi
         rsync -az --stats -e "ssh -i ~/.ssh/id_ed25519 -p $PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
           --exclude='node_modules' \
           --exclude='.git' \
