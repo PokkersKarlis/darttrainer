@@ -1,48 +1,54 @@
-<script setup>
-import GuestLayout from '@/layouts/GuestLayout.vue';
-import { useForm } from '@inertiajs/vue3';
+<script setup lang="ts">
+import InputError from '@/components/InputError.vue';
+import TextLink from '@/components/TextLink.vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import AuthLayout from '@/layouts/AuthLayout.vue';
+import { Head, useForm } from '@inertiajs/vue3';
+import { LoaderCircle } from 'lucide-vue-next';
 
-defineProps({
-    status: { type: String, default: null },
-});
+defineProps<{
+    status?: string;
+}>();
 
 const form = useForm({
     email: '',
 });
 
-function submit() {
-    form.post('/forgot-password');
-}
+const submit = () => {
+    form.post(route('password.email'));
+};
 </script>
 
 <template>
-    <GuestLayout :status="status">
-        <h1 class="text-center text-xl font-black tracking-tight text-slate-100 mb-1">Aizmirsi paroli?</h1>
-        <p class="text-center text-sm text-[#7b8ba8] mb-6">
-            Nav problēmu. Ievadi savu e-pastu, un mēs atsūtīsim saiti paroles maiņai.
-        </p>
+    <AuthLayout title="Forgot password" description="Enter your email to receive a password reset link">
+        <Head title="Forgot password" />
 
-        <form @submit.prevent="submit" class="space-y-4">
-            <div>
-                <label for="email" class="block mb-1.5 text-xs font-bold uppercase tracking-wide text-slate-500">E-pasts</label>
-                <input
-                    id="email"
-                    v-model="form.email"
-                    type="email"
-                    class="w-full rounded-lg border-[1.5px] border-[#252d3d] bg-[#0b0e14] px-3.5 py-2.5 text-[15px] text-slate-100 outline-none focus:border-amber-500"
-                    required
-                    autofocus
-                />
-                <p v-if="form.errors.email" class="mt-1.5 text-sm text-red-400">{{ form.errors.email }}</p>
+        <div v-if="status" class="mb-4 text-center text-sm font-medium text-green-600">
+            {{ status }}
+        </div>
+
+        <div class="space-y-6">
+            <form @submit.prevent="submit">
+                <div class="grid gap-2">
+                    <Label for="email">Email address</Label>
+                    <Input id="email" type="email" name="email" autocomplete="off" v-model="form.email" autofocus placeholder="email@example.com" />
+                    <InputError :message="form.errors.email" />
+                </div>
+
+                <div class="my-6 flex items-center justify-start">
+                    <Button class="w-full" :disabled="form.processing">
+                        <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
+                        Email password reset link
+                    </Button>
+                </div>
+            </form>
+
+            <div class="space-x-1 text-center text-sm text-muted-foreground">
+                <span>Or, return to</span>
+                <TextLink :href="route('login')">log in</TextLink>
             </div>
-
-            <button
-                type="submit"
-                class="w-full rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-extrabold text-navy-950 transition-opacity hover:opacity-90 disabled:opacity-50"
-                :disabled="form.processing"
-            >
-                {{ form.processing ? 'Sūta…' : 'Nosūtīt paroles maiņas saiti' }}
-            </button>
-        </form>
-    </GuestLayout>
+        </div>
+    </AuthLayout>
 </template>

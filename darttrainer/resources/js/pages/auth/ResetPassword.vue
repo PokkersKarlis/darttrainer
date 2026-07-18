@@ -1,11 +1,18 @@
-<script setup>
-import GuestLayout from '@/layouts/GuestLayout.vue';
-import { useForm } from '@inertiajs/vue3';
+<script setup lang="ts">
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import AuthLayout from '@/layouts/AuthLayout.vue';
+import { Head, useForm } from '@inertiajs/vue3';
+import { LoaderCircle } from 'lucide-vue-next';
 
-const props = defineProps({
-    email: { type: String, default: '' },
-    token: { type: String, required: true },
-});
+interface Props {
+    token: string;
+    email: string;
+}
+
+const props = defineProps<Props>();
 
 const form = useForm({
     token: props.token,
@@ -14,70 +21,61 @@ const form = useForm({
     password_confirmation: '',
 });
 
-function submit() {
-    form.post('/reset-password', {
-        onFinish: () => form.reset('password', 'password_confirmation'),
+const submit = () => {
+    form.post(route('password.store'), {
+        onFinish: () => {
+            form.reset('password', 'password_confirmation');
+        },
     });
-}
+};
 </script>
 
 <template>
-    <GuestLayout>
-        <h1 class="text-center text-xl font-black tracking-tight text-slate-100 mb-1">Jauna parole</h1>
-        <p class="text-center text-sm text-[#7b8ba8] mb-6">Ievadi un apstiprini savu jauno paroli.</p>
+    <AuthLayout title="Reset password" description="Please enter your new password below">
+        <Head title="Reset password" />
 
-        <form @submit.prevent="submit" class="space-y-4">
-            <div>
-                <label for="email" class="block mb-1.5 text-xs font-bold uppercase tracking-wide text-slate-500">E-pasts</label>
-                <input
-                    id="email"
-                    v-model="form.email"
-                    type="email"
-                    class="w-full rounded-lg border-[1.5px] border-[#252d3d] bg-[#0b0e14] px-3.5 py-2.5 text-[15px] text-slate-100 outline-none focus:border-amber-500"
-                    required
-                    autofocus
-                    autocomplete="username"
-                />
-                <p v-if="form.errors.email" class="mt-1.5 text-sm text-red-400">{{ form.errors.email }}</p>
+        <form @submit.prevent="submit">
+            <div class="grid gap-6">
+                <div class="grid gap-2">
+                    <Label for="email">Email</Label>
+                    <Input id="email" type="email" name="email" autocomplete="email" v-model="form.email" class="mt-1 block w-full" readonly />
+                    <InputError :message="form.errors.email" class="mt-2" />
+                </div>
+
+                <div class="grid gap-2">
+                    <Label for="password">Password</Label>
+                    <Input
+                        id="password"
+                        type="password"
+                        name="password"
+                        autocomplete="new-password"
+                        v-model="form.password"
+                        class="mt-1 block w-full"
+                        autofocus
+                        placeholder="Password"
+                    />
+                    <InputError :message="form.errors.password" />
+                </div>
+
+                <div class="grid gap-2">
+                    <Label for="password_confirmation"> Confirm Password </Label>
+                    <Input
+                        id="password_confirmation"
+                        type="password"
+                        name="password_confirmation"
+                        autocomplete="new-password"
+                        v-model="form.password_confirmation"
+                        class="mt-1 block w-full"
+                        placeholder="Confirm password"
+                    />
+                    <InputError :message="form.errors.password_confirmation" />
+                </div>
+
+                <Button type="submit" class="mt-4 w-full" :disabled="form.processing">
+                    <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
+                    Reset password
+                </Button>
             </div>
-
-            <div>
-                <label for="password" class="block mb-1.5 text-xs font-bold uppercase tracking-wide text-slate-500">Jaunā parole</label>
-                <input
-                    id="password"
-                    v-model="form.password"
-                    type="password"
-                    class="w-full rounded-lg border-[1.5px] border-[#252d3d] bg-[#0b0e14] px-3.5 py-2.5 text-[15px] text-slate-100 outline-none focus:border-amber-500"
-                    required
-                    autocomplete="new-password"
-                />
-                <p v-if="form.errors.password" class="mt-1.5 text-sm text-red-400">{{ form.errors.password }}</p>
-            </div>
-
-            <div>
-                <label for="password_confirmation" class="block mb-1.5 text-xs font-bold uppercase tracking-wide text-slate-500">
-                    Apstiprini paroli
-                </label>
-                <input
-                    id="password_confirmation"
-                    v-model="form.password_confirmation"
-                    type="password"
-                    class="w-full rounded-lg border-[1.5px] border-[#252d3d] bg-[#0b0e14] px-3.5 py-2.5 text-[15px] text-slate-100 outline-none focus:border-amber-500"
-                    required
-                    autocomplete="new-password"
-                />
-                <p v-if="form.errors.password_confirmation" class="mt-1.5 text-sm text-red-400">
-                    {{ form.errors.password_confirmation }}
-                </p>
-            </div>
-
-            <button
-                type="submit"
-                class="w-full rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-extrabold text-navy-950 transition-opacity hover:opacity-90 disabled:opacity-50"
-                :disabled="form.processing"
-            >
-                {{ form.processing ? 'Notiek maiņa…' : 'Mainīt paroli' }}
-            </button>
         </form>
-    </GuestLayout>
+    </AuthLayout>
 </template>

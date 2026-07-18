@@ -13,18 +13,16 @@ class EmailVerificationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_email_verification_screen_can_be_rendered(): void
+    public function test_email_verification_screen_can_be_rendered()
     {
         $user = User::factory()->unverified()->create();
 
         $response = $this->actingAs($user)->get('/verify-email');
 
-        $response
-            ->assertSeeVolt('pages.auth.verify-email')
-            ->assertStatus(200);
+        $response->assertStatus(200);
     }
 
-    public function test_email_can_be_verified(): void
+    public function test_email_can_be_verified()
     {
         $user = User::factory()->unverified()->create();
 
@@ -36,33 +34,14 @@ class EmailVerificationTest extends TestCase
             ['id' => $user->id, 'hash' => sha1($user->email)]
         );
 
-        $response = $this->get($verificationUrl);
+        $response = $this->actingAs($user)->get($verificationUrl);
 
         Event::assertDispatched(Verified::class);
         $this->assertTrue($user->fresh()->hasVerifiedEmail());
-        $expected = rtrim((string) config('app.frontend_url'), '/').'/login?verified=1';
-        $response->assertRedirect($expected);
+        $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
     }
 
-    public function test_email_verification_logs_out_user_session(): void
-    {
-        $user = User::factory()->unverified()->create();
-
-        $verificationUrl = URL::temporarySignedRoute(
-            'verification.verify',
-            now()->addMinutes(60),
-            ['id' => $user->id, 'hash' => sha1($user->email)]
-        );
-
-        $this->actingAs($user, 'web');
-        $this->get($verificationUrl)->assertRedirect(
-            rtrim((string) config('app.frontend_url'), '/').'/login?verified=1',
-        );
-        $this->assertTrue($user->fresh()->hasVerifiedEmail());
-        $this->assertGuest('web');
-    }
-
-    public function test_email_is_not_verified_with_invalid_hash(): void
+    public function test_email_is_not_verified_with_invalid_hash()
     {
         $user = User::factory()->unverified()->create();
 
@@ -72,7 +51,7 @@ class EmailVerificationTest extends TestCase
             ['id' => $user->id, 'hash' => sha1('wrong-email')]
         );
 
-        $this->get($verificationUrl)->assertForbidden();
+        $this->actingAs($user)->get($verificationUrl);
 
         $this->assertFalse($user->fresh()->hasVerifiedEmail());
     }

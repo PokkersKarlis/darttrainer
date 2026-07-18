@@ -1,14 +1,18 @@
-<script setup>
-/**
- * @typedef {Object} Props
- * @property {string|null} status
- */
-import GuestLayout from '@/layouts/GuestLayout.vue';
-import { Link, useForm } from '@inertiajs/vue3';
+<script setup lang="ts">
+import InputError from '@/components/InputError.vue';
+import TextLink from '@/components/TextLink.vue';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import AuthBase from '@/layouts/AuthLayout.vue';
+import { Head, useForm } from '@inertiajs/vue3';
+import { LoaderCircle } from 'lucide-vue-next';
 
-defineProps({
-    status: { type: String, default: null },
-});
+defineProps<{
+    status?: string;
+    canResetPassword: boolean;
+}>();
 
 const form = useForm({
     email: '',
@@ -16,75 +20,72 @@ const form = useForm({
     remember: false,
 });
 
-function submit() {
-    form.post('/login', {
+const submit = () => {
+    form.post(route('login'), {
         onFinish: () => form.reset('password'),
     });
-}
+};
 </script>
 
 <template>
-    <GuestLayout :status="status">
-        <h1 class="text-center text-xl font-black tracking-tight text-slate-100 mb-1">Pieteikties</h1>
-        <p class="text-center text-sm text-[#7b8ba8] mb-6">Turpini treniņu tur, kur pārtrauci.</p>
+    <AuthBase title="Log in to your account" description="Enter your email and password below to log in">
+        <Head title="Log in" />
 
-        <form @submit.prevent="submit" class="space-y-4">
-            <div>
-                <label for="email" class="block mb-1.5 text-xs font-bold uppercase tracking-wide text-slate-500">
-                    E-pasts
-                </label>
-                <input
-                    id="email"
-                    v-model="form.email"
-                    type="email"
-                    class="w-full rounded-lg border-[1.5px] border-[#252d3d] bg-[#0b0e14] px-3.5 py-2.5 text-[15px] text-slate-100 outline-none focus:border-amber-500"
-                    required
-                    autofocus
-                    autocomplete="username"
-                />
-                <p v-if="form.errors.email" class="mt-1.5 text-sm text-red-400">{{ form.errors.email }}</p>
+        <div v-if="status" class="mb-4 text-center text-sm font-medium text-green-600">
+            {{ status }}
+        </div>
+
+        <form @submit.prevent="submit" class="flex flex-col gap-6">
+            <div class="grid gap-6">
+                <div class="grid gap-2">
+                    <Label for="email">Email address</Label>
+                    <Input
+                        id="email"
+                        type="email"
+                        required
+                        autofocus
+                        tabindex="1"
+                        autocomplete="email"
+                        v-model="form.email"
+                        placeholder="email@example.com"
+                    />
+                    <InputError :message="form.errors.email" />
+                </div>
+
+                <div class="grid gap-2">
+                    <div class="flex items-center justify-between">
+                        <Label for="password">Password</Label>
+                        <TextLink v-if="canResetPassword" :href="route('password.request')" class="text-sm" tabindex="5"> Forgot password? </TextLink>
+                    </div>
+                    <Input
+                        id="password"
+                        type="password"
+                        required
+                        tabindex="2"
+                        autocomplete="current-password"
+                        v-model="form.password"
+                        placeholder="Password"
+                    />
+                    <InputError :message="form.errors.password" />
+                </div>
+
+                <div class="flex items-center justify-between" tabindex="3">
+                    <Label for="remember" class="flex items-center space-x-3">
+                        <Checkbox id="remember" v-model:checked="form.remember" tabindex="4" />
+                        <span>Remember me</span>
+                    </Label>
+                </div>
+
+                <Button type="submit" class="mt-4 w-full" tabindex="4" :disabled="form.processing">
+                    <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
+                    Log in
+                </Button>
             </div>
 
-            <div>
-                <label for="password" class="block mb-1.5 text-xs font-bold uppercase tracking-wide text-slate-500">
-                    Parole
-                </label>
-                <input
-                    id="password"
-                    v-model="form.password"
-                    type="password"
-                    class="w-full rounded-lg border-[1.5px] border-[#252d3d] bg-[#0b0e14] px-3.5 py-2.5 text-[15px] text-slate-100 outline-none focus:border-amber-500"
-                    required
-                    autocomplete="current-password"
-                />
-                <p v-if="form.errors.password" class="mt-1.5 text-sm text-red-400">{{ form.errors.password }}</p>
+            <div class="text-center text-sm text-muted-foreground">
+                Don't have an account?
+                <TextLink :href="route('register')" :tabindex="5">Sign up</TextLink>
             </div>
-
-            <div class="flex items-center justify-between text-sm">
-                <label class="inline-flex items-center gap-2 text-[#7b8ba8]">
-                    <input v-model="form.remember" type="checkbox" class="rounded border-[#334155] bg-[#0b0e14]" />
-                    Atcerēties mani
-                </label>
-
-                <Link href="/forgot-password" class="font-bold text-amber-400 underline underline-offset-2">
-                    Aizmirsi paroli?
-                </Link>
-            </div>
-
-            <button
-                type="submit"
-                class="w-full rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-extrabold text-navy-950 transition-opacity hover:opacity-90 disabled:opacity-50"
-                :disabled="form.processing"
-            >
-                {{ form.processing ? 'Notiek pieteikšanās…' : 'Pieteikties' }}
-            </button>
-
-            <p class="text-center text-sm text-[#5a6d82]">
-                Nav konta?
-                <Link href="/register" class="font-extrabold text-amber-400 underline underline-offset-2">
-                    Reģistrējies
-                </Link>
-            </p>
         </form>
-    </GuestLayout>
+    </AuthBase>
 </template>

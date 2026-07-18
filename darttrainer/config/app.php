@@ -15,9 +15,6 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
-    /** Optional deploy label (e.g. git SHA) for admin / diagnostics */
-    'version' => env('APP_VERSION'),
-
     /*
     |--------------------------------------------------------------------------
     | Application Environment
@@ -57,12 +54,6 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
-    /** E-pasta apstiprināšanas novirzīšana uz SPA (hash router; bāze bez ceļa, piem. https://example.com) */
-    'frontend_url' => env('FRONTEND_URL', rtrim(env('APP_URL', 'http://localhost'), '/')),
-
-    /** Vite dev servera URL izstrādei (HMR). Produkcijā: null / neiestatīts. */
-    'vite_dev_server_url' => env('VITE_DEV_SERVER_URL'),
-
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
@@ -74,7 +65,7 @@ return [
     |
     */
 
-    'timezone' => env('APP_TIMEZONE', 'UTC'),
+    'timezone' => 'UTC',
 
     /*
     |--------------------------------------------------------------------------

@@ -1,58 +1,36 @@
-<script setup>
-import GuestLayout from '@/layouts/GuestLayout.vue';
-import { useForm } from '@inertiajs/vue3';
-import { computed } from 'vue';
+<script setup lang="ts">
+import TextLink from '@/components/TextLink.vue';
+import { Button } from '@/components/ui/button';
+import AuthLayout from '@/layouts/AuthLayout.vue';
+import { Head, useForm } from '@inertiajs/vue3';
+import { LoaderCircle } from 'lucide-vue-next';
 
-const props = defineProps({
-    status: { type: String, default: null },
-});
-
-const verificationLinkSent = computed(() => props.status === 'verification-link-sent');
+defineProps<{
+    status?: string;
+}>();
 
 const form = useForm({});
-const logoutForm = useForm({});
 
-function submit() {
-    form.post('/email/verification-notification');
-}
-
-function logout() {
-    logoutForm.post('/logout');
-}
+const submit = () => {
+    form.post(route('verification.send'));
+};
 </script>
 
 <template>
-    <GuestLayout>
-        <h1 class="text-center text-xl font-black tracking-tight text-slate-100 mb-1">Apstiprini e-pastu</h1>
-        <p class="text-center text-sm text-[#7b8ba8] mb-6">
-            Paldies par reģistrēšanos! Pirms turpini, apstiprini savu e-pasta adresi, noklikšķinot uz saites,
-            ko tikko nosūtījām. Ja vēstuli nesaņēmi, varam nosūtīt vēlreiz.
-        </p>
+    <AuthLayout title="Verify email" description="Please verify your email address by clicking on the link we just emailed to you.">
+        <Head title="Email verification" />
 
-        <div
-            v-if="verificationLinkSent"
-            class="mb-4 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-2.5 text-sm font-medium text-emerald-400"
-        >
-            Jauna apstiprinājuma saite tika nosūtīta uz e-pastu, ko norādīji reģistrējoties.
+        <div v-if="status === 'verification-link-sent'" class="mb-4 text-center text-sm font-medium text-green-600">
+            A new verification link has been sent to the email address you provided during registration.
         </div>
 
-        <div class="flex items-center justify-between">
-            <button
-                type="button"
-                class="rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-extrabold text-navy-950 transition-opacity hover:opacity-90 disabled:opacity-50"
-                :disabled="form.processing"
-                @click="submit"
-            >
-                Nosūtīt vēlreiz
-            </button>
+        <form @submit.prevent="submit" class="space-y-6 text-center">
+            <Button :disabled="form.processing" variant="secondary">
+                <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
+                Resend verification email
+            </Button>
 
-            <button
-                type="button"
-                class="text-sm font-bold text-[#7b8ba8] underline underline-offset-2"
-                @click="logout"
-            >
-                Iziet
-            </button>
-        </div>
-    </GuestLayout>
+            <TextLink :href="route('logout')" method="post" as="button" class="mx-auto block text-sm"> Log out </TextLink>
+        </form>
+    </AuthLayout>
 </template>

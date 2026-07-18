@@ -4,39 +4,23 @@
 /public/hot
 /public/storage
 /storage/*.key
-/storage/logs/*
-!/storage/logs/.gitignore
-/storage/framework/cache/*
-!/storage/framework/cache/.gitignore
-/storage/framework/sessions/*
-!/storage/framework/sessions/.gitignore
-/storage/framework/views/*
-!/storage/framework/views/.gitignore
+/storage/pail
 /vendor
 .env
-.env.*
-!.env.example
 .env.backup
 .env.production
 .phpactor.json
 .phpunit.result.cache
 Homestead.json
 Homestead.yaml
-auth.json
 npm-debug.log
 yarn-error.log
+/auth.json
+
+# Redaktori un vides
 /.fleet
 /.idea
+/.nova
 /.vscode
-.claude/
-CURSOR_INSTRUCTIONS.md
-*.pem
-*.p12
-
-# Docker
-mysql_data/
-docker/mysql/data/
-
-# Local SQLite (migrate:fresh --seed)
-/database/database.sqlite
-
+/.zed
+/.github

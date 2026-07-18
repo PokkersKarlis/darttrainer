@@ -1,47 +1,53 @@
-<script setup>
-import GuestLayout from '@/layouts/GuestLayout.vue';
-import { useForm } from '@inertiajs/vue3';
+<script setup lang="ts">
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import AuthLayout from '@/layouts/AuthLayout.vue';
+import { Head, useForm } from '@inertiajs/vue3';
+import { LoaderCircle } from 'lucide-vue-next';
 
 const form = useForm({
     password: '',
 });
 
-function submit() {
-    form.post('/confirm-password', {
-        onFinish: () => form.reset('password'),
+const submit = () => {
+    form.post(route('password.confirm'), {
+        onFinish: () => {
+            form.reset();
+        },
     });
-}
+};
 </script>
 
 <template>
-    <GuestLayout>
-        <h1 class="text-center text-xl font-black tracking-tight text-slate-100 mb-1">Apstiprini paroli</h1>
-        <p class="text-center text-sm text-[#7b8ba8] mb-6">
-            Šī ir droša lietotnes sadaļa. Lūdzu, apstiprini savu paroli, pirms turpini.
-        </p>
+    <AuthLayout title="Confirm your password" description="This is a secure area of the application. Please confirm your password before continuing.">
+        <Head title="Confirm password" />
 
-        <form @submit.prevent="submit" class="space-y-4">
-            <div>
-                <label for="password" class="block mb-1.5 text-xs font-bold uppercase tracking-wide text-slate-500">Parole</label>
-                <input
-                    id="password"
-                    v-model="form.password"
-                    type="password"
-                    class="w-full rounded-lg border-[1.5px] border-[#252d3d] bg-[#0b0e14] px-3.5 py-2.5 text-[15px] text-slate-100 outline-none focus:border-amber-500"
-                    required
-                    autofocus
-                    autocomplete="current-password"
-                />
-                <p v-if="form.errors.password" class="mt-1.5 text-sm text-red-400">{{ form.errors.password }}</p>
+        <form @submit.prevent="submit">
+            <div class="space-y-6">
+                <div class="grid gap-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                        id="password"
+                        type="password"
+                        class="mt-1 block w-full"
+                        v-model="form.password"
+                        required
+                        autocomplete="current-password"
+                        autofocus
+                    />
+
+                    <InputError :message="form.errors.password" />
+                </div>
+
+                <div class="flex items-center">
+                    <Button class="w-full" :disabled="form.processing">
+                        <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
+                        Confirm Password
+                    </Button>
+                </div>
             </div>
-
-            <button
-                type="submit"
-                class="w-full rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-extrabold text-navy-950 transition-opacity hover:opacity-90 disabled:opacity-50"
-                :disabled="form.processing"
-            >
-                {{ form.processing ? 'Apstiprina…' : 'Apstiprināt' }}
-            </button>
         </form>
-    </GuestLayout>
+    </AuthLayout>
 </template>

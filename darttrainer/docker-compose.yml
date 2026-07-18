@@ -1,104 +1,77 @@
-# DartTrainer — lokālā izstrāde
-#
-# Pamata stack (Nginx + PHP + MySQL):
-#   docker compose up -d
-#
-# + Vite HMR (5173) — izstrādē liec .env: VITE_DEV_SERVER_URL=http://localhost:5173
-#   docker compose --profile dev up -d
-#   vai: make up-dev / make up-all
-#
-# npm / npx viens-off (bez lokālā Node) — profils "tools":
-#   docker compose --profile tools run --rm nodejs npm install
-#   docker compose --profile tools run --rm nodejs npm run build
-#   vai: make npm-install | make npm-build | make shell-node
-#
-# Ja pēc build http://localhost:8088 joprojām rāda veco JS:
-#   1) .env — komentē vai izdzēš VITE_DEV_SERVER_URL (ja netiek lietots `vite` profils / 5173),
-#      citādi Laravel var mēģināt ielādēt bundle no dev servera, nevis no public/build.
-#   2) Pārliecinies, ka `docker compose` palaiž no šīs mapes (kur ir docker-compose.yml un package.json).
-#   3) Pārlūkā cietā pārlāde (Ctrl+Shift+R). Iespējams: `docker compose exec php php artisan view:clear`.
-#
-x-node-service: &node-service
-  image: node:20-alpine
-  working_dir: /var/www/html
-  volumes:
-    - .:/var/www/html
-  environment:
-    CHOKIDAR_USEPOLLING: "true"
-    # Retāks polling = mazāk slodzes uz Windows bind mount (HMR joprojām strādā)
-    VITE_POLL_INTERVAL_MS: "800"
-    # Pre-bundle kešs ārpus projekta tilpuma
-    VITE_CACHE_DIR: /tmp/vite-cache
-    NODE_ENV: development
-  networks:
-    - dartnet
-
 services:
-
-  nginx:
-    image: nginx:1.25-alpine
-    ports:
-      - "8088:80"
-    volumes:
-      - .:/var/www/html
-      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
-    depends_on:
-      - php
-    networks:
-      - dartnet
-
-  php:
+  app:
     build:
       context: .
-      dockerfile: docker/php/Dockerfile
+      dockerfile: docker/Dockerfile
+    image: traindart-app
+    restart: unless-stopped
+    working_dir: /var/www
     volumes:
-      - .:/var/www/html
-    depends_on:
-      mysql:
-        condition: service_healthy
+      - .:/var/www
     networks:
-      - dartnet
-    environment:
-      - PHP_OPCACHE_ENABLE=0
-
-  mysql:
-    image: mysql:8.0
+      - traindart-network
+  webserver:
+    image: nginx:alpine
+    restart: unless-stopped
     ports:
-      - "3316:3306"
+      - "8000:80"
+    volumes:
+      - .:/var/www
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - traindart-network
+    depends_on:
+      - app
+
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
     environment:
-      MYSQL_DATABASE: darttrainer
-      MYSQL_USER: dartuser
-      MYSQL_PASSWORD: dartpass
-      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: traindart
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: secret_password
+      MYSQL_ROOT_PASSWORD: root_secret_password
     volumes:
       - mysql_data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpass"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
     networks:
-      - dartnet
+      - traindart-network
 
-  # npm / npx / viens-off skripti — nelasa profilu "dev"; nav jāpalaiž fona režīmā
-  nodejs:
-    <<: *node-service
-    profiles:
-      - tools
+  # db-postgres:
+  #   image: postgres:15-alpine
+  #   restart: unless-stopped
+  #   ports:
+  #     - "5432:5432"
+  #   environment:
+  #     POSTGRES_DB: traindart
+  #     POSTGRES_USER: laravel
+  #     POSTGRES_PASSWORD: secret_password
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #     # in future pg_partman... connectiomn goes here
+  #   networks:
+  #     - traindart-network
 
-  # Vite izstrādes serveris (HMR)
-  vite:
-    <<: *node-service
-    # npm install tikai, ja trūkst node_modules (katru startu neinstalē no jauna)
-    command: sh -c "test -f node_modules/.bin/vite || npm install; npm run dev -- --host 0.0.0.0 --port 5173"
+  node:
+    image: node:20-alpine
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
     ports:
       - "5173:5173"
-    profiles:
-      - dev
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    command: npm run dev -- --host
+    networks:
+      - traindart-network
+
+networks:
+  traindart-network:
+    driver: bridge
 
 volumes:
   mysql_data:
-
-networks:
-  dartnet:
-    driver: bridge
+    driver: local
+  # postgres_data:
+  #   driver: local
