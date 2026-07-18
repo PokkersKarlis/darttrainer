@@ -1,30 +1,87 @@
 <script setup lang="ts">
+import SettingsShell from '@/layouts/SettingsShell.vue';
+import { useAppearance } from '@/composables/useAppearance';
 import { Head } from '@inertiajs/vue3';
+import { Monitor, Moon, Sun } from 'lucide-vue-next';
 
-import AppearanceTabs from '@/components/AppearanceTabs.vue';
-import HeadingSmall from '@/components/HeadingSmall.vue';
-import { type BreadcrumbItem } from '@/types';
+const { appearance, updateAppearance } = useAppearance();
 
-import AppLayout from '@/layouts/AppLayout.vue';
-import SettingsLayout from '@/layouts/settings/Layout.vue';
-
-const breadcrumbItems: BreadcrumbItem[] = [
-    {
-        title: 'Appearance settings',
-        href: '/settings/appearance',
-    },
-];
+const options = [
+    { value: 'light', Icon: Sun, label: 'Gaišs' },
+    { value: 'dark', Icon: Moon, label: 'Tumšs' },
+    { value: 'system', Icon: Monitor, label: 'Sistēma' },
+] as const;
 </script>
 
 <template>
-    <AppLayout :breadcrumbs="breadcrumbItems">
-        <Head title="Appearance settings" />
+    <Head title="Izskata iestatījumi" />
 
-        <SettingsLayout>
-            <div class="space-y-6">
-                <HeadingSmall title="Appearance settings" description="Update your account's appearance settings" />
-                <AppearanceTabs />
+    <SettingsShell>
+        <section>
+            <h2 class="tf-h">Izskats</h2>
+            <p class="tf-desc">Izvēlies lietotnes krāsu tēmu.</p>
+
+            <div class="ap-tabs">
+                <button
+                    v-for="{ value, Icon, label } in options"
+                    :key="value"
+                    type="button"
+                    class="ap-tab"
+                    :class="{ 'ap-tab--on': appearance === value }"
+                    @click="updateAppearance(value)"
+                >
+                    <component :is="Icon" class="ap-ico" />
+                    <span>{{ label }}</span>
+                </button>
             </div>
-        </SettingsLayout>
-    </AppLayout>
+        </section>
+    </SettingsShell>
 </template>
+
+<style scoped>
+.tf-h {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 20px;
+    margin: 0 0 4px;
+}
+.tf-desc {
+    color: #64748b;
+    font-size: 14px;
+    margin: 0 0 20px;
+}
+.ap-tabs {
+    display: inline-flex;
+    gap: 6px;
+    padding: 6px;
+    border-radius: 12px;
+    background: #131a26;
+    border: 1px solid #1f2937;
+}
+.ap-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.ap-tab:hover {
+    color: #f4f4f5;
+}
+.ap-tab--on {
+    background: rgba(57, 255, 20, 0.12);
+    color: #39ff14;
+}
+.ap-ico {
+    width: 16px;
+    height: 16px;
+}
+</style>

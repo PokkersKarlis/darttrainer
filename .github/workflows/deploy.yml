@@ -7,8 +7,39 @@ on:
   # Izslēdzam pull_request deployu, lai kods nesūtītos uz serveri pirms laika, kad kāds tikai taisa PR
   
 jobs:
+  # ── Testi VISPIRMS. Ja krīt — deploy NENOTIEK (needs: test zemāk). ──
+  test:
+    name: Tests (Pest)
+    runs-on: ubuntu-latest
+    steps:
+    - name: 🚚 Get latest code
+      uses: actions/checkout@v4
+
+    - name: 🐘 Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: mbstring, pdo, pdo_sqlite, bcmath, intl
+        tools: composer:v2
+        coverage: none
+
+    - name: 📥 Install Composer Dependencies
+      working-directory: darttrainer
+      run: composer install --no-progress --no-interaction --prefer-dist
+
+    - name: ⚙️ Sagatavo vidi
+      working-directory: darttrainer
+      run: |
+        cp .env.example .env
+        php artisan key:generate
+
+    - name: 🧪 Palaid Pest testus
+      working-directory: darttrainer
+      run: php artisan test
+
   build-and-deploy:
     name: Build Frontend & Deploy
+    needs: test          # ← deploy tikai, ja "test" jobs izgāja veiksmīgi
     runs-on: ubuntu-latest
 
     steps:

@@ -1,53 +1,48 @@
 <script setup lang="ts">
-import InputError from '@/components/InputError.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import AuthLayout from '@/layouts/AuthLayout.vue';
+import AuthShell from '@/layouts/AuthShell.vue';
 import { Head, useForm } from '@inertiajs/vue3';
-import { LoaderCircle } from 'lucide-vue-next';
 
-const form = useForm({
-    password: '',
-});
+const form = useForm({ password: '' });
 
 const submit = () => {
     form.post(route('password.confirm'), {
-        onFinish: () => {
-            form.reset();
-        },
+        onFinish: () => form.reset(),
     });
 };
 </script>
 
 <template>
-    <AuthLayout title="Confirm your password" description="This is a secure area of the application. Please confirm your password before continuing.">
-        <Head title="Confirm password" />
+    <Head title="Apstiprini paroli" />
 
-        <form @submit.prevent="submit">
-            <div class="space-y-6">
-                <div class="grid gap-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                        id="password"
-                        type="password"
-                        class="mt-1 block w-full"
-                        v-model="form.password"
-                        required
-                        autocomplete="current-password"
-                        autofocus
-                    />
+    <AuthShell
+        heading-line1="Secure area."
+        heading-line2="Confirm it's you."
+        lead="Šī ir droša sadaļa. Apstiprini paroli, lai turpinātu."
+    >
+        <h2 class="td-h">Apstiprini paroli</h2>
+        <p class="td-sub">Ievadi paroli, lai turpinātu.</p>
 
-                    <InputError :message="form.errors.password" />
-                </div>
-
-                <div class="flex items-center">
-                    <Button class="w-full" :disabled="form.processing">
-                        <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
-                        Confirm Password
-                    </Button>
-                </div>
+        <form class="td-fields" @submit.prevent="submit">
+            <div>
+                <label class="td-label" for="password">Parole</label>
+                <input id="password" v-model="form.password" type="password" class="td-input" required autofocus autocomplete="current-password" />
+                <p v-if="form.errors.password" class="td-error">{{ form.errors.password }}</p>
             </div>
+            <button type="submit" class="td-submit" :disabled="form.processing">
+                {{ form.processing ? 'Apstiprina…' : 'Apstiprināt' }}
+            </button>
         </form>
-    </AuthLayout>
+    </AuthShell>
 </template>
+
+<style scoped>
+.td-h { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; font-size: 30px; margin: 0 0 8px; }
+.td-sub { color: #64748b; font-size: 14px; margin: 0 0 28px; }
+.td-fields { display: flex; flex-direction: column; gap: 16px; }
+.td-label { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; margin-bottom: 8px; }
+.td-input { width: 100%; padding: 13px 16px; border-radius: 10px; background: #131a26; border: 1px solid #1f2937; color: #f4f4f5; font-size: 14px; font-family: Inter, sans-serif; outline: none; }
+.td-input:focus { border-color: #39ff14; }
+.td-error { margin-top: 6px; font-size: 12px; color: #fb2c5f; }
+.td-submit { margin-top: 8px; padding: 14px; text-align: center; border-radius: 10px; background: #39ff14; color: #0b0f19; font-weight: 800; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.5px; text-transform: uppercase; font-size: 16px; cursor: pointer; border: none; box-shadow: 0 0 20px rgba(57, 255, 20, 0.2); }
+.td-submit:disabled { opacity: 0.7; cursor: not-allowed; }
+</style>
