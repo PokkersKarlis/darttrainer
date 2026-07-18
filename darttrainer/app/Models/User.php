@@ -21,6 +21,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'is_admin',
+        'is_banned',
+        'ban_reason',
+        'account_type',
+        'club_name',
     ];
 
     /**
