@@ -66,7 +66,7 @@ class ServeSpaController extends Controller
   <body>
     <div id="app"></div>
     <script type="module" src="{$viteUrl}/@vite/client"></script>
-    <script type="module" src="{$viteUrl}/dart-app/main.js"></script>
+    <script type="module" src="{$viteUrl}/resources/js/dart-app/main.js"></script>
   </body>
 </html>
 HTML;

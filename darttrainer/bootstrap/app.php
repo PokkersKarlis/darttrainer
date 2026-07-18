@@ -35,9 +35,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'verified.email' => \App\Http\Middleware\EnsureEmailVerifiedForApi::class,
         ]);
 
-        // Web: dienas unikālie apmeklējumi admin panelim
+        // Web: dienas unikālie apmeklējumi admin panelim + Inertia kopīgie props (auth.user u.c.)
         $middleware->web(append: [
             \App\Http\Middleware\TrackDailyVisit::class,
+            \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

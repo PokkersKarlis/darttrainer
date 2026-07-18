@@ -57,10 +57,10 @@ class SecurityHeaders
         $csp = implode('; ', array_filter([
             "default-src 'self'",
             "script-src 'self'" . ($isDev ? " {$viteOrigin}" : ''),
-            "style-src 'self' 'unsafe-inline'",
+            "style-src 'self' 'unsafe-inline'" . ($isDev ? " {$viteOrigin}" : ''),
             "img-src 'self' data: blob: https://*.paypal.com https://*.paypalobjects.com",
             "font-src 'self'",
-            "connect-src 'self'" . ($isDev ? " {$viteOrigin} {$viteWs}" : ''),
+            "connect-src 'self' https://tv.dartconnect.com" . ($isDev ? " {$viteOrigin} {$viteWs}" : ''),
             "frame-ancestors 'none'",
             "base-uri 'self'",
             "form-action 'self'",

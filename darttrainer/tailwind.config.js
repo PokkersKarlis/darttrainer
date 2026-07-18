@@ -8,6 +8,9 @@ export default {
         './storage/framework/views/*.php',
         './resources/views/**/*.blade.php',
         './resources/js/dart-app/**/*.{js,vue}',
+        './resources/js/pages/**/*.vue',
+        './resources/js/components/**/*.vue',
+        './resources/js/layouts/**/*.vue',
     ],
 
     theme: {

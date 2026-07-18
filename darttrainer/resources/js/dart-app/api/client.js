@@ -95,3 +95,20 @@ export const Training = {
   x01Finished: (params) => api.get('/training/x01/finished', { params }),
   x01Protocol: (id) => api.get(`/training/x01/games/${id}`),
 };
+
+/** Liels turnīrs: DartConnect `/matches` var atbildēt ilgāk par noklusējuma 15 s. */
+const DARTCONNECT_MATCHES_TIMEOUT_MS = 90_000;
+
+/** DartConnect (servera proxy — izvairās no CORS). */
+export const DartConnect = {
+  connectivityCheck: (config = {}) =>
+    api.get('/integrations/dartconnect/connectivity-check', config),
+  eventSearchSuggestions: (search, config = {}) =>
+    api.post('/integrations/dartconnect/event-search-suggestions', { search }, config),
+  /** @param {string} eventId piem. jekabpilskauss26 */
+  eventMatches: (eventId, config = {}) =>
+    api.post(`/integrations/dartconnect/events/${encodeURIComponent(eventId)}/matches`, {}, {
+      timeout: DARTCONNECT_MATCHES_TIMEOUT_MS,
+      ...config,
+    }),
+};

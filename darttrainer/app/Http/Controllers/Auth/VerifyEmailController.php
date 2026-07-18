@@ -28,25 +28,19 @@ class VerifyEmailController extends Controller
         }
 
         if ($user->hasVerifiedEmail()) {
-            return $this->redirectToSpa('login?already_verified=1');
+            $this->logoutSession($request);
+
+            return redirect()->route('login')->with('status', 'already-verified');
         }
 
         if (! $user->markEmailAsVerified()) {
-            return $this->redirectToSpa('login');
+            return redirect()->route('login');
         }
 
         event(new Verified($user));
         $this->logoutSession($request);
 
-        return $this->redirectToSpa('login?verified=1');
-    }
-
-    private function redirectToSpa(string $pathAndQuery): RedirectResponse
-    {
-        $base = rtrim(config('app.frontend_url', url('/')), '/');
-        $path = ltrim($pathAndQuery, '/');
-
-        return redirect()->to($base.'/'.$path);
+        return redirect()->route('login')->with('status', 'verified');
     }
 
     private function logoutSession(Request $request): void

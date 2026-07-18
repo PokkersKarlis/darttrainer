@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ConsentController;
+use App\Http\Controllers\Api\DartConnectProxyController;
 use App\Http\Controllers\Api\FriendController;
 use App\Http\Controllers\Api\GameController;
 use App\Http\Controllers\Api\PublicStatsController;
@@ -74,6 +75,14 @@ Route::middleware(['auth:web', 'verified.email'])->group(function () {
 
     Route::get('/stats/me', [StatsController::class, 'me']);
     Route::get('/stats/recent-matches', [StatsController::class, 'recentFinishedMatches']);
+
+    Route::get('/integrations/dartconnect/connectivity-check', [DartConnectProxyController::class, 'connectivityCheck'])
+        ->middleware('throttle:20,1');
+    Route::post('/integrations/dartconnect/event-search-suggestions', [DartConnectProxyController::class, 'eventSearchSuggestions'])
+        ->middleware('throttle:30,1');
+    Route::post('/integrations/dartconnect/events/{eventId}/matches', [DartConnectProxyController::class, 'eventMatches'])
+        ->middleware('throttle:40,1')
+        ->where('eventId', '[a-zA-Z0-9_-]{1,80}');
 });
 
 // ── Statistics (publiski) ────────────────────────────────────────────────────

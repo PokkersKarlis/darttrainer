@@ -31,6 +31,7 @@ function isSbActive(id) {
   if (id === 'cricket') return route.path === '/lobby/cricket';
   if (id === 'x501') return route.path === '/lobby/x01' && String(route.query.variant) === '501';
   if (id === 'x301') return route.path === '/lobby/x01' && String(route.query.variant) === '301';
+  if (id === 'events') return route.path === '/events/report';
   return false;
 }
 
@@ -72,6 +73,9 @@ function sbStats() {
   if (showGuestCta.value) { router.push('/login'); return; }
   if (needsEmailVerify.value) return;
   router.push('/stats');
+}
+function goEventsReport() {
+  router.push('/events/report');
 }
 function sbSolo() {
   if (needsEmailVerify.value) { window._dartToast?.(t('auth.verifyEmailToContinue'), 'error'); return; }
@@ -198,6 +202,17 @@ function navX01Var(v) {
         >
           <HomeStrokeIcon name="star" :size="16" color="currentColor" />
           <span class="dth-sb-lbl">X01 — 301</span>
+        </button>
+        <div class="dth-sb-sec">
+          {{ t('home.sbEvents') }}
+        </div>
+        <button
+          type="button"
+          :class="['dth-sb-row', { 'dth-sb-row--on': isSbActive('events') }]"
+          @click="goEventsReport"
+        >
+          <HomeStrokeIcon name="flame" :size="16" color="currentColor" />
+          <span class="dth-sb-lbl">Veidot reportāžu</span>
         </button>
       </div>
     </div>

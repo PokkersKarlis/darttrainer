@@ -42,6 +42,7 @@ const routes = [
   },
   { path: '/friends', component: load(() => import('../pages/Friends.vue')), meta: { titleKey: 'nav.friends', requiresVerified: true } },
   { path: '/stats', component: load(() => import('../pages/Statistics.vue')), meta: { titleKey: 'stats.title', requiresVerified: true } },
+  { path: '/events/report', component: load(() => import('../pages/EventsReport.vue')), meta: { titleKey: 'eventsReport.pageTitle', requiresVerified: true } },
   { path: '/admin', component: load(() => import('../pages/Admin.vue')), meta: { titleKey: 'nav.admin' } },
   {
     path: '/game/:matchId',

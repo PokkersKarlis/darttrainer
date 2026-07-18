@@ -8,6 +8,7 @@ composer install --no-dev --optimize-autoloader
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
+php artisan event:cache
 
 # 3) Frontend: uz kopīga hostinga `vite build` bieži nav iespējams (WASM OOM).
 #    Uzbūvē GitHub Actions (workflow "Build frontend") vai lokāli, tad augšupielādē public/build/.
