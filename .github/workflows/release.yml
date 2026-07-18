@@ -1,0 +1,25 @@
+name: 🚀 Create Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Skripts reaģēs tikai tad, kad iepušosi tagu, kas sākas ar "v" (piem. v1.0.0)
+
+jobs:
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Ļoti svarīgi: dod tiesības GitHub Action izveidot relīzes ierakstu un changelog
+    steps:
+      - name: 🚚 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Paņem visu vēsturi, lai varētu uzģenerēt precīzu Changelog
+
+      - name: 📝 Generate Release Notes & Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true # GitHub automātiski sagrupēs commitus smukā sarakstā
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Šis ir iebūvēts token, tev nekas nav jāpievieno Secrets
