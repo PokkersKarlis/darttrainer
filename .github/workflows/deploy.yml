@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - feat/index-page-visuals-only
   # Izslēdzam pull_request deployu, lai kods nesūtītos uz serveri pirms laika, kad kāds tikai taisa PR
   
 jobs:
