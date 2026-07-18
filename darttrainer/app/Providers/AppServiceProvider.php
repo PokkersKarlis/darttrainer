@@ -6,6 +6,7 @@ use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Vite;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +23,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if (env('VITE_BUILD_DIR')) {
+            Vite::useBuildDirectory(env('VITE_BUILD_DIR'));
+        }
         // ── Zīmola e-pasti (TrainDart tumšais dizains) ──
 
         // E-pasta apstiprināšana
@@ -46,7 +50,7 @@ class AppServiceProvider extends ServiceProvider
                 'email' => $notifiable->getEmailForPasswordReset(),
             ]);
 
-            $expire = config('auth.passwords.'.config('auth.defaults.passwords').'.expire', 60);
+            $expire = config('auth.passwords.' . config('auth.defaults.passwords') . '.expire', 60);
 
             return (new MailMessage)
                 ->subject('TrainDart paroles atjaunošana')
