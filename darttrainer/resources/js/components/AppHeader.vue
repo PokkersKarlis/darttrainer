@@ -39,8 +39,8 @@ const activeItemStyles = computed(() => (url: string) => (isCurrentRoute(url) ? 
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
-        href: '/dashboard',
+        title: 'Sākums',
+        href: '/',
         icon: LayoutGrid,
     },
 ];
@@ -107,7 +107,7 @@ const rightNavItems: NavItem[] = [
                     </Sheet>
                 </div>
 
-                <Link :href="route('dashboard')" class="flex items-center gap-x-2">
+                <Link :href="route('home')" class="flex items-center gap-x-2">
                     <AppLogo class="hidden h-6 xl:block" />
                 </Link>
 

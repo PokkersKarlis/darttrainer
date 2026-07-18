@@ -74,4 +74,4 @@ jobs:
 
         ssh -i ~/.ssh/id_ed25519 -p $PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
           traindar@${{ secrets.SSH_HOST }} \
-          "cd /home/traindar/public_html/darttrainer/darttrainer && php artisan optimize:clear && php artisan config:cache && php artisan route:cache && php artisan view:cache"
+          "cd /home/traindar/public_html/darttrainer/darttrainer && php artisan optimize:clear"
