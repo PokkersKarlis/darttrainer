@@ -21,16 +21,15 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '24'
-        # Noņēmām cache parametru, lai novērstu ceļu validācijas kļūdas
 
     - name: 🛠️ Install Dependencies
-      working-directory: darttrainer/darttrainer
+      working-directory: darttrainer
       run: npm install
 
     - name: 🔬 Type-Check & Lint
-      working-directory: darttrainer/darttrainer
+      working-directory: darttrainer
       run: npm run lint --if-present
 
     - name: 📦 Compile Assets (Vite Build)
-      working-directory: darttrainer/darttrainer
+      working-directory: darttrainer
       run: npm run build
