@@ -310,43 +310,45 @@ const leaderboard = computed(() => [
                     </div>
                 </div>
             </section>
+
+            <!-- Aktivitāte / Draugi / Līderi — main bloka beigās, kartītes pašas sakārtojas kolonnās -->
+            <aside class="td-panels">
+                <div class="td-right-section">
+                    <div class="td-right-title">{{ t('side.activity') }}</div>
+                    <div class="td-activity">
+                        <div v-for="(a, i) in activityFeed" :key="i" class="td-activity-row">
+                            <span class="td-activity-dot" />
+                            <div>
+                                <div class="td-activity-text">{{ a.text }}</div>
+                                <div class="td-activity-time">{{ a.time }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="td-right-section">
+                    <div class="td-right-title">{{ t('side.friends') }}</div>
+                    <div v-for="fr in friends" :key="fr.name" class="td-friend">
+                        <div class="td-friend-av">
+                            {{ fr.initials }}<span class="td-friend-status" :style="{ background: fr.online ? '#39ff14' : '#64748b' }" />
+                        </div>
+                        <div class="td-friend-info">
+                            <div class="td-friend-name">{{ fr.name }}</div>
+                            <div class="td-friend-sub" :style="{ color: fr.online ? '#39ff14' : '#64748b' }">{{ t(`friend.${fr.statusKey}`) }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="td-right-section">
+                    <div class="td-right-title">{{ t('side.leaderboard') }}</div>
+                    <div v-for="lb in leaderboard" :key="lb.rank" class="td-lb-row">
+                        <span class="td-lb-rank" :class="{ 'td-lb-rank--top': lb.rank <= 3 }">{{ lb.rank }}</span>
+                        <span class="td-lb-name">{{ lb.name }}</span>
+                        <span class="td-lb-avg">{{ lb.avg }}</span>
+                    </div>
+                </div>
+            </aside>
         </main>
-
-        <!-- Labā sānjosla (darbvirsma, plašiem ekrāniem) -->
-        <aside class="td-side td-side--right">
-            <div class="td-right-title">{{ t('side.activity') }}</div>
-            <div class="td-activity">
-                <div v-for="(a, i) in activityFeed" :key="i" class="td-activity-row">
-                    <span class="td-activity-dot" />
-                    <div>
-                        <div class="td-activity-text">{{ a.text }}</div>
-                        <div class="td-activity-time">{{ a.time }}</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="td-right-section">
-                <div class="td-right-title">{{ t('side.friends') }}</div>
-                <div v-for="fr in friends" :key="fr.name" class="td-friend">
-                    <div class="td-friend-av">
-                        {{ fr.initials }}<span class="td-friend-status" :style="{ background: fr.online ? '#39ff14' : '#64748b' }" />
-                    </div>
-                    <div class="td-friend-info">
-                        <div class="td-friend-name">{{ fr.name }}</div>
-                        <div class="td-friend-sub" :style="{ color: fr.online ? '#39ff14' : '#64748b' }">{{ t(`friend.${fr.statusKey}`) }}</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="td-right-section">
-                <div class="td-right-title">{{ t('side.leaderboard') }}</div>
-                <div v-for="lb in leaderboard" :key="lb.rank" class="td-lb-row">
-                    <span class="td-lb-rank" :class="{ 'td-lb-rank--top': lb.rank <= 3 }">{{ lb.rank }}</span>
-                    <span class="td-lb-name">{{ lb.name }}</span>
-                    <span class="td-lb-avg">{{ lb.avg }}</span>
-                </div>
-            </div>
-        </aside>
 
         <!-- Mobilā apakšējā navigācija (footeris) -->
         <nav class="td-bottom-nav">
@@ -408,9 +410,6 @@ const leaderboard = computed(() => [
     background: #0b0f19;
     color: #f4f4f5;
     font-family: Inter, sans-serif;
-}
-.td-side--right {
-    display: none;
 }
 
 /* ── Sānjoslas ── */
@@ -900,30 +899,34 @@ const leaderboard = computed(() => [
     font-size: 12px;
 }
 
-/* ── Labā sānjosla ── */
-.td-side--right {
-    border-right: none;
-    border-left: 1px solid #1f2937;
-    padding-bottom: 20px;
+/* ── Aktivitāte / Draugi / Līderi — main bloka beigās, kartītes ── */
+.td-panels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    align-items: stretch;
+    gap: 16px;
+    margin-top: 24px;
+}
+.td-panels .td-right-section {
+    display: flex;
+    flex-direction: column;
+}
+.td-right-section {
+    background: #131a26;
+    border: 1px solid #1f2937;
+    border-radius: 16px;
+    padding: 20px;
 }
 .td-right-title {
-    padding: 24px 20px 14px;
     font-family: 'Barlow Condensed', sans-serif;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     font-size: 15px;
     color: #64748b;
-}
-.td-right-section {
-    padding: 20px;
-    border-top: 1px solid #1f2937;
-}
-.td-right-section .td-right-title {
-    padding: 0 0 14px;
+    margin: 0 0 14px;
 }
 .td-activity {
-    padding: 0 20px;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -1090,17 +1093,7 @@ const leaderboard = computed(() => [
     transform: translateX(-100%);
 }
 
-/* ── Responsīvi (darbvirsma ≥1280px: rāda labo sānjoslu) ── */
-@media (min-width: 1280px) {
-    .td-dash {
-        grid-template-columns: 280px 1fr 300px;
-    }
-    .td-side--right {
-        display: flex;
-        flex-direction: column;
-    }
-}
-
+/* ── Responsīvi (darbvirsma ≥1280px: labā sānjosla kā šaura kolonna ar dalītājlīnijām) ── */
 /* ── Mobilais izkārtojums (≤860px) ── */
 @media (max-width: 860px) {
     .td-dash {
@@ -1160,6 +1153,9 @@ const leaderboard = computed(() => [
     }
     .td-main {
         padding: 14px 14px calc(84px + env(safe-area-inset-bottom, 0px));
+    }
+    .td-panels {
+        gap: 12px;
     }
 
     /* Aizvelkamā izvēlne */
