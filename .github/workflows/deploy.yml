@@ -17,12 +17,24 @@ jobs:
     - name: 🚚 Get latest code
       uses: actions/checkout@v4
 
+    # --- JAUNAIS SOLIS: Sagatavojam PHP un Composer ---
+    - name: 🐘 Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3' # Atbilst tavam serverim
+        tools: composer:v2
+
+    - name: 📥 Install Composer Dependencies
+      working-directory: darttrainer
+      run: composer install --no-progress --no-interaction --prefer-dist
+    # --------------------------------------------------
+
     - name: 🟢 Setup Node.js (Node 24)
       uses: actions/setup-node@v4
       with:
         node-version: '24'
 
-    - name: 🛠️ Install Dependencies
+    - name: 🛠️ Install NPM Dependencies
       working-directory: darttrainer
       run: npm install
 
