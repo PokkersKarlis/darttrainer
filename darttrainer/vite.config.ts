@@ -6,6 +6,7 @@ import tailwindcss from 'tailwindcss';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+    base: '/darttrainer/darttrainer/public/build/',
     plugins: [
         laravel({
             input: ['resources/js/app.ts'], // Tavs TypeScript ieejas punkts

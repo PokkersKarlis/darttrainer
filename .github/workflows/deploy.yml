@@ -58,7 +58,8 @@ jobs:
         fi
         
         # Izmantojam iepriekšējā solī droši uzstādīto atslēgu
-        rsync -avz -e "ssh -p $PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
+        # Rsync palaišana ar tīrāku logu izvadi (tikai statistika beigās)
+        rsync -az --stats -e "ssh -i ~/.ssh/id_ed25519 -p $PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
           --exclude='node_modules' \
           --exclude='.git' \
           --exclude='.github' \
