@@ -1,0 +1,57 @@
+name: tests
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo, pdo_sqlite, bcmath, intl
+          coverage: none
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: darttrainer/package-lock.json
+
+      - name: Install PHP dependencies
+        working-directory: darttrainer
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Install Node dependencies
+        working-directory: darttrainer
+        run: npm ci
+
+      - name: Copy environment file
+        working-directory: darttrainer
+        run: cp .env.example .env
+
+      - name: Generate application key
+        working-directory: darttrainer
+        run: php artisan key:generate
+
+      - name: Build frontend assets
+        working-directory: darttrainer
+        run: npm run build
+
+      - name: Run Pest tests
+        working-directory: darttrainer
+        run: ./vendor/bin/pest

@@ -62,4 +62,16 @@ jobs:
           --exclude='node_modules' \
           --exclude='.git' \
           --exclude='.github' \
+          --exclude='.env' \
           ./darttrainer/ traindar@${{ secrets.SSH_HOST }}:/home/traindar/public_html/darttrainer/darttrainer/
+
+    - name: 🧹 Clear & rebuild Laravel cache on server
+      run: |
+        PORT="${{ secrets.SSH_PORT }}"
+        if [ -z "$PORT" ]; then
+          PORT="722"
+        fi
+
+        ssh -i ~/.ssh/id_ed25519 -p $PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+          traindar@${{ secrets.SSH_HOST }} \
+          "cd /home/traindar/public_html/darttrainer/darttrainer && php artisan optimize:clear && php artisan config:cache && php artisan route:cache && php artisan view:cache"
