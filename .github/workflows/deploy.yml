@@ -21,14 +21,11 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '24'
-        cache: 'npm'
-        # Norādām, kur tieši atrodas package-lock.json fails:
-        cache-dependency-path: darttrainer/darttrainer/package-lock.json
+        # Noņēmām cache parametru, lai novērstu ceļu validācijas kļūdas
 
     - name: 🛠️ Install Dependencies
-      # Ar working-directory liekam komandām izpildīties pareizajā mapē
       working-directory: darttrainer/darttrainer
-      run: npm ci
+      run: npm install
 
     - name: 🔬 Type-Check & Lint
       working-directory: darttrainer/darttrainer
