@@ -182,7 +182,7 @@ const leaderboard = computed(() => [
                 </div>
                 <nav class="td-nav">
                     <button v-for="item in nav" :key="item.key" type="button" class="td-nav-item" :class="{ 'td-nav-item--on': item.active }" @click="closeDrawer">
-                        <span class="td-nav-dot" />
+                        <NavIcon :name="item.key" class="td-nav-ico" />
                         <span>{{ t(`nav.${item.key}`) }}</span>
                     </button>
                 </nav>
@@ -1113,21 +1113,53 @@ const leaderboard = computed(() => [
         display: none;
     }
 
-    /* Header: rāda hamburgeri, samazina paddingu, atstāj vietu apakšjoslai */
+    /* Header: kompaktāks, hamburgeris redzams, meklēšana/paziņojumi paliek labajā pusē vienā rindā */
     .td-hamburger {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 40px;
-        height: 40px;
+        width: 36px;
+        height: 36px;
         border-radius: 10px;
         background: #131a26;
         border: 1px solid #1f2937;
         cursor: pointer;
         flex-shrink: 0;
     }
+    .td-main-head {
+        flex-wrap: nowrap;
+        margin-bottom: 16px;
+        gap: 10px;
+    }
+    .td-main-head-left {
+        min-width: 0;
+        flex: 1 1 auto;
+        gap: 10px;
+    }
+    .td-main-head-left > div {
+        min-width: 0;
+    }
+    .td-main-title {
+        font-size: 19px;
+        letter-spacing: 0.3px;
+    }
+    .td-main-sub {
+        font-size: 12px;
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .td-main-head-right {
+        flex-shrink: 0;
+        gap: 6px;
+    }
+    .td-icon-btn {
+        width: 36px;
+        height: 36px;
+    }
     .td-main {
-        padding: 16px 16px calc(84px + env(safe-area-inset-bottom, 0px));
+        padding: 14px 14px calc(84px + env(safe-area-inset-bottom, 0px));
     }
 
     /* Aizvelkamā izvēlne */

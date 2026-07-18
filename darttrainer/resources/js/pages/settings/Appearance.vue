@@ -72,9 +72,15 @@ const options = [
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
+    outline: none;
+    /* Pārlūka noklusējuma fokusa gredzens (parasti gaiši zils) citādi pēc klikšķa
+       nogulstas virs neona zaļā fona un padara aktīvo cilni izbalējušu. */
 }
 .ap-tab:hover {
     color: #f4f4f5;
+}
+.ap-tab:focus-visible {
+    box-shadow: 0 0 0 2px #0b0f19, 0 0 0 4px #39ff14;
 }
 .ap-tab--on {
     background: rgba(57, 255, 20, 0.12);
