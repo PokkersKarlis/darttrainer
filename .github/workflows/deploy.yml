@@ -42,29 +42,23 @@ jobs:
       working-directory: darttrainer
       run: npm run build
 
+    - name: ⚙️ Install SSH Key (Automātiskā formāta labošana)
+      uses: shimataro/ssh-key-action@v2
+      with:
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        known_hosts: "unnecessary_because_we_ignore_it" # šo ignorēsim nākamajā solī
+        if_key_exists: replace
+
     - name: 🚚 Deploy via Native Rsync to cPanel
       run: |
-        # 1. Sagatavojam SSH mapi
-        mkdir -p ~/.ssh
-        chmod 700 ~/.ssh
-        
-        # Ierakstām privāto atslēgu, izmantojot cat << 'EOF', lai saglabātu precīzus rindu pārtraukumus
-        cat << 'EOF' > ~/.ssh/id_rsa
-        ${{ secrets.SSH_PRIVATE_KEY }}
-        EOF
-        
-        # Pārliecināmies, ka failam ir tukša rinda beigās (OpenSSL / libcrypto prasība)
-        echo "" >> ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        
         # Noteicam portu (ja secrets nav definēts, izmantojam 722)
         PORT="${{ secrets.SSH_PORT }}"
         if [ -z "$PORT" ]; then
           PORT="722"
         fi
         
-        # 2. Rsync izpilde ar piespiedu id_rsa atslēgas izmantošanu (-i)
-        rsync -avz -e "ssh -p $PORT -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
+        # Izmantojam iepriekšējā solī droši uzstādīto atslēgu
+        rsync -avz -e "ssh -p $PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
           --exclude='node_modules' \
           --exclude='.git' \
           --exclude='.github' \
