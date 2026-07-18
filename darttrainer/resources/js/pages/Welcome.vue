@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import BrandLogo from '@/components/BrandLogo.vue';
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
+import NavIcon from '@/components/NavIcon.vue';
 import { useLocale } from '@/composables/useLocale';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
@@ -129,7 +130,7 @@ const leaderboard = computed(() => [
             <div class="td-side-logo"><BrandLogo :width="157" /></div>
             <nav class="td-nav">
                 <button v-for="item in nav" :key="item.key" type="button" class="td-nav-item" :class="{ 'td-nav-item--on': item.active }">
-                    <span class="td-nav-dot" />
+                    <NavIcon :name="item.key" class="td-nav-ico" />
                     <span>{{ t(`nav.${item.key}`) }}</span>
                 </button>
             </nav>
@@ -219,7 +220,9 @@ const leaderboard = computed(() => [
             <section class="td-cards">
                 <div class="td-card">
                     <div class="td-card-head">
-                        <span class="td-card-ico" style="background: rgba(57, 255, 20, 0.1); color: #39ff14">◎</span>
+                        <span class="td-card-ico" style="background: rgba(57, 255, 20, 0.1); color: #39ff14">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5.5" /><circle cx="12" cy="12" r="2" /></svg>
+                        </span>
                         <span class="td-card-title">{{ t('cards.x01.title') }}</span>
                     </div>
                     <p class="td-card-desc">{{ t('cards.x01.desc') }}</p>
@@ -231,7 +234,9 @@ const leaderboard = computed(() => [
 
                 <div class="td-card">
                     <div class="td-card-head">
-                        <span class="td-card-ico" style="background: rgba(34, 211, 238, 0.1); color: #22d3ee">⚡</span>
+                        <span class="td-card-ico" style="background: rgba(34, 211, 238, 0.1); color: #22d3ee">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h4l3 8 4-16 3 8h4" /></svg>
+                        </span>
                         <span class="td-card-title">{{ t('cards.solo.title') }}</span>
                     </div>
                     <p class="td-card-desc">{{ t('cards.solo.desc') }}</p>
@@ -243,7 +248,9 @@ const leaderboard = computed(() => [
 
                 <div class="td-card">
                     <div class="td-card-head">
-                        <span class="td-card-ico" style="background: rgba(251, 44, 95, 0.1); color: #fb2c5f">✕</span>
+                        <span class="td-card-ico" style="background: rgba(251, 44, 95, 0.1); color: #fb2c5f">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M9 9l6 6M15 9l-6 6" /></svg>
+                        </span>
                         <span class="td-card-title">{{ t('cards.cricket.title') }}</span>
                     </div>
                     <p class="td-card-desc">{{ t('cards.cricket.desc') }}</p>
@@ -253,7 +260,9 @@ const leaderboard = computed(() => [
 
                 <div class="td-card td-card--muted">
                     <div class="td-card-head">
-                        <span class="td-card-ico" style="background: rgba(148, 163, 184, 0.1); color: #94a3b8">▤</span>
+                        <span class="td-card-ico" style="background: rgba(148, 163, 184, 0.1); color: #94a3b8">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19V5a2 2 0 012-2h9l5 5v11a2 2 0 01-2 2H6a2 2 0 01-2-2z" /><path d="M14 3v5h5" /></svg>
+                        </span>
                         <span class="td-card-title">{{ t('cards.drills.title') }}</span>
                     </div>
                     <p class="td-card-desc">{{ t('cards.drills.desc') }}</p>
@@ -443,12 +452,13 @@ const leaderboard = computed(() => [
     background: rgba(57, 255, 20, 0.1);
     color: #39ff14;
 }
-.td-nav-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: currentColor;
+.td-nav-ico {
+    flex-shrink: 0;
     opacity: 0.85;
+}
+.td-nav-item--on .td-nav-ico,
+.td-nav-item:hover .td-nav-ico {
+    opacity: 1;
 }
 .td-usercard-wrap {
     position: relative;
