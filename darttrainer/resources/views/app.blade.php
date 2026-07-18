@@ -6,6 +6,11 @@
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
+        {{-- TrainDart favikona: tumšs aplis + neona zaļš gredzens un centrs (dartboard motīvs) --}}
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+        <link rel="alternate icon" href="/favicon.svg">
+        <link rel="apple-touch-icon" href="/favicon.svg">
+
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
         {{-- TrainDart dizaina fonti: Barlow Condensed (virsraksti) + Inter (teksts) --}}
