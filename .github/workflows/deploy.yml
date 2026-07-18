@@ -55,11 +55,9 @@ jobs:
           PORT="22"
         fi
         
-        # 2. Pievienojam serveri uzticamajiem saimniekiem (known_hosts)
-        ssh-keyscan -p $PORT ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-        
-        # 3. Rsync komanda ar pareizo portu
-        rsync -avz -e "ssh -p $PORT" \
+        # 2. Rsync izpilde ar hosta pārbaudes ignorēšanu un detalizētu izvadi (-vv)
+        # Ja kaut kas noiet greizi, -vv izvadīs precīzu iemeslu.
+        rsync -avzvv -e "ssh -p $PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
           --exclude='node_modules' \
           --exclude='.git' \
           --exclude='.github' \
