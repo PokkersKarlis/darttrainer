@@ -5,7 +5,6 @@
         "lead": "TrainDart is built for players who want a better way to track their performance. From daily practice routines to online matches — tools designed to help you analyze data and refine your throw.",
         "register": "Sign up",
         "login": "Login",
-        "reassurance": "Free to join · No strings attached",
         "nav": {
             "login": "Already a member? Login"
         }
@@ -23,15 +22,24 @@
         },
         "training": {
             "title": "Structured practice",
-            "desc": "Choose practice modes that fit your needs. Focused work on doubles and segments leads to better results."
+            "desc": "Choose practice modes that fit your needs. Focused work on doubles triples and segments leads to better results."
         },
         "online": {
             "title": "Online matches",
             "desc": "A simple way to play against others. Compete in your own time, anywhere you have your setup."
         },
-        "tournaments": {
+        "data": {
             "title": "Match analysis",
             "desc": "Get a clear summary after every match. It helps you spot mistakes faster and improve your consistency."
+        },
+        "tournaments": {
+            "title": "Tournament system with API integration*",
+            "desc": "Organize tournaments and synchronize results in real-time. Our API allows seamless data integration for third-party platforms, ideal for professional ranking systems and digital scoreboards.*",
+            "note": "*Available for custom integrations and partners."
+        },
+        "aiReports": {
+            "title": "AI-generated match reports",
+            "desc": "AI analyzes tournament performance to generate a professional, journalistic-style recap, highlighting key throws and turning points."
         }
     },
     "tournamentBlock": {

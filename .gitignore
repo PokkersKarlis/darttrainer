@@ -17,8 +17,6 @@ Desktop.ini
 
 # Cursor — ignore local state; keep project rules versioned
 .cursor/*
-!.cursor/rules/
-!.cursor/rules/**
 
 # Other AI / agent scaffolding (local only)
 .claude/

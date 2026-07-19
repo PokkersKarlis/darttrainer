@@ -5,7 +5,6 @@
         "lead": "TrainDart ir veidots, lai šautriņu spēlētājiem būtu ērtāk izsekot savam sniegumam. No ikdienas treniņiem līdz mačiem tiešsaistē — rīki, kas palīdz analizēt datus un pilnveidot metienu.",
         "register": "Reģistrēties",
         "login": "Pieslēgties",
-        "reassurance": "Bez maksas · Bez sarežģījumiem",
         "nav": {
             "login": "Jau esi reģistrējies? Pieslēgties"
         }
@@ -23,15 +22,24 @@
         },
         "training": {
             "title": "Strukturēti treniņi",
-            "desc": "Izvēlies savām vajadzībām piemērotus treniņu režīmus. Fokusēts darbs pie dubultniekiem un sektoriem sniedz labākus rezultātus."
+            "desc": "Izvēlies savām vajadzībām piemērotus treniņu režīmus. Fokusēts darbs pie dubultajiem, trīskāršajiem un sektoriem sniedz labākus rezultātus."
         },
         "online": {
             "title": "Tiešsaistes mači",
             "desc": "Ērts risinājums mačiem pret citiem spēlētājiem. Spēlē savā tempā, jebkurā vietā, kur ir pieejams dators vai telefons."
         },
-        "tournaments": {
+        "data": {
             "title": "Spēļu analīze",
             "desc": "Pēc katra aizvadītā mača saņem pārskatāmu kopsavilkumu. Tas palīdz ātrāk pamanīt kļūdas un uzlabot metienu stabilitāti."
+        },
+        "tournaments": {
+            "title": "Turnīru sistēma ar API datu izvadi*",
+            "desc": "Organizē turnīrus un automātiski sinhronizē rezultātus. Mūsu API nodrošina elastīgu datu izvadi trešo pušu platformām, kas ir īpaši piemērots profesionālai rangu sistēmai un digitālajiem rezultātu tablo.*",
+            "note": "*Pielāgotiem risinājumiem un sadarbības partneriem."
+        },
+        "aiReports": {
+            "title": "AI ģenerētas spēļu atskaites",
+            "desc": "AI analizē turnīra gaitu un sagatavo profesionāla žurnālistikas stila pārskatu, izceļot izšķirošos metienus un mača lūzuma punktus."
         }
     },
     "tournamentBlock": {
