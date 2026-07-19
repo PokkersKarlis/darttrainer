@@ -1,5 +1,6 @@
 {
-        "lang": {
+    "version": "· {version}",
+    "lang": {
         "lv": "LV",
         "en": "EN",
         "label": "Language"

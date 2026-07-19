@@ -1,0 +1,28 @@
+{
+    "cookies": {
+        "banner": {
+            "title": "Sīkdatņu preferences",
+            "body": "Izmantojam obligātās sīkdatnes TrainDart darbībai. Analītikas sīkdatnes (piem., Google Analytics) ir izvēles un tiek ielādētas tikai pēc tavas piekrišanas.",
+            "accept": "Pieņemt visas",
+            "reject": "Noraidīt neobligātās",
+            "settings": "Iestatījumi",
+            "privacyLink": "Privātuma politika"
+        },
+        "settings": {
+            "title": "Sīkdatņu iestatījumi",
+            "save": "Saglabāt preferences",
+            "cancel": "Atcelt",
+            "alwaysOn": "Vienmēr ieslēgts"
+        },
+        "categories": {
+            "essential": {
+                "title": "Obligātās",
+                "desc": "Nepieciešamas drošībai, sesijai, valodai un pamata funkcionalitātei."
+            },
+            "analytics": {
+                "title": "Analītika",
+                "desc": "Palīdz izprast lietojumu, izmantojot rīkus kā Google Analytics. Ielādē tikai pēc tavas piekrišanas."
+            }
+        }
+    }
+}

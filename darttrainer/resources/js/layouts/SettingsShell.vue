@@ -2,8 +2,7 @@
 /**
  * TrainDart settings shell — athletic surface aligned with Welcome/Auth.
  */
-import BrandLogo from '@/components/BrandLogo.vue';
-import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
+import AppTopBar from '@/components/AppTopBar.vue';
 import { useLocale } from '@/composables/useLocale';
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
@@ -21,11 +20,6 @@ const tabs = computed(() => [
         href: '/settings/password',
         kind: 'password' as const,
     },
-    {
-        label: t('settings.tabs.appearance'),
-        href: '/settings/appearance',
-        kind: 'appearance' as const,
-    },
 ]);
 
 const currentPath = computed(() => (typeof window !== 'undefined' ? window.location.pathname : ''));
@@ -39,18 +33,7 @@ const currentPath = computed(() => (typeof window !== 'undefined' ? window.locat
             <div class="ts-gridlines" />
         </div>
 
-        <header class="ts-top">
-            <Link href="/" class="ts-brand"><BrandLogo :width="150" /></Link>
-            <div class="ts-top-actions">
-                <LanguageSwitcher />
-                <Link href="/" class="ts-back">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
-                        <path d="M19 12H5M11 6l-6 6 6 6" />
-                    </svg>
-                    {{ t('settings.back') }}
-                </Link>
-            </div>
-        </header>
+        <AppTopBar />
 
         <main class="ts-main ts-rise">
             <p class="ts-kicker">
@@ -79,13 +62,9 @@ const currentPath = computed(() => (typeof window !== 'undefined' ? window.locat
                             <circle cx="12" cy="8" r="4" />
                             <path d="M4 20a8 8 0 0116 0" />
                         </svg>
-                        <svg v-else-if="tab.kind === 'password'" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <svg v-else width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                             <rect x="5" y="11" width="14" height="10" rx="2" />
                             <path d="M8 11V7a4 4 0 018 0v4" />
-                        </svg>
-                        <svg v-else width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                            <circle cx="12" cy="12" r="4" />
-                            <path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19" />
                         </svg>
                     </span>
                     {{ tab.label }}

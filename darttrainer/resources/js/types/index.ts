@@ -18,6 +18,7 @@ export interface NavItem {
 
 export interface SharedData {
     name: string;
+    appVersion: string;
     locale: 'lv' | 'en';
     quote: { message: string; author: string };
     auth: Auth;
@@ -42,3 +43,5 @@ export interface User {
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;
+
+export type { HeaderMenuItem, HeaderMenuItemVariant } from './header';

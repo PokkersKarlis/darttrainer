@@ -31,11 +31,18 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        if ($request->filled('company')) {
+            return back()->withInput()->withErrors([
+                'email' => __('Registration could not be completed.'),
+            ]);
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'locale' => ['nullable', 'in:'.implode(',', AppLocale::SUPPORTED)],
+            'terms_accepted' => ['accepted'],
         ]);
 
         $locale = AppLocale::resolve($request->input('locale'), app()->getLocale());

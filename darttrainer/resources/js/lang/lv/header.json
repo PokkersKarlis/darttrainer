@@ -1,0 +1,12 @@
+{
+    "header": {
+        "home": "TrainDart sākums",
+        "guestNav": "Viesu navigācija",
+        "accountMenu": "Konta izvēlne",
+        "verifyEmail": "Apstiprini savu e-pasta adresi"
+    },
+    "menu": {
+        "settings": "Iestatījumi",
+        "logout": "Iziet"
+    }
+}

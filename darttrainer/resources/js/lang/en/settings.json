@@ -2,11 +2,9 @@
     "settings": {
         "title": "Settings",
         "subtitle": "Manage your profile and account settings.",
-        "back": "Back",
         "tabs": {
             "profile": "Profile",
-            "password": "Password",
-            "appearance": "Appearance"
+            "password": "Password"
         },
         "saved": "Saved.",
         "profile": {
@@ -35,14 +33,6 @@
             "new": "New password",
             "confirm": "Confirm password",
             "save": "Save password"
-        },
-        "appearance": {
-            "head": "Appearance settings",
-            "title": "Appearance",
-            "desc": "Choose the app color theme.",
-            "light": "Light",
-            "dark": "Dark",
-            "system": "System"
         }
     }
 }

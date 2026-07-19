@@ -2,11 +2,9 @@
     "settings": {
         "title": "Iestatījumi",
         "subtitle": "Pārvaldi savu profilu un konta iestatījumus.",
-        "back": "Atpakaļ",
         "tabs": {
             "profile": "Profils",
-            "password": "Parole",
-            "appearance": "Izskats"
+            "password": "Parole"
         },
         "saved": "Saglabāts.",
         "profile": {
@@ -35,14 +33,6 @@
             "new": "Jaunā parole",
             "confirm": "Apstiprini paroli",
             "save": "Saglabāt paroli"
-        },
-        "appearance": {
-            "head": "Izskata iestatījumi",
-            "title": "Izskats",
-            "desc": "Izvēlies lietotnes krāsu tēmu.",
-            "light": "Gaišs",
-            "dark": "Tumšs",
-            "system": "Sistēma"
         }
     }
 }

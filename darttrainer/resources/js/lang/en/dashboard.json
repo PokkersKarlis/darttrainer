@@ -18,12 +18,6 @@
     "usercard": {
         "rank": "Rank #4 · Avg 74.2"
     },
-    "menu": {
-        "profile": "Profile",
-        "password": "Password",
-        "appearance": "Appearance",
-        "logout": "Log Out"
-    },
     "cards": {
         "x01": {
             "title": "X01 Multiplayer",

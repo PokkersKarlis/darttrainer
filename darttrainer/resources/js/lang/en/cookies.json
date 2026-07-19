@@ -1,0 +1,28 @@
+{
+    "cookies": {
+        "banner": {
+            "title": "Cookie preferences",
+            "body": "We use essential cookies to run TrainDart. Analytics cookies (e.g. Google Analytics) are optional and load only if you accept.",
+            "accept": "Accept all",
+            "reject": "Reject non-essential",
+            "settings": "Settings",
+            "privacyLink": "Privacy Policy"
+        },
+        "settings": {
+            "title": "Cookie settings",
+            "save": "Save preferences",
+            "cancel": "Cancel",
+            "alwaysOn": "Always on"
+        },
+        "categories": {
+            "essential": {
+                "title": "Essential",
+                "desc": "Required for security, session, language, and core site functionality."
+            },
+            "analytics": {
+                "title": "Analytics",
+                "desc": "Helps us understand usage via tools like Google Analytics. Loaded only after you opt in."
+            }
+        }
+    }
+}

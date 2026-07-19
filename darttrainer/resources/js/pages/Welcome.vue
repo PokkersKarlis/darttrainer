@@ -3,14 +3,17 @@
  * Guest landing — athletic TrainDart surface with dartboard visual + feature icons.
  * Copy from guest/seo/features/closing catalogs.
  */
-import BrandLogo from '@/components/BrandLogo.vue';
-import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
+import AppVersionLabel from '@/components/AppVersionLabel.vue';
+import AppTopBar from '@/components/AppTopBar.vue';
+import CookieConsent from '@/components/CookieConsent.vue';
+import { useCookieConsent } from '@/composables/useCookieConsent';
 import { useLocale } from '@/composables/useLocale';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import type { SharedData } from '@/types';
 
 const { t } = useLocale();
+const { openSettings } = useCookieConsent();
 const page = usePage<SharedData>();
 const isAuthenticated = computed(() => !!page.props.auth.user);
 
@@ -48,21 +51,7 @@ const features: FeatureItem[] = [
             <div class="tw-gridlines" />
         </div>
 
-        <header class="tw-top">
-            <Link href="/" class="tw-brand"><BrandLogo class="tw-brand-logo" :width="168" /></Link>
-            <div class="tw-top-end">
-                <LanguageSwitcher class="tw-top-lang" />
-                <div class="tw-top-nav">
-                    <template v-if="isAuthenticated">
-                        <Link :href="route('profile.edit')" class="tw-link tw-top-link">{{ t('menu.profile') }}</Link>
-                    </template>
-                    <template v-else>
-                        <Link :href="route('login')" class="tw-link tw-top-link">{{ t('guest.login') }}</Link>
-                        <Link :href="route('register')" class="tw-cta tw-top-cta">{{ t('guest.register') }}</Link>
-                    </template>
-                </div>
-            </div>
-        </header>
+        <AppTopBar />
 
         <section class="tw-hero">
             <div class="tw-hero-copy tw-rise">
@@ -89,7 +78,7 @@ const features: FeatureItem[] = [
                         </svg>
                     </Link>
                     <Link v-else :href="route('profile.edit')" class="tw-cta tw-cta--lg">
-                        {{ t('menu.profile') }}
+                        {{ t('menu.settings') }}
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
                             <path d="M5 12h14M13 6l6 6-6 6" />
                         </svg>
@@ -191,7 +180,21 @@ const features: FeatureItem[] = [
             </div>
         </section>
 
-        <footer class="tw-foot">{{ t('auth.brand.copyright') }}</footer>
+        <footer class="tw-foot">
+            <p class="tw-foot-copy">
+                {{ t('auth.brand.copyright') }}
+                <AppVersionLabel />
+            </p>
+            <nav class="tw-foot-nav" :aria-label="t('legal.footer.terms')">
+                <Link :href="route('terms')" class="tw-foot-link">{{ t('legal.footer.terms') }}</Link>
+                <Link :href="route('privacy')" class="tw-foot-link">{{ t('legal.footer.privacy') }}</Link>
+                <button type="button" class="tw-foot-link tw-foot-btn" @click="openSettings">
+                    {{ t('cookies.banner.settings') }}
+                </button>
+            </nav>
+        </footer>
+
+        <CookieConsent />
     </div>
 </template>
 
@@ -867,8 +870,38 @@ const features: FeatureItem[] = [
 .tw-foot {
     border-top: 1px solid var(--td-line);
     padding: 20px 28px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 20px;
+}
+.tw-foot-copy {
+    margin: 0;
     color: var(--td-muted);
     font-size: 13px;
+}
+.tw-foot-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+}
+.tw-foot-link {
+    color: var(--td-soft);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+.tw-foot-link:hover {
+    color: var(--td-green);
+}
+.tw-foot-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: inherit;
 }
 
 .tw-rise {

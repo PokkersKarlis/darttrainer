@@ -3,7 +3,6 @@ import AuthShell from '@/layouts/AuthShell.vue';
 import PasswordField from '@/components/PasswordField.vue';
 import { useLocale } from '@/composables/useLocale';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
 
 const { t, locale } = useLocale();
 
@@ -13,12 +12,12 @@ const form = useForm({
     password: '',
     password_confirmation: '',
     locale: locale.value,
+    terms_accepted: false,
+    company: '',
 });
 
-const termsAccepted = ref(false);
-
 const submit = () => {
-    if (!termsAccepted.value) return;
+    if (!form.terms_accepted) return;
     // Nosūta pašreiz izvēlēto valodu, lai apstiprinājuma e-pasts atnāk tajā
     // pašā valodā, kāda ir izvēlēta lietotnē (nevis vienmēr LV).
     form.locale = locale.value;
@@ -46,8 +45,9 @@ const submit = () => {
                     :placeholder="t('auth.register.namePlaceholder')"
                     required
                     autofocus
-                    autocomplete="name"
+                    autocomplete="nickname"
                 />
+                <p class="td-hint">{{ t('auth.register.nameHint') }}</p>
                 <p v-if="form.errors.name" class="td-error">{{ form.errors.name }}</p>
             </div>
 
@@ -86,20 +86,33 @@ const submit = () => {
                 :error="form.errors.password_confirmation"
             />
 
+            <div class="td-hp" aria-hidden="true">
+                <label for="company">{{ t('auth.register.honeypotLabel') }}</label>
+                <input
+                    id="company"
+                    v-model="form.company"
+                    type="text"
+                    name="company"
+                    tabindex="-1"
+                    autocomplete="off"
+                />
+            </div>
+
             <label class="td-check-row td-check-row--top">
-                <span class="td-check" :class="{ 'td-check--on': termsAccepted }">
-                    <svg v-if="termsAccepted" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0b0f19" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <span class="td-check" :class="{ 'td-check--on': form.terms_accepted }">
+                    <svg v-if="form.terms_accepted" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0b0f19" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M20 6L9 17l-5-5" />
                     </svg>
                 </span>
-                <input v-model="termsAccepted" type="checkbox" class="sr-only" />
+                <input v-model="form.terms_accepted" type="checkbox" class="sr-only" />
                 <span class="td-check-lbl">
-                    {{ t('auth.register.termsPrefix') }}<a href="#" class="td-link">{{ t('auth.register.termsOfService') }}</a
-                    >{{ t('auth.register.termsAnd') }}<a href="#" class="td-link">{{ t('auth.register.privacyPolicy') }}</a>
+                    {{ t('auth.register.termsPrefix') }}<Link :href="route('terms')" class="td-link" @click.stop>{{ t('auth.register.termsOfService') }}</Link
+                    >{{ t('auth.register.termsAnd') }}<Link :href="route('privacy')" class="td-link" @click.stop>{{ t('auth.register.privacyPolicy') }}</Link>.
                 </span>
             </label>
+            <p v-if="form.errors.terms_accepted" class="td-error">{{ form.errors.terms_accepted }}</p>
 
-            <button type="submit" class="td-submit" :class="{ 'td-submit--off': !termsAccepted }" :disabled="!termsAccepted || form.processing">
+            <button type="submit" class="td-submit" :class="{ 'td-submit--off': !form.terms_accepted }" :disabled="!form.terms_accepted || form.processing">
                 {{ form.processing ? t('auth.register.submitting') : t('auth.register.submit') }}
             </button>
         </form>
@@ -156,10 +169,26 @@ const submit = () => {
 .td-input::placeholder {
     color: #64748b;
 }
+.td-hint {
+    margin: 6px 0 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #64748b;
+}
 .td-link {
     font-size: 12px;
     color: #39ff14;
     text-decoration: none;
+}
+.td-link:hover {
+    text-decoration: underline;
+}
+.td-hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
 }
 .td-link--bold {
     font-weight: 600;

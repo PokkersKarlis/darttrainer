@@ -31,6 +31,8 @@ export function useLocale() {
     const t = (key: string, params?: Record<string, string | number>): string =>
         i18n.global.t(key, params ?? {});
 
+    const tm = (key: string) => i18n.global.tm(key);
+
     const setLocale = (next: Locale) => {
         if (locale.value === next) {
             return;
@@ -57,5 +59,6 @@ export function useLocale() {
         locale,
         setLocale,
         t,
+        tm,
     };
 }

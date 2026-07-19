@@ -3,7 +3,9 @@
  * TrainDart auth shell — athletic brand panel + form column.
  * Visual language aligned with Welcome (atmosphere, icons, motion).
  */
+import AppVersionLabel from '@/components/AppVersionLabel.vue';
 import BrandLogo from '@/components/BrandLogo.vue';
+import CookieConsent from '@/components/CookieConsent.vue';
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 import { useLocale } from '@/composables/useLocale';
 
@@ -105,7 +107,10 @@ const brandFeatures = [
                 </div>
             </div>
 
-            <div class="td-brand-foot td-rise" style="--delay: 0.4s">{{ t('auth.brand.copyright') }}</div>
+            <div class="td-brand-foot td-rise" style="--delay: 0.4s">
+                {{ t('auth.brand.copyright') }}
+                <AppVersionLabel />
+            </div>
         </aside>
 
         <main class="td-form-wrap">
@@ -117,6 +122,8 @@ const brandFeatures = [
                 <slot />
             </div>
         </main>
+
+        <CookieConsent />
     </div>
 </template>
 
