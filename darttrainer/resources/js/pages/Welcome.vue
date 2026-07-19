@@ -49,16 +49,18 @@ const features: FeatureItem[] = [
         </div>
 
         <header class="tw-top">
-            <Link href="/" class="tw-brand"><BrandLogo :width="168" /></Link>
-            <div class="tw-top-actions">
-                <LanguageSwitcher />
-                <template v-if="isAuthenticated">
-                    <Link :href="route('profile.edit')" class="tw-link">{{ t('menu.profile') }}</Link>
-                </template>
-                <template v-else>
-                    <Link :href="route('login')" class="tw-link">{{ t('guest.login') }}</Link>
-                    <Link :href="route('register')" class="tw-cta">{{ t('guest.register') }}</Link>
-                </template>
+            <Link href="/" class="tw-brand"><BrandLogo class="tw-brand-logo" :width="168" /></Link>
+            <div class="tw-top-end">
+                <LanguageSwitcher class="tw-top-lang" />
+                <div class="tw-top-nav">
+                    <template v-if="isAuthenticated">
+                        <Link :href="route('profile.edit')" class="tw-link tw-top-link">{{ t('menu.profile') }}</Link>
+                    </template>
+                    <template v-else>
+                        <Link :href="route('login')" class="tw-link tw-top-link">{{ t('guest.login') }}</Link>
+                        <Link :href="route('register')" class="tw-cta tw-top-cta">{{ t('guest.register') }}</Link>
+                    </template>
+                </div>
             </div>
         </header>
 
@@ -272,14 +274,26 @@ const features: FeatureItem[] = [
 }
 .tw-brand {
     display: inline-flex;
+    flex-shrink: 1;
+    min-width: 0;
     text-decoration: none;
 }
-.tw-top-actions {
+.tw-brand-logo {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+.tw-top-end {
     display: flex;
     align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    justify-content: flex-end;
+    gap: 10px;
+    flex-shrink: 0;
+}
+.tw-top-nav {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap;
 }
 .tw-link {
     color: var(--td-soft);
@@ -903,6 +917,56 @@ const features: FeatureItem[] = [
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@media (max-width: 640px) {
+    .tw-top {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-areas:
+            'brand lang'
+            'nav nav';
+        align-items: center;
+        padding: 10px 14px 12px;
+        gap: 8px 10px;
+    }
+    .tw-brand {
+        grid-area: brand;
+    }
+    .tw-top-end {
+        display: contents;
+    }
+    .tw-top-lang {
+        grid-area: lang;
+        justify-self: end;
+    }
+    .tw-top-nav {
+        grid-area: nav;
+        justify-content: flex-end;
+        gap: 8px;
+        width: 100%;
+    }
+    .tw-brand-logo {
+        width: 128px !important;
+        height: auto !important;
+    }
+    .tw-top-end :deep(.lang-switch) {
+        padding: 2px;
+    }
+    .tw-top-end :deep(.lang-btn) {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+    .tw-top-link {
+        font-size: 12px;
+        white-space: nowrap;
+    }
+    .tw-top-cta {
+        padding: 8px 12px;
+        font-size: 12px;
+        letter-spacing: 0.3px;
+        white-space: nowrap;
     }
 }
 
