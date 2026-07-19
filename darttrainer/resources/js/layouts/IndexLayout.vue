@@ -7,7 +7,7 @@ import AppTopBar from '@/components/AppTopBar.vue';
 import CookieConsent from '@/components/CookieConsent.vue';
 import IndexAtmosphere from '@/components/index/IndexAtmosphere.vue';
 import IndexFooter from '@/components/index/IndexFooter.vue';
-import { useDisplayFrame, provideDisplayFrame } from '@/composables/useDisplayFrame';
+import { provideDisplayFrame } from '@/composables/useDisplayFrame';
 import '@/styles/index-frame.css';
 
 const { breakpoint, designType } = provideDisplayFrame();
