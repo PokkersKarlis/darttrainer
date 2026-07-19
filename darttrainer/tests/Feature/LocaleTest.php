@@ -44,6 +44,25 @@ class LocaleTest extends TestCase
         $this->assertSame('en', session(AppLocale::SESSION_KEY));
     }
 
+    public function test_authenticated_user_can_switch_locale_on_home(): void
+    {
+        $user = User::factory()->create(['locale' => 'lv']);
+
+        $this->actingAs($user)
+            ->from('/')
+            ->post('/locale', ['locale' => 'en'])
+            ->assertRedirect('/');
+
+        $this->assertSame('en', session(AppLocale::SESSION_KEY));
+        $this->assertSame('en', $user->fresh()->locale);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Index')
+                ->where('locale', 'en'));
+    }
+
     public function test_invalid_locale_is_rejected(): void
     {
         $this->from('/')

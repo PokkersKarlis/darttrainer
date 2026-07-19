@@ -22,8 +22,13 @@ class LocaleController extends Controller
         $request->session()->put(AppLocale::SESSION_KEY, $locale);
         app()->setLocale($locale);
 
-        if ($request->user()) {
-            $request->user()->forceFill(['locale' => $locale])->save();
+        if ($user = $request->user()) {
+            try {
+                $user->forceFill(['locale' => $locale])->save();
+            } catch (\Throwable $e) {
+                // Session/cookie still apply; avoid 500 if production DB is behind migrations.
+                report($e);
+            }
         }
 
         return back();
