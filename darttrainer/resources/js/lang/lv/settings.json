@@ -1,0 +1,48 @@
+{
+    "settings": {
+        "title": "Iestatījumi",
+        "subtitle": "Pārvaldi savu profilu un konta iestatījumus.",
+        "back": "Atpakaļ",
+        "tabs": {
+            "profile": "Profils",
+            "password": "Parole",
+            "appearance": "Izskats"
+        },
+        "saved": "Saglabāts.",
+        "profile": {
+            "head": "Profila iestatījumi",
+            "title": "Profila informācija",
+            "desc": "Atjaunini savu vārdu un e-pasta adresi.",
+            "name": "Vārds",
+            "email": "E-pasts",
+            "unverified": "E-pasts nav apstiprināts.",
+            "resend": "Nosūtīt apstiprinājuma saiti vēlreiz",
+            "linkSent": "Saite nosūtīta.",
+            "save": "Saglabāt",
+            "deleteTitle": "Dzēst kontu",
+            "deleteDesc": "Kad konts izdzēsts, visi dati tiek neatgriezeniski dzēsti.",
+            "delete": "Dzēst kontu",
+            "deleteConfirm": "Apstiprini ar paroli, lai dzēstu kontu.",
+            "password": "Parole",
+            "deleteForever": "Dzēst neatgriezeniski",
+            "cancel": "Atcelt"
+        },
+        "password": {
+            "head": "Paroles iestatījumi",
+            "title": "Mainīt paroli",
+            "desc": "Izmanto garu, nejaušu paroli, lai konts būtu drošs.",
+            "current": "Pašreizējā parole",
+            "new": "Jaunā parole",
+            "confirm": "Apstiprini paroli",
+            "save": "Saglabāt paroli"
+        },
+        "appearance": {
+            "head": "Izskata iestatījumi",
+            "title": "Izskats",
+            "desc": "Izvēlies lietotnes krāsu tēmu.",
+            "light": "Gaišs",
+            "dark": "Tumšs",
+            "system": "Sistēma"
+        }
+    }
+}

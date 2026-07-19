@@ -1,0 +1,48 @@
+{
+    "settings": {
+        "title": "Settings",
+        "subtitle": "Manage your profile and account settings.",
+        "back": "Back",
+        "tabs": {
+            "profile": "Profile",
+            "password": "Password",
+            "appearance": "Appearance"
+        },
+        "saved": "Saved.",
+        "profile": {
+            "head": "Profile settings",
+            "title": "Profile information",
+            "desc": "Update your name and email address.",
+            "name": "Name",
+            "email": "Email",
+            "unverified": "Your email is unverified.",
+            "resend": "Resend verification link",
+            "linkSent": "Link sent.",
+            "save": "Save",
+            "deleteTitle": "Delete account",
+            "deleteDesc": "Once your account is deleted, all data is permanently removed.",
+            "delete": "Delete account",
+            "deleteConfirm": "Confirm with your password to delete the account.",
+            "password": "Password",
+            "deleteForever": "Delete permanently",
+            "cancel": "Cancel"
+        },
+        "password": {
+            "head": "Password settings",
+            "title": "Change password",
+            "desc": "Use a long, random password to keep your account secure.",
+            "current": "Current password",
+            "new": "New password",
+            "confirm": "Confirm password",
+            "save": "Save password"
+        },
+        "appearance": {
+            "head": "Appearance settings",
+            "title": "Appearance",
+            "desc": "Choose the app color theme.",
+            "light": "Light",
+            "dark": "Dark",
+            "system": "System"
+        }
+    }
+}
