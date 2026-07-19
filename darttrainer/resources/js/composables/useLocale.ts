@@ -18,37 +18,43 @@ export function useLocale() {
 
     watch(
         () => page.props.locale,
-        (locale) => {
-            if (isLocale(locale) && i18n.global.locale.value !== locale) {
-                applyLocale(locale);
+        (sharedLocale) => {
+            if (isLocale(sharedLocale) && i18n.global.locale.value !== sharedLocale) {
+                applyLocale(sharedLocale);
             }
         },
         { immediate: true },
     );
 
+    const locale = computed(() => i18n.global.locale.value as Locale);
+
     const t = (key: string, params?: Record<string, string | number>): string =>
         i18n.global.t(key, params ?? {});
 
-    const setLocale = (locale: Locale) => {
-        if (i18n.global.locale.value === locale) {
+    const setLocale = (next: Locale) => {
+        if (locale.value === next) {
             return;
         }
 
-        applyLocale(locale);
+        applyLocale(next);
 
-        router.post(
-            route('locale.update'),
-            { locale },
-            {
-                preserveScroll: true,
-                preserveState: true,
-                only: ['locale'],
+        router.post(route('locale.update'), { locale: next }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                if (isLocale(page.props.locale)) {
+                    applyLocale(page.props.locale);
+                }
             },
-        );
+            onError: () => {
+                if (isLocale(page.props.locale)) {
+                    applyLocale(page.props.locale);
+                }
+            },
+        });
     };
 
     return {
-        locale: computed(() => i18n.global.locale.value as Locale),
+        locale,
         setLocale,
         t,
     };

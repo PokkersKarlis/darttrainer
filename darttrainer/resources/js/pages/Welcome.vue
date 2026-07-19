@@ -14,18 +14,24 @@ const { t } = useLocale();
 const page = usePage<SharedData>();
 const isAuthenticated = computed(() => !!page.props.auth.user);
 
-type FeatureTone = 'green' | 'cyan' | 'pink' | 'amber';
+type FeatureKey = 'stats' | 'training' | 'online' | 'data' | 'tournaments' | 'aiReports';
+type FeatureTone = 'green' | 'cyan' | 'pink' | 'amber' | 'violet';
+type FeatureKind = 'bars' | 'pulse' | 'board' | 'chart' | 'brackets' | 'article';
+
 type FeatureItem = {
-    key: 'stats' | 'training' | 'online' | 'tournaments';
+    key: FeatureKey;
     tone: FeatureTone;
-    kind: 'bars' | 'pulse' | 'board' | 'trophy';
+    kind: FeatureKind;
+    note?: boolean;
 };
 
 const features: FeatureItem[] = [
     { key: 'stats', tone: 'green', kind: 'bars' },
     { key: 'training', tone: 'cyan', kind: 'pulse' },
     { key: 'online', tone: 'pink', kind: 'board' },
-    { key: 'tournaments', tone: 'amber', kind: 'trophy' },
+    { key: 'data', tone: 'amber', kind: 'chart' },
+    { key: 'tournaments', tone: 'green', kind: 'brackets', note: true },
+    { key: 'aiReports', tone: 'violet', kind: 'article' },
 ];
 </script>
 
@@ -87,7 +93,6 @@ const features: FeatureItem[] = [
                         </svg>
                     </Link>
                     <Link v-if="!isAuthenticated" :href="route('login')" class="tw-cta-ghost">{{ t('guest.login') }}</Link>
-                    <p class="tw-reassure">{{ t('guest.reassurance') }}</p>
                 </div>
             </div>
 
@@ -128,138 +133,43 @@ const features: FeatureItem[] = [
                     :style="{ '--delay': `${0.08 + i * 0.06}s` }"
                 >
                     <span class="tw-feature-ico" :class="`tw-feature-ico--${f.tone}`" aria-hidden="true">
+                        <!-- Stats: bar chart -->
                         <svg v-if="f.kind === 'bars'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                             <path d="M4 19V9M10 19V5M16 19v-7M20 19H3" />
                         </svg>
+                        <!-- Training: pulse / drill -->
                         <svg v-else-if="f.kind === 'pulse'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M3 12h4l3 8 4-16 3 8h4" />
                         </svg>
+                        <!-- Online: dartboard -->
                         <svg v-else-if="f.kind === 'board'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="9" />
                             <circle cx="12" cy="12" r="5.5" />
                             <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
                         </svg>
+                        <!-- Match analysis: trend chart -->
+                        <svg v-else-if="f.kind === 'chart'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 19V5M4 19h16" />
+                            <path d="M8 17V11M12 17V7M16 17v-4" />
+                        </svg>
+                        <!-- Tournaments + API: bracket tree -->
+                        <svg v-else-if="f.kind === 'brackets'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="5" cy="6" r="2" />
+                            <circle cx="5" cy="18" r="2" />
+                            <circle cx="19" cy="12" r="2" />
+                            <path d="M7 6h8M7 18h8M7 6v12" />
+                            <path d="M15 12h4" />
+                        </svg>
+                        <!-- AI reports: article -->
                         <svg v-else width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M6 4h12v2a6 6 0 01-6 6 6 6 0 01-6-6V4z" />
-                            <path d="M9 20h6M12 12v4" />
-                            <path d="M6 6H3a3 3 0 003 3M18 6h3a3 3 0 01-3 3" />
+                            <path d="M6 4h10l4 4v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2z" />
+                            <path d="M14 4v4h4M8 12h8M8 16h6" />
+                            <path d="M18 3l2 2-3 3" />
                         </svg>
                     </span>
                     <h3 class="tw-feature-title">{{ t(`features.${f.key}.title`) }}</h3>
                     <p class="tw-feature-desc">{{ t(`features.${f.key}.desc`) }}</p>
-                </article>
-            </div>
-        </section>
-
-        <section class="tw-spotlight tw-rise">
-            <div class="tw-spotlight-copy">
-                <p class="tw-kicker">
-                    <span class="tw-kicker-ico" aria-hidden="true">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M6 4h12v2a6 6 0 01-6 6 6 6 0 01-6-6V4z" />
-                            <path d="M9 20h6M12 12v4" />
-                        </svg>
-                    </span>
-                    {{ t('tournamentBlock.kicker') }}
-                </p>
-                <h2 class="tw-section-title tw-section-title--wide">{{ t('tournamentBlock.title') }}</h2>
-                <p class="tw-section-lead">{{ t('tournamentBlock.lead') }}</p>
-                <ul class="tw-checklist">
-                    <li>
-                        <span class="tw-check" aria-hidden="true">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5" /></svg>
-                        </span>
-                        {{ t('tournamentBlock.points.brackets') }}
-                    </li>
-                    <li>
-                        <span class="tw-check" aria-hidden="true">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5" /></svg>
-                        </span>
-                        {{ t('tournamentBlock.points.roundRobin') }}
-                    </li>
-                    <li>
-                        <span class="tw-check" aria-hidden="true">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5" /></svg>
-                        </span>
-                        {{ t('tournamentBlock.points.live') }}
-                    </li>
-                </ul>
-            </div>
-
-            <div class="tw-bracket" aria-hidden="true">
-                <div class="tw-bracket-col">
-                    <span class="tw-bracket-label">{{ t('tournamentBlock.bracket.round') }}</span>
-                    <div class="tw-match">
-                        <div class="tw-match-row tw-match-row--win"><span>{{ t('tournamentBlock.bracket.p1') }}</span><b>3</b></div>
-                        <div class="tw-match-row"><span>{{ t('tournamentBlock.bracket.p2') }}</span><b>1</b></div>
-                    </div>
-                    <div class="tw-match">
-                        <div class="tw-match-row"><span>{{ t('tournamentBlock.bracket.p3') }}</span><b>2</b></div>
-                        <div class="tw-match-row tw-match-row--win"><span>{{ t('tournamentBlock.bracket.p4') }}</span><b>3</b></div>
-                    </div>
-                </div>
-                <div class="tw-bracket-join" />
-                <div class="tw-bracket-col tw-bracket-col--final">
-                    <span class="tw-bracket-label">{{ t('tournamentBlock.bracket.final') }}</span>
-                    <div class="tw-match tw-match--final">
-                        <div class="tw-match-row tw-match-row--win"><span>{{ t('tournamentBlock.bracket.p1') }}</span><b>4</b></div>
-                        <div class="tw-match-row"><span>{{ t('tournamentBlock.bracket.p4') }}</span><b>2</b></div>
-                    </div>
-                    <div class="tw-champ">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 4h12v2a6 6 0 01-6 6 6 6 0 01-6-6V4z" /><path d="M9 20h6M12 12v4" /></svg>
-                        {{ t('tournamentBlock.bracket.winner') }}
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="tw-reports tw-rise">
-            <div class="tw-section-head">
-                <p class="tw-kicker">
-                    <span class="tw-kicker-ico" aria-hidden="true">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                            <path d="M4 5h16v14H4z" /><path d="M8 9h8M8 13h5" />
-                        </svg>
-                    </span>
-                    {{ t('reportsBlock.kicker') }}
-                </p>
-                <h2 class="tw-section-title tw-section-title--wide">{{ t('reportsBlock.title') }}</h2>
-                <p class="tw-section-lead">{{ t('reportsBlock.lead') }}</p>
-            </div>
-
-            <div class="tw-posts">
-                <article class="tw-post tw-post--ig">
-                    <div class="tw-post-head">
-                        <span class="tw-post-avatar">TD</span>
-                        <div>
-                            <strong>TrainDart</strong>
-                            <small>{{ t('reportsBlock.platforms.ig') }} · {{ t('reportsBlock.posts.ig.time') }}</small>
-                        </div>
-                    </div>
-                    <div class="tw-post-media">
-                        <span class="tw-post-media-score">180</span>
-                        <span class="tw-post-media-sub">{{ t('reportsBlock.posts.ig.stat') }}</span>
-                    </div>
-                    <p class="tw-post-caption">{{ t('reportsBlock.posts.ig.caption') }}</p>
-                </article>
-
-                <article class="tw-post tw-post--fb">
-                    <div class="tw-post-head">
-                        <span class="tw-post-avatar tw-post-avatar--fb">f</span>
-                        <div>
-                            <strong>{{ t('reportsBlock.posts.fb.title') }}</strong>
-                            <small>{{ t('reportsBlock.platforms.fb') }}</small>
-                        </div>
-                    </div>
-                    <p class="tw-post-body">{{ t('reportsBlock.posts.fb.body') }}</p>
-                    <div class="tw-post-meta">{{ t('reportsBlock.posts.fb.meta') }}</div>
-                </article>
-
-                <article class="tw-post tw-post--blog">
-                    <span class="tw-post-tag">{{ t('reportsBlock.posts.blog.tag') }}</span>
-                    <h3 class="tw-post-blog-title">{{ t('reportsBlock.posts.blog.title') }}</h3>
-                    <p class="tw-post-body">{{ t('reportsBlock.posts.blog.excerpt') }}</p>
-                    <span class="tw-post-platform">{{ t('reportsBlock.platforms.blog') }}</span>
+                    <p v-if="f.note" class="tw-feature-note">{{ t(`features.${f.key}.note`) }}</p>
                 </article>
             </div>
         </section>
@@ -295,6 +205,7 @@ const features: FeatureItem[] = [
     --td-cyan: #22d3ee;
     --td-pink: #fb2c5f;
     --td-amber: #fbbf24;
+    --td-violet: #a78bfa;
 
     position: relative;
     isolation: isolate;
@@ -840,7 +751,6 @@ const features: FeatureItem[] = [
     letter-spacing: 0.5px;
     font-size: clamp(26px, 3.5vw, 34px);
     margin: 0 0 8px;
-    max-width: 18ch;
 }
 .tw-section-lead {
     color: var(--td-muted);
@@ -854,7 +764,7 @@ const features: FeatureItem[] = [
 }
 .tw-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 16px;
 }
 .tw-feature {
@@ -897,6 +807,11 @@ const features: FeatureItem[] = [
     background: rgba(251, 191, 36, 0.1);
     border: 1px solid rgba(251, 191, 36, 0.22);
 }
+.tw-feature-ico--violet {
+    color: var(--td-violet);
+    background: rgba(167, 139, 250, 0.1);
+    border: 1px solid rgba(167, 139, 250, 0.22);
+}
 .tw-feature-title {
     font-family: 'Barlow Condensed', sans-serif;
     font-weight: 800;
@@ -910,6 +825,13 @@ const features: FeatureItem[] = [
     color: var(--td-soft);
     font-size: 14px;
     line-height: 1.55;
+}
+.tw-feature-note {
+    margin: 10px 0 0;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--td-muted);
+    font-style: italic;
 }
 
 .tw-closing-panel {
@@ -998,7 +920,7 @@ const features: FeatureItem[] = [
         width: min(100%, 260px);
     }
     .tw-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
     .tw-spotlight {
         grid-template-columns: 1fr;
@@ -1020,6 +942,12 @@ const features: FeatureItem[] = [
     .tw-closing-panel {
         flex-direction: column;
         align-items: flex-start;
+    }
+}
+
+@media (max-width: 560px) {
+    .tw-grid {
+        grid-template-columns: 1fr;
     }
 }
 
