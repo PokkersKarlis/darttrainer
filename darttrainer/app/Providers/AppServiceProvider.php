@@ -27,6 +27,14 @@ class AppServiceProvider extends ServiceProvider
         if (env('VITE_BUILD_DIR')) {
             Vite::useBuildDirectory(env('VITE_BUILD_DIR'));
         }
+
+        // ── Vēstures šifrēšana (aizsardzība pret "Atpakaļ" pogu pēc izlogošanās) ──
+        // Inertia v2 šifrē lapu stāvokli klienta pusē (sessionStorage). Kad
+        // AuthenticatedSessionController::destroy() izsauc Inertia::clearHistory(),
+        // šifrēšanas atslēga tiek dzēsta un jebkura bfcache atjaunota (kešota)
+        // lapa vairs neatšifrējas — pārlūkam jāveic jauns pieprasījums uz serveri.
+        Inertia::encryptHistory();
+
         // ── Zīmola e-pasti (TrainDart tumšais dizains) ──
 
         // E-pasta apstiprināšana
