@@ -7,6 +7,7 @@ use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Vite;
+use Inertia\Inertia;
 
 class AppServiceProvider extends ServiceProvider
 {
