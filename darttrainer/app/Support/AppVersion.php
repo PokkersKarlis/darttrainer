@@ -30,7 +30,7 @@ final class AppVersion
         $buildFile = storage_path(self::BUILD_FILE);
         if (is_readable($buildFile)) {
             $fromBuild = trim((string) file_get_contents($buildFile));
-            if ($fromBuild !== '') {
+            if ($fromBuild !== '' && $fromBuild !== 'dev') {
                 return $fromBuild;
             }
         }

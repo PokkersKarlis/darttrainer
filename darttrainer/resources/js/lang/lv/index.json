@@ -1,0 +1,55 @@
+{
+    "index": {
+        "title": "TrainDart",
+        "emailApproved": "E-pasts apstiprināts",
+        "emailNotApproved": "E-pasts nav apstiprināts",
+        "releases": {
+            "title": "Relīzes radars",
+            "lead": "Kas jau ir izlaists un ko veidojam tālāk TrainDart platformā.",
+            "upcoming": {
+                "badge": "Nākamā relīze",
+                "title": "Nākamais laidiens",
+                "body": "Jauns platformas atjauninājums ir ceļā — uzlabojumi, ātrums un vairāk vietas tavai statistikai."
+            },
+            "games": {
+                "badge": "Drīzumā",
+                "title": "X01 spēles",
+                "body": "501 un 301 daudzspēlētāju režīms ir nākamais solis — lobijs, tiešraides punkti un legu duelis."
+            },
+            "latest": {
+                "badge": "Jaunākā relīze",
+                "title": "Autentifikācija un sākums",
+                "body": "Reģistrācija, pieteikšanās, e-pasta apstiprinājums, sīkdatņu piekrišana un jaunā autentificētā sākumlapa ar sānu izvēlni.",
+                "version": "Ielaists kā {version}"
+            }
+        },
+        "support": {
+            "title": "Nepieciešama palīdzība vai atradi kļūdu?",
+            "body": "Sazinies ar komandu e-pastā vai pievienojies mūsu Discord kopienai.",
+            "emailLabel": "Kļūdu ziņojumi un atsauksmes",
+            "discordLabel": "Kopienas Discord",
+            "discordAction": "Pievienoties"
+        },
+        "sidebar": {
+            "kicker": "Izvēlne",
+            "aria": "Galvenā navigācija",
+            "open": "Atvērt izvēlni",
+            "close": "Aizvērt izvēlni",
+            "games": {
+                "title": "Spēles",
+                "x01Multiplayer": "X01 Daudzspēlētāju",
+                "comingSoon": "Drīzumā",
+                "verifyToUnlock": "Apstiprini e-pastu, lai atbloķētu"
+            }
+        },
+        "emailNotice": {
+            "title": "Apstiprini savu e-pastu",
+            "body": "Uz {email} nosūtījām apstiprinājuma saiti. Apstiprini e-pastu, lai atbloķētu daudzspēlētāju spēles.",
+            "waiting": "Gatavo atkārtotu nosūtīšanu",
+            "resend": "Nosūtīt apstiprinājumu vēlreiz",
+            "resending": "Nosūta…",
+            "resendSent": "Jauna apstiprinājuma saite ir nosūtīta.",
+            "resendFailed": "Neizdevās nosūtīt e-pastu. Mēģini vēlāk."
+        }
+    }
+}

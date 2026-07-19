@@ -1,0 +1,55 @@
+{
+    "index": {
+        "title": "TrainDart",
+        "emailApproved": "Email approved",
+        "emailNotApproved": "Email not approved",
+        "releases": {
+            "title": "Release radar",
+            "lead": "What shipped recently and what we are building next on TrainDart.",
+            "upcoming": {
+                "badge": "Upcoming next",
+                "title": "Next release",
+                "body": "A fresh platform update is on deck — polish, performance, and more room for your stats to grow."
+            },
+            "games": {
+                "badge": "Coming next",
+                "title": "X01 games",
+                "body": "501 and 301 multiplayer is next in line — lobby flow, live scoring, and head-to-head legs."
+            },
+            "latest": {
+                "badge": "Latest release",
+                "title": "Auth & home shell",
+                "body": "Registration, login, email verification, cookie consent, and this new authenticated home with sidebar navigation.",
+                "version": "Shipped as {version}"
+            }
+        },
+        "support": {
+            "title": "Need help or found a bug?",
+            "body": "Reach the team by email or join our Discord community.",
+            "emailLabel": "Bug reports & feedback",
+            "discordLabel": "Community Discord",
+            "discordAction": "Join channel"
+        },
+        "sidebar": {
+            "kicker": "Menu",
+            "aria": "Main navigation",
+            "open": "Open menu",
+            "close": "Close menu",
+            "games": {
+                "title": "Games",
+                "x01Multiplayer": "X01 Multiplayer",
+                "comingSoon": "Coming soon",
+                "verifyToUnlock": "Verify email to unlock"
+            }
+        },
+        "emailNotice": {
+            "title": "Verify your email",
+            "body": "We sent a verification link to {email}. Confirm your email to unlock multiplayer games.",
+            "waiting": "Preparing resend option",
+            "resend": "Send verification email again",
+            "resending": "Sending…",
+            "resendSent": "A new verification link has been sent.",
+            "resendFailed": "Could not send the email. Try again later."
+        }
+    }
+}

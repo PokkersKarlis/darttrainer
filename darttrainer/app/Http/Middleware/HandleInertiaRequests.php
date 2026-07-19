@@ -48,6 +48,8 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'emailVerified' => (bool) $request->user()?->hasVerifiedEmail(),
+            'emailVerificationSentAt' => $request->user()?->email_verification_sent_at?->toIso8601String(),
         ];
     }
 }

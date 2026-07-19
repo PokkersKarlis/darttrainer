@@ -62,12 +62,15 @@ class EmailVerificationTest extends TestCase
     {
         Notification::fake();
 
-        $user = User::factory()->unverified()->create();
+        $user = User::factory()->unverified()->create([
+            'email_verification_sent_at' => now()->subMinutes(10),
+        ]);
 
         $response = $this->actingAs($user)->post('/email/verification-notification');
 
         Notification::assertSentTo($user, VerifyEmailNotification::class);
         $response->assertSessionHas('status', 'verification-link-sent');
+        $this->assertNotNull($user->fresh()->email_verification_sent_at);
     }
 
     /**

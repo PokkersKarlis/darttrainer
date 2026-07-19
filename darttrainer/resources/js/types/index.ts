@@ -22,6 +22,8 @@ export interface SharedData {
     locale: 'lv' | 'en';
     quote: { message: string; author: string };
     auth: Auth;
+    emailVerified: boolean;
+    emailVerificationSentAt: string | null;
     ziggy: {
         location: string;
         url: string;

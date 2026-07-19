@@ -1,0 +1,157 @@
+/**
+ * Responsive tokens for Index shell — 3 breakpoints × 3 design types.
+ * Applied via data-bp and data-design on the layout root.
+ */
+.ix {
+    --ix-bg: #0b0f19;
+    --ix-panel: #0d1220;
+    --ix-line: #1f2937;
+    --ix-muted: #64748b;
+    --ix-text: #f4f4f5;
+    --ix-green: #39ff14;
+    --ix-cyan: #22d3ee;
+
+    --ix-scale: 1;
+    --ix-glow-scale: 1;
+    --ix-grid-size: 48px;
+    --ix-content-max: 920px;
+    --ix-main-pad-y: 48px;
+    --ix-main-pad-x: 28px;
+    --ix-foot-pad-y: 20px;
+    --ix-foot-pad-x: 28px;
+    --ix-hero-gap: 16px;
+    --ix-panel-pad-y: 32px;
+    --ix-panel-pad-x: 28px;
+    --ix-panel-radius: 16px;
+    --ix-title-size: clamp(36px, 6vw, 52px);
+    --ix-kicker-size: 12px;
+    --ix-foot-size: 13px;
+    --ix-sidebar-width: 268px;
+    --ix-drawer-width: 300px;
+    --ix-workspace-gap: 22px;
+    --ix-workspace-min-h: 480px;
+    --ix-topbar-height: 64px;
+    --ix-foot-height: 72px;
+}
+
+/* Breakpoints */
+.ix[data-bp='compact'] {
+    --ix-scale: 0.92;
+    --ix-glow-scale: 0.85;
+    --ix-grid-size: 40px;
+    --ix-main-pad-y: 24px;
+    --ix-main-pad-x: 14px;
+    --ix-foot-pad-x: 14px;
+    --ix-panel-pad-y: 22px;
+    --ix-panel-pad-x: 16px;
+    --ix-title-size: clamp(28px, 8vw, 38px);
+    --ix-sidebar-width: 228px;
+    --ix-drawer-width: min(280px, 86vw);
+    --ix-workspace-gap: 14px;
+    --ix-workspace-min-h: 360px;
+}
+
+.ix[data-bp='medium'] {
+    --ix-scale: 0.96;
+    --ix-glow-scale: 0.92;
+    --ix-grid-size: 44px;
+    --ix-main-pad-y: 32px;
+    --ix-main-pad-x: 18px;
+    --ix-panel-pad-y: 26px;
+    --ix-panel-pad-x: 22px;
+    --ix-title-size: clamp(32px, 6.5vw, 46px);
+    --ix-sidebar-width: 248px;
+    --ix-workspace-gap: 18px;
+}
+
+.ix[data-bp='wide'] {
+    --ix-scale: 1;
+    --ix-glow-scale: 1;
+    --ix-grid-size: 48px;
+    --ix-main-pad-y: 40px;
+    --ix-main-pad-x: 28px;
+    --ix-title-size: clamp(38px, 4.5vw, 56px);
+    --ix-sidebar-width: 284px;
+    --ix-workspace-gap: 24px;
+    --ix-workspace-min-h: 520px;
+}
+
+/* Design types (aspect) */
+.ix[data-design='portrait'] {
+    --ix-content-max: 100%;
+    --ix-hero-gap: 12px;
+    --ix-main-pad-y: 20px;
+}
+
+.ix[data-design='landscape'] {
+    --ix-content-max: min(1360px, 100%);
+    --ix-hero-gap: 18px;
+    --ix-sidebar-width: 292px;
+    --ix-workspace-min-h: calc(100dvh - var(--ix-topbar-height) - var(--ix-foot-height) - 120px);
+}
+
+.ix[data-design='square'] {
+    --ix-content-max: min(1280px, 100%);
+    --ix-hero-gap: 16px;
+    --ix-sidebar-width: 272px;
+    --ix-panel-radius: 18px;
+    --ix-workspace-min-h: calc(100dvh - var(--ix-topbar-height) - var(--ix-foot-height) - 100px);
+}
+
+/* Combined tuning for tight portrait phones */
+.ix[data-bp='compact'][data-design='portrait'] {
+    --ix-scale: 0.9;
+    --ix-title-size: clamp(26px, 7.5vw, 34px);
+    --ix-main-pad-x: 12px;
+}
+
+.ix-shell {
+    position: relative;
+    isolation: isolate;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: clip;
+    background: var(--ix-bg);
+    color: var(--ix-text);
+    font-family: Inter, sans-serif;
+}
+
+.ix-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    margin: 0 auto;
+    padding: var(--ix-main-pad-y) var(--ix-main-pad-x) calc(var(--ix-main-pad-y) + 8px);
+    min-height: 0;
+}
+
+.ix-main-inner {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    width: 100%;
+    max-width: var(--ix-content-max);
+    min-height: 0;
+    margin: 0 auto;
+}
+
+.ix[data-design='portrait'] .ix-main-inner {
+    max-width: 100%;
+}
+
+.ix[data-design='landscape'] .ix-main-inner,
+.ix[data-design='square'] .ix-main-inner {
+    max-width: min(1360px, 100%);
+}
+
+.ix-workspace--docked .ix-workspace-main {
+    padding-top: calc(4px * var(--ix-scale, 1));
+}
+
+.ix-workspace--portrait .ix-workspace-main > * {
+    width: 100%;
+}

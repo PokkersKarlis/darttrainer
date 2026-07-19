@@ -8,14 +8,10 @@ import AppTopBar from '@/components/AppTopBar.vue';
 import CookieConsent from '@/components/CookieConsent.vue';
 import { useCookieConsent } from '@/composables/useCookieConsent';
 import { useLocale } from '@/composables/useLocale';
-import { Head, Link, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
-import type { SharedData } from '@/types';
+import { Head, Link } from '@inertiajs/vue3';
 
 const { t } = useLocale();
 const { openSettings } = useCookieConsent();
-const page = usePage<SharedData>();
-const isAuthenticated = computed(() => !!page.props.auth.user);
 
 type FeatureKey = 'stats' | 'training' | 'online' | 'data' | 'tournaments' | 'aiReports';
 type FeatureTone = 'green' | 'cyan' | 'pink' | 'amber' | 'violet';
@@ -71,19 +67,13 @@ const features: FeatureItem[] = [
                 </h1>
                 <p class="tw-lead">{{ t('guest.lead') }}</p>
                 <div class="tw-hero-actions">
-                    <Link v-if="!isAuthenticated" :href="route('register')" class="tw-cta tw-cta--lg">
+                    <Link :href="route('register')" class="tw-cta tw-cta--lg">
                         {{ t('guest.register') }}
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
                             <path d="M5 12h14M13 6l6 6-6 6" />
                         </svg>
                     </Link>
-                    <Link v-else :href="route('profile.edit')" class="tw-cta tw-cta--lg">
-                        {{ t('menu.settings') }}
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
-                            <path d="M5 12h14M13 6l6 6-6 6" />
-                        </svg>
-                    </Link>
-                    <Link v-if="!isAuthenticated" :href="route('login')" class="tw-cta-ghost">{{ t('guest.login') }}</Link>
+                    <Link :href="route('login')" class="tw-cta-ghost">{{ t('guest.login') }}</Link>
                 </div>
             </div>
 
@@ -171,7 +161,7 @@ const features: FeatureItem[] = [
                     <h2 class="tw-section-title">{{ t('closing.title') }}</h2>
                     <p class="tw-section-lead tw-section-lead--tight">{{ t('closing.lead') }}</p>
                 </div>
-                <Link v-if="!isAuthenticated" :href="route('register')" class="tw-cta tw-cta--lg">
+                <Link :href="route('register')" class="tw-cta tw-cta--lg">
                     {{ t('closing.cta') }}
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
                         <path d="M5 12h14M13 6l6 6-6 6" />
