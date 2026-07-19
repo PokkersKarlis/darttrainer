@@ -1,0 +1,12 @@
+---
+description: TrainDart i18n — server locale source of truth, vue-i18n catalogs, opaque flash keys
+alwaysApply: true
+---
+
+# i18n conventions
+
+- **Source of truth:** `SetLocale` middleware (request → session → user.locale → cookie → config). Share `locale` via Inertia.
+- **UI copy:** vue-i18n catalogs in `resources/js/lang/{en,lv}/*.json`. Use `useLocale()` (`t`, `setLocale`). Switcher POSTs `locale.update`.
+- **Server copy:** Laravel `lang/{locale}` for emails/validation. Do not flash already-translated strings for UI status — use opaque keys (`password-reset`, `reset-link-sent`, …) and translate in Vue.
+- **New UI surfaces:** add keys to both `en` and `lv` modules; wire LanguageSwitcher on shells that need it (Auth, Settings, Welcome).
+- **Locales:** only `lv` and `en` (`App\Support\AppLocale`).
