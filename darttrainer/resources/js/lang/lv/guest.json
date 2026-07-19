@@ -1,42 +1,88 @@
 {
     "guest": {
-        "h1Line1": "Trenējies gudrāk. Spēlē tiešsaistē.",
-        "h1Line2": "Kāp reitingā.",
-        "lead": "No pirmā metiena līdz čempionātam — TrainDart apvieno šautriņu mešanas treniņus, tiešsaistes šautriņu mačus un pilnu turnīru sistēmu, bet automātiski ģenerētas spēļu reportāžas pārvērš katru rezultātu stāstā, ko vari dalīties.",
-        "register": "Pievienoties tagad",
-        "login": "Pieteikties",
-        "reassurance": "Bez maksas · Nav nepieciešama kredītkarte",
+        "h1Line1": "Trenējies strukturēti. Spēlē tiešsaistē.",
+        "h1Line2": "Seko savam progresam.",
+        "lead": "TrainDart ir veidots, lai šautriņu spēlētājiem būtu ērtāk izsekot savam sniegumam. No ikdienas treniņiem līdz mačiem tiešsaistē — rīki, kas palīdz analizēt datus un pilnveidot metienu.",
+        "register": "Reģistrēties",
+        "login": "Pieslēgties",
+        "reassurance": "Bez maksas · Bez sarežģījumiem",
         "nav": {
-            "login": "Jau ir konts? Pieteikties"
+            "login": "Jau esi reģistrējies? Pieslēgties"
         }
     },
     "seo": {
-        "title": "TrainDart — Šautriņu treniņu un statistikas platforma",
-        "description": "TrainDart palīdz uzlabot precizitāti ar šautriņu treniņu programmām, detalizētu statistiku un analītiku, tiešsaistes šautriņu mačiem un turnīriem. Sāc trenēties bez maksas."
+        "title": "TrainDart — Šautriņu treniņu un statistikas rīks",
+        "description": "TrainDart nodrošina ērtu veidu, kā izsekot šautriņu treniņiem, analizēt statistiku un spēlēt tiešsaistes mačus. Kvalitatīvs rīks katram šautriņu spēlētājam."
     },
     "features": {
-        "sectionTitle": "Viss, kas nepieciešams, lai kļūtu labāks šautriņu spēlētājs",
-        "sectionLead": "No pirmā metiena līdz reitinga virsotnei — viena platforma tavai izaugsmei.",
+        "sectionTitle": "Rīki, kas noder katram spēlētājam",
+        "sectionLead": "Mērķtiecīgi izstrādātas funkcijas tavai ikdienas spēlei.",
         "stats": {
-            "title": "Precīza statistika un progresa izsekošana",
-            "desc": "Seko savam vidējam rezultātam, checkout %, 180-iem un vairāk ar detalizētu šautriņu statistiku un analītiku, kas atklāj tavu īsto progresu."
+            "title": "Precīza statistika",
+            "desc": "Sekojot līdzi savam vidējam rezultātam un checkout precizitātei, vari redzēt objektīvus datus par savu progresu."
         },
         "training": {
-            "title": "Interaktīvi un efektīvi treniņu režīmi",
-            "desc": "Strukturētas šautriņu treniņu programmas dubultniekiem, trīskāršniekiem un finišiem, kas palīdz mērķtiecīgi uzlabot precizitāti."
+            "title": "Strukturēti treniņi",
+            "desc": "Izvēlies savām vajadzībām piemērotus treniņu režīmus. Fokusēts darbs pie dubultniekiem un sektoriem sniedz labākus rezultātus."
         },
         "online": {
-            "title": "Tiešsaistes mači ar citiem spēlētājiem",
-            "desc": "Izaicini draugus vai atrodi pretiniekus tiešsaistes šautriņu mačos jebkurā laikā, jebkurā vietā."
+            "title": "Tiešsaistes mači",
+            "desc": "Ērts risinājums mačiem pret citiem spēlētājiem. Spēlē savā tempā, jebkurā vietā, kur ir pieejams dators vai telefons."
         },
         "tournaments": {
-            "title": "Turnīru sistēma un automātiskas spēļu reportāžas",
-            "desc": "Piedalies organizētos turnīros un pēc katra mača saņem automātiski ģenerētu reportāžu, kas balstīta uz taviem reālajiem rezultātiem."
+            "title": "Spēļu analīze",
+            "desc": "Pēc katra aizvadītā mača saņem pārskatāmu kopsavilkumu. Tas palīdz ātrāk pamanīt kļūdas un uzlabot metienu stabilitāti."
+        }
+    },
+    "tournamentBlock": {
+        "kicker": "Turnīri",
+        "title": "Vadī turnīrus kā īstu čempionātu",
+        "lead": "Veido knockout vai round-robin turnīrus, ģenerē spēļu sarakstu automātiski un seko katra spēlētāja ceļam līdz finālam.",
+        "points": {
+            "brackets": "Single un double elimination iekavas",
+            "roundRobin": "Round-robin līgas un tabulas",
+            "live": "Reāllaika progress, kad ienāk rezultāti"
+        },
+        "bracket": {
+            "round": "Pusfināls",
+            "final": "Fināls",
+            "p1": "J. Price",
+            "p2": "M. Suljović",
+            "p3": "G. Anderson",
+            "p4": "D. Cross",
+            "winner": "Čempions"
+        }
+    },
+    "reportsBlock": {
+        "kicker": "AI spēļu reportāžas",
+        "title": "Dalies ar katru maču kā ar postu",
+        "lead": "Pēc katras spēles TrainDart pārvērš tavu statistiku gatavā stāstā — Facebook, Instagram vai kluba blogam.",
+        "platforms": {
+            "ig": "Instagram",
+            "fb": "Facebook",
+            "blog": "Blogs"
+        },
+        "posts": {
+            "ig": {
+                "caption": "Leja aizvērta. Checkout zem spiediena.",
+                "stat": "3DA 91.4 · Checkout 42%",
+                "time": "Tikko"
+            },
+            "fb": {
+                "title": "Spēles reportāža: Kluba vakars 501",
+                "body": "Saspīlēts best-of-five, kas izšķīrās pēdējā lejā. Spēcīgs first 9 un precīzi dubultnieki izšķirošajā brīdī.",
+                "meta": "Automātiski no tava rezultātu protokola"
+            },
+            "blog": {
+                "title": "Kā iekava apgriezās 2. kārtā",
+                "excerpt": "AI uzrakstīts kopsavilkums par momenta maiņām, 180-iem un finišu, kas aizveda līdz finālam.",
+                "tag": "Turnīra dienasgrāmata"
+            }
         }
     },
     "closing": {
-        "title": "Gatavs uzlabot savu spēli?",
-        "lead": "Pievienojies TrainDart un sāc izsekot katram metienam jau šodien.",
-        "cta": "Sākt bez maksas"
+        "title": "Pievienojies lietotājiem",
+        "lead": "Izmēģini rīku, kas padara treniņus un mačus organizētākus.",
+        "cta": "Sākt lietot"
     }
 }

@@ -1,42 +1,88 @@
 {
     "guest": {
         "h1Line1": "Train smarter. Play online.",
-        "h1Line2": "Climb the ranks.",
-        "lead": "From your first throw to tournament night — TrainDart combines darts training, online darts matches and a full tournament system, while auto-generated match reports turn every result into a story worth sharing.",
-        "register": "Join Now",
-        "login": "Log In",
-        "reassurance": "Free · No credit card required",
+        "h1Line2": "Track your progress.",
+        "lead": "TrainDart is built for players who want a better way to track their performance. From daily practice routines to online matches — tools designed to help you analyze data and refine your throw.",
+        "register": "Sign up",
+        "login": "Login",
+        "reassurance": "Free to join · No strings attached",
         "nav": {
-            "login": "Already have an account? Log in"
+            "login": "Already a member? Login"
         }
     },
     "seo": {
-        "title": "TrainDart — Darts Training & Stats Platform",
-        "description": "TrainDart helps you improve accuracy with darts training programs, detailed stats and analytics, online darts matches and tournaments. Start training for free."
+        "title": "TrainDart — Darts training and statistics tool",
+        "description": "TrainDart provides an easy way to track your darts practice, analyze your statistics, and play online matches. A reliable tool for every darts player."
     },
     "features": {
-        "sectionTitle": "Everything you need to become a better darts player",
-        "sectionLead": "From your first throw to the top of the leaderboard — one platform for your growth.",
+        "sectionTitle": "Tools for every player",
+        "sectionLead": "Features designed for purposeful practice and consistent gameplay.",
         "stats": {
-            "title": "Precise stats and progress tracking",
-            "desc": "Follow your average, checkout %, 180s and more with detailed darts statistics and analytics that reveal your real progress."
+            "title": "Detailed statistics",
+            "desc": "Track your average and checkout percentages to see objective data on how your game is evolving."
         },
         "training": {
-            "title": "Interactive, effective training modes",
-            "desc": "Structured darts practice routines for doubles, trebles and finishing that help you improve accuracy with purpose."
+            "title": "Structured practice",
+            "desc": "Choose practice modes that fit your needs. Focused work on doubles and segments leads to better results."
         },
         "online": {
-            "title": "Online matches with other players",
-            "desc": "Challenge friends or find opponents in online darts matches anytime, anywhere."
+            "title": "Online matches",
+            "desc": "A simple way to play against others. Compete in your own time, anywhere you have your setup."
         },
         "tournaments": {
-            "title": "Tournament system and automatic match reports",
-            "desc": "Join organized tournaments and get an automatically generated report after every match, built from your real results."
+            "title": "Match analysis",
+            "desc": "Get a clear summary after every match. It helps you spot mistakes faster and improve your consistency."
+        }
+    },
+    "tournamentBlock": {
+        "kicker": "Tournaments",
+        "title": "Run brackets like a real event",
+        "lead": "Build knockout or round-robin tournaments, generate fixtures automatically, and track every player’s path through the draw — from first round to final.",
+        "points": {
+            "brackets": "Single & double elimination brackets",
+            "roundRobin": "Round-robin leagues and standings",
+            "live": "Live progression as results come in"
+        },
+        "bracket": {
+            "round": "Semi-final",
+            "final": "Final",
+            "p1": "J. Price",
+            "p2": "M. Suljović",
+            "p3": "G. Anderson",
+            "p4": "D. Cross",
+            "winner": "Champion"
+        }
+    },
+    "reportsBlock": {
+        "kicker": "AI match reports",
+        "title": "Share every match like a highlight post",
+        "lead": "After each game, TrainDart turns your real stats into a ready-to-post story — formatted for Facebook, Instagram, or your club blog.",
+        "platforms": {
+            "ig": "Instagram",
+            "fb": "Facebook",
+            "blog": "Blog"
+        },
+        "posts": {
+            "ig": {
+                "caption": "Leg locked. Checkout under pressure.",
+                "stat": "3DA 91.4 · Checkout 42%",
+                "time": "Just now"
+            },
+            "fb": {
+                "title": "Match report: Club night 501",
+                "body": "A tight best-of-five decided on the last leg. Strong first 9, clinical doubles when it mattered.",
+                "meta": "Auto-generated from your scorecard"
+            },
+            "blog": {
+                "title": "How the bracket flipped in round 2",
+                "excerpt": "An AI-written recap of momentum shifts, 180s, and the finish that sent one player to the final.",
+                "tag": "Tournament diary"
+            }
         }
     },
     "closing": {
-        "title": "Ready to level up your game?",
-        "lead": "Join TrainDart and start tracking every dart today.",
-        "cta": "Start Free"
+        "title": "Join the community",
+        "lead": "Try the tool that makes practice and matches more organized.",
+        "cta": "Start using it"
     }
 }

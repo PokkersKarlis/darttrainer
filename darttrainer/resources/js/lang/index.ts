@@ -1,9 +1,7 @@
 /**
  * Apvieno visus pa moduļiem sadalītos tulkojumu failus vienā ziņojumu kokā
  * katrai valodai. Katra faila augšējā līmeņa atslēgas ir savstarpēji unikālas
- * (auth/guest/seo/features/closing/header/nav/usercard/menu/cards/panel/
- * stat/live/side/friend/mobile/lang/pwd/settings), tāpēc plakans spread apvienojums
- * ir droši lietojams.
+ * (auth/guest/seo/features/closing/tournamentBlock/reportsBlock/header/nav/...)
  */
 import lvCommon from './lv/common.json';
 import lvAuth from './lv/auth.json';
