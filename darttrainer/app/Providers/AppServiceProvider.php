@@ -7,6 +7,7 @@ use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Vite;
+use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 
 class AppServiceProvider extends ServiceProvider
@@ -35,20 +36,34 @@ class AppServiceProvider extends ServiceProvider
         // lapa vairs neatšifrējas — pārlūkam jāveic jauns pieprasījums uz serveri.
         Inertia::encryptHistory();
 
+        // ── Paroles stipruma prasības (reģistrācija, paroles maiņa/atjaunošana) ──
+        // Saskaņots ar frontend PasswordField stipruma indikatoru: min. 8 rakstzīmes,
+        // lielie/mazie burti un vismaz viens cipars. Apzināti NEIZMANTOJAM ->uncompromised()
+        // (HaveIBeenPwned pārbaude) — tā katrā reģistrācijā/paroles maiņā veiktu ārēju HTTP
+        // pieprasījumu, kas padarītu auth plūsmu un CI testus atkarīgus no trešās puses API.
+        Password::defaults(function () {
+            return Password::min(8)->mixedCase()->numbers();
+        });
+
         // ── Zīmola e-pasti (TrainDart tumšais dizains) ──
+        // Teksts nāk no lang/{locale}/emails.php. Valoda tiek noteikta pēc
+        // app()->getLocale(), ko attiecīgais kontrolieris (RegisteredUserController,
+        // PasswordResetLinkController, EmailVerificationNotificationController)
+        // uzstāda TIEŠI PIRMS notification/event izsaukšanas — tātad e-pasts
+        // atnāk tādā valodā, kāda bija izvēlēta lietotnē tajā brīdī.
 
         // E-pasta apstiprināšana
         VerifyEmail::toMailUsing(function (object $notifiable, string $url): MailMessage {
             return (new MailMessage)
-                ->subject('Apstiprini savu TrainDart e-pastu')
+                ->subject(__('emails.verify.subject'))
                 ->view('emails.branded', [
-                    'title' => 'Apstiprini e-pastu',
-                    'lines' => [
-                        'Paldies, ka pievienojies TrainDart! Lai atbloķētu tiešsaistes spēles, statistiku un draugus, apstiprini savu e-pasta adresi.',
-                    ],
-                    'buttonText' => 'Apstiprināt e-pastu',
+                    'eyebrow' => __('emails.verify.eyebrow'),
+                    'title' => __('emails.verify.title'),
+                    'icon' => __('emails.verify.icon'),
+                    'lines' => __('emails.verify.lines'),
+                    'buttonText' => __('emails.verify.button'),
                     'buttonUrl' => $url,
-                    'footerNote' => 'Ja neizveidoji šo kontu, vari ignorēt šo vēstuli.',
+                    'footerNote' => __('emails.verify.footer'),
                 ]);
         });
 
@@ -62,15 +77,15 @@ class AppServiceProvider extends ServiceProvider
             $expire = config('auth.passwords.' . config('auth.defaults.passwords') . '.expire', 60);
 
             return (new MailMessage)
-                ->subject('TrainDart paroles atjaunošana')
+                ->subject(__('emails.reset.subject'))
                 ->view('emails.branded', [
-                    'title' => 'Atjauno paroli',
-                    'lines' => [
-                        'Saņēmām pieprasījumu atjaunot tavu TrainDart paroli. Noklikšķini uz pogas, lai izvēlētos jaunu paroli.',
-                    ],
-                    'buttonText' => 'Atjaunot paroli',
+                    'eyebrow' => __('emails.reset.eyebrow'),
+                    'title' => __('emails.reset.title'),
+                    'icon' => __('emails.reset.icon'),
+                    'lines' => __('emails.reset.lines'),
+                    'buttonText' => __('emails.reset.button'),
                     'buttonUrl' => $url,
-                    'footerNote' => "Šī saite ir derīga {$expire} minūtes. Ja neveici šo pieprasījumu, vari ignorēt šo vēstuli.",
+                    'footerNote' => __('emails.reset.footer', ['expire' => $expire]),
                 ]);
         });
     }

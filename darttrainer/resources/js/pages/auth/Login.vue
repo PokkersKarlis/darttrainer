@@ -1,20 +1,21 @@
 <script setup lang="ts">
 import AuthShell from '@/layouts/AuthShell.vue';
+import PasswordField from '@/components/PasswordField.vue';
+import { useLocale } from '@/composables/useLocale';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
 
 defineProps<{
     status?: string;
     canResetPassword: boolean;
 }>();
 
+const { t } = useLocale();
+
 const form = useForm({
     email: '',
     password: '',
     remember: false,
 });
-
-const showPassword = ref(false);
 
 const submit = () => {
     form.post(route('login'), {
@@ -24,27 +25,23 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Pieteikties" />
+    <Head :title="t('auth.login.title')" />
 
-    <AuthShell
-        heading-line1="Welcome back."
-        heading-line2="Time to check in."
-        lead="Pick up where you left off — your averages, live matches and training streak are waiting."
-    >
-        <h2 class="td-h">Log in</h2>
-        <p class="td-sub">Enter your details to access your dashboard.</p>
+    <AuthShell :heading-line1="t('auth.login.heading1')" :heading-line2="t('auth.login.heading2')" :lead="t('auth.login.lead')">
+        <h2 class="td-h">{{ t('auth.login.title') }}</h2>
+        <p class="td-sub">{{ t('auth.login.subtitle') }}</p>
 
         <div v-if="status" class="td-status">{{ status }}</div>
 
         <form class="td-fields" @submit.prevent="submit">
             <div>
-                <label class="td-label" for="email">Email Address</label>
+                <label class="td-label" for="email">{{ t('auth.field.email') }}</label>
                 <input
                     id="email"
                     v-model="form.email"
                     type="email"
                     class="td-input"
-                    placeholder="you@example.com"
+                    :placeholder="t('auth.field.emailPlaceholder')"
                     required
                     autofocus
                     autocomplete="email"
@@ -54,26 +51,18 @@ const submit = () => {
 
             <div>
                 <div class="td-label-row">
-                    <label class="td-label" for="password">Password</label>
-                    <Link v-if="canResetPassword" :href="route('password.request')" class="td-link">Forgot password?</Link>
+                    <label class="td-label" for="password">{{ t('auth.field.password') }}</label>
+                    <Link v-if="canResetPassword" :href="route('password.request')" class="td-link">{{ t('auth.login.forgot') }}</Link>
                 </div>
-                <div class="td-input-wrap">
-                    <input
-                        id="password"
-                        v-model="form.password"
-                        :type="showPassword ? 'text' : 'password'"
-                        class="td-input"
-                        placeholder="Enter your password"
-                        required
-                        autocomplete="current-password"
-                    />
-                    <button type="button" class="td-eye" aria-label="Rādīt paroli" @click="showPassword = !showPassword">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" /><circle cx="12" cy="12" r="3" />
-                        </svg>
-                    </button>
-                </div>
-                <p v-if="form.errors.password" class="td-error">{{ form.errors.password }}</p>
+                <PasswordField
+                    id="password"
+                    v-model="form.password"
+                    :label="''"
+                    :placeholder="t('auth.login.passwordPlaceholder')"
+                    required
+                    autocomplete="current-password"
+                    :error="form.errors.password"
+                />
             </div>
 
             <label class="td-check-row">
@@ -83,17 +72,17 @@ const submit = () => {
                     </svg>
                 </span>
                 <input v-model="form.remember" type="checkbox" class="sr-only" />
-                <span class="td-check-lbl">Remember me on this device</span>
+                <span class="td-check-lbl">{{ t('auth.login.remember') }}</span>
             </label>
 
             <button type="submit" class="td-submit" :disabled="form.processing">
-                {{ form.processing ? 'Logging in…' : 'Log In' }}
+                {{ form.processing ? t('auth.login.submitting') : t('auth.login.submit') }}
             </button>
         </form>
 
         <div class="td-foot">
-            Don't have an account?
-            <Link :href="route('register')" class="td-link td-link--bold">Sign up</Link>
+            {{ t('auth.login.noAccount') }}
+            <Link :href="route('register')" class="td-link td-link--bold">{{ t('auth.login.signUp') }}</Link>
         </div>
     </AuthShell>
 </template>

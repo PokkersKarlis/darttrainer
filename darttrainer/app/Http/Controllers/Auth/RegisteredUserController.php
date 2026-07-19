@@ -34,6 +34,7 @@ class RegisteredUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'locale' => ['nullable', 'in:lv,en'],
         ]);
 
         $user = User::create([
@@ -42,7 +43,21 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        event(new Registered($user));
+        // E-pastam jāatnāk tajā valodā, kas bija izvēlēta lietotnē reģistrācijas
+        // brīdī (frontend to nosūta līdzi kā 'locale' lauku).
+        if ($request->filled('locale')) {
+            app()->setLocale($request->string('locale')->toString());
+        }
+
+        // Registered event nosūta e-pasta apstiprinājuma vēstuli. Ja e-pasta
+        // serviss tobrīd nav sasniedzams, konta izveide un pieteikšanās
+        // TOMĒR jānotiek — lietotājs var apstiprināt e-pastu vēlāk (skat.
+        // EmailVerificationNotificationController "Nosūtīt vēlreiz").
+        try {
+            event(new Registered($user));
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         Auth::login($user);
 

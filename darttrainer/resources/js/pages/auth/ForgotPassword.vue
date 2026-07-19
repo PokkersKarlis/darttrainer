@@ -1,41 +1,55 @@
 <script setup lang="ts">
 import AuthShell from '@/layouts/AuthShell.vue';
+import { useLocale } from '@/composables/useLocale';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 defineProps<{ status?: string }>();
 
-const form = useForm({ email: '' });
+const { t, locale } = useLocale();
 
-const submit = () => form.post(route('password.email'));
+const form = useForm({ email: '', locale: locale.value });
+
+const submit = () => {
+    // Nosūta pašreiz izvēlēto valodu, lai atjaunošanas e-pasts atnāk tajā
+    // pašā valodā, kāda ir izvēlēta lietotnē.
+    form.locale = locale.value;
+    form.post(route('password.email'));
+};
 </script>
 
 <template>
-    <Head title="Aizmirsi paroli" />
+    <Head :title="t('auth.forgot.title')" />
 
-    <AuthShell
-        heading-line1="Locked out?"
-        heading-line2="Let's fix that."
-        lead="Ievadi savu e-pastu, un mēs atsūtīsim saiti paroles atjaunošanai."
-    >
-        <h2 class="td-h">Aizmirsi paroli?</h2>
-        <p class="td-sub">Ievadi e-pastu, un saņemsi paroles atjaunošanas saiti.</p>
+    <AuthShell :heading-line1="t('auth.forgot.heading1')" :heading-line2="t('auth.forgot.heading2')" :lead="t('auth.forgot.lead')">
+        <h2 class="td-h">{{ t('auth.forgot.title') }}</h2>
+        <p class="td-sub">{{ t('auth.forgot.subtitle') }}</p>
 
-        <div v-if="status" class="td-status">{{ status }}</div>
+        <div v-if="status === 'reset-link-sent'" class="td-status">{{ t('auth.forgot.sent') }}</div>
+        <div v-else-if="status === 'reset-link-failed'" class="td-status td-status--error">{{ t('auth.forgot.failed') }}</div>
 
         <form class="td-fields" @submit.prevent="submit">
             <div>
-                <label class="td-label" for="email">Email Address</label>
-                <input id="email" v-model="form.email" type="email" class="td-input" placeholder="you@example.com" required autofocus autocomplete="email" />
+                <label class="td-label" for="email">{{ t('auth.field.email') }}</label>
+                <input
+                    id="email"
+                    v-model="form.email"
+                    type="email"
+                    class="td-input"
+                    :placeholder="t('auth.field.emailPlaceholder')"
+                    required
+                    autofocus
+                    autocomplete="email"
+                />
                 <p v-if="form.errors.email" class="td-error">{{ form.errors.email }}</p>
             </div>
             <button type="submit" class="td-submit" :disabled="form.processing">
-                {{ form.processing ? 'Sūta…' : 'Nosūtīt saiti' }}
+                {{ form.processing ? t('auth.forgot.submitting') : t('auth.forgot.submit') }}
             </button>
         </form>
 
         <div class="td-foot">
-            Atceries paroli?
-            <Link :href="route('login')" class="td-link td-link--bold">Pieteikties</Link>
+            {{ t('auth.forgot.remember') }}
+            <Link :href="route('login')" class="td-link td-link--bold">{{ t('auth.forgot.login') }}</Link>
         </div>
     </AuthShell>
 </template>
@@ -44,6 +58,7 @@ const submit = () => form.post(route('password.email'));
 .td-h { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; font-size: 30px; margin: 0 0 8px; }
 .td-sub { color: #64748b; font-size: 14px; margin: 0 0 28px; }
 .td-status { margin-bottom: 16px; border-radius: 10px; background: rgba(57, 255, 20, 0.08); border: 1px solid rgba(57, 255, 20, 0.25); padding: 10px 14px; font-size: 13px; color: #39ff14; }
+.td-status--error { background: rgba(251, 44, 95, 0.08); border-color: rgba(251, 44, 95, 0.25); color: #fb2c5f; }
 .td-fields { display: flex; flex-direction: column; gap: 16px; }
 .td-label { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; margin-bottom: 8px; }
 .td-input { width: 100%; padding: 13px 16px; border-radius: 10px; background: #131a26; border: 1px solid #1f2937; color: #f4f4f5; font-size: 14px; font-family: Inter, sans-serif; outline: none; }

@@ -1,0 +1,16 @@
+{
+    "lang": {
+        "lv": "LV",
+        "en": "EN"
+    },
+    "pwd": {
+        "show": "Rādīt paroli",
+        "hide": "Slēpt paroli",
+        "strength": {
+            "weak": "Vāja — pievieno ciparus un simbolus",
+            "fair": "Vidēja — jau tuvu mērķim",
+            "good": "Laba",
+            "strong": "Stipra"
+        }
+    }
+}

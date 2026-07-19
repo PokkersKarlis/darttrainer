@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import AuthShell from '@/layouts/AuthShell.vue';
+import PasswordField from '@/components/PasswordField.vue';
+import { useLocale } from '@/composables/useLocale';
 import { Head, useForm } from '@inertiajs/vue3';
 
 interface Props {
@@ -7,6 +9,8 @@ interface Props {
     email: string;
 }
 const props = defineProps<Props>();
+
+const { t } = useLocale();
 
 const form = useForm({
     token: props.token,
@@ -23,34 +27,40 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Atjaunot paroli" />
+    <Head :title="t('auth.reset.title')" />
 
-    <AuthShell
-        heading-line1="New password."
-        heading-line2="Fresh start."
-        lead="Izvēlies jaunu, drošu paroli un turpini treniņu."
-    >
-        <h2 class="td-h">Jauna parole</h2>
-        <p class="td-sub">Ievadi un apstiprini savu jauno paroli.</p>
+    <AuthShell :heading-line1="t('auth.reset.heading1')" :heading-line2="t('auth.reset.heading2')" :lead="t('auth.reset.lead')">
+        <h2 class="td-h">{{ t('auth.reset.title') }}</h2>
+        <p class="td-sub">{{ t('auth.reset.subtitle') }}</p>
 
         <form class="td-fields" @submit.prevent="submit">
             <div>
-                <label class="td-label" for="email">Email Address</label>
+                <label class="td-label" for="email">{{ t('auth.field.email') }}</label>
                 <input id="email" v-model="form.email" type="email" class="td-input" readonly autocomplete="email" />
                 <p v-if="form.errors.email" class="td-error">{{ form.errors.email }}</p>
             </div>
-            <div>
-                <label class="td-label" for="password">Jaunā parole</label>
-                <input id="password" v-model="form.password" type="password" class="td-input" placeholder="Vismaz 8 rakstzīmes" required autofocus autocomplete="new-password" />
-                <p v-if="form.errors.password" class="td-error">{{ form.errors.password }}</p>
-            </div>
-            <div>
-                <label class="td-label" for="password_confirmation">Apstiprini paroli</label>
-                <input id="password_confirmation" v-model="form.password_confirmation" type="password" class="td-input" placeholder="Atkārto paroli" required autocomplete="new-password" />
-                <p v-if="form.errors.password_confirmation" class="td-error">{{ form.errors.password_confirmation }}</p>
-            </div>
+            <PasswordField
+                id="password"
+                v-model="form.password"
+                :label="t('auth.field.newPassword')"
+                :placeholder="t('auth.reset.passwordPlaceholder')"
+                required
+                autofocus
+                autocomplete="new-password"
+                show-strength
+                :error="form.errors.password"
+            />
+            <PasswordField
+                id="password_confirmation"
+                v-model="form.password_confirmation"
+                :label="t('auth.register.confirmPassword')"
+                :placeholder="t('auth.reset.confirmPasswordPlaceholder')"
+                required
+                autocomplete="new-password"
+                :error="form.errors.password_confirmation"
+            />
             <button type="submit" class="td-submit" :disabled="form.processing">
-                {{ form.processing ? 'Notiek maiņa…' : 'Mainīt paroli' }}
+                {{ form.processing ? t('auth.reset.submitting') : t('auth.reset.submit') }}
             </button>
         </form>
     </AuthShell>

@@ -54,9 +54,10 @@ services:
   #     - traindart-network
 
   node:
-    # node:20 (glibc), NEVIS alpine (musl) — Vite 8 / rolldown native binārie
+    # node:22 (glibc), NEVIS alpine (musl) — Vite 8 / rolldown native binārie
     # ir linux-x64-gnu (glibc); alpine musl vidē tie krīt ("Cannot find binding musl").
-    image: node:20
+    # Uzlabots no node:20 uz node:22, jo vue-i18n ^11 pieprasa Node >= 22 (engines).
+    image: node:22
     working_dir: /var/www
     volumes:
       - .:/var/www

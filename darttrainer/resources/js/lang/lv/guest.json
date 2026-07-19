@@ -1,0 +1,42 @@
+{
+    "guest": {
+        "h1Line1": "Trenējies gudrāk. Spēlē tiešsaistē.",
+        "h1Line2": "Kāp reitingā.",
+        "lead": "No pirmā metiena līdz čempionātam — TrainDart apvieno šautriņu mešanas treniņus, tiešsaistes šautriņu mačus un pilnu turnīru sistēmu, bet automātiski ģenerētas spēļu reportāžas pārvērš katru rezultātu stāstā, ko vari dalīties.",
+        "register": "Pievienoties tagad",
+        "login": "Pieteikties",
+        "reassurance": "Bez maksas · Nav nepieciešama kredītkarte",
+        "nav": {
+            "login": "Jau ir konts? Pieteikties"
+        }
+    },
+    "seo": {
+        "title": "TrainDart — Šautriņu treniņu un statistikas platforma",
+        "description": "TrainDart palīdz uzlabot precizitāti ar šautriņu treniņu programmām, detalizētu statistiku un analītiku, tiešsaistes šautriņu mačiem un turnīriem. Sāc trenēties bez maksas."
+    },
+    "features": {
+        "sectionTitle": "Viss, kas nepieciešams, lai kļūtu labāks šautriņu spēlētājs",
+        "sectionLead": "No pirmā metiena līdz reitinga virsotnei — viena platforma tavai izaugsmei.",
+        "stats": {
+            "title": "Precīza statistika un progresa izsekošana",
+            "desc": "Seko savam vidējam rezultātam, checkout %, 180-iem un vairāk ar detalizētu šautriņu statistiku un analītiku, kas atklāj tavu īsto progresu."
+        },
+        "training": {
+            "title": "Interaktīvi un efektīvi treniņu režīmi",
+            "desc": "Strukturētas šautriņu treniņu programmas dubultniekiem, trīskāršniekiem un finišiem, kas palīdz mērķtiecīgi uzlabot precizitāti."
+        },
+        "online": {
+            "title": "Tiešsaistes mači ar citiem spēlētājiem",
+            "desc": "Izaicini draugus vai atrodi pretiniekus tiešsaistes šautriņu mačos jebkurā laikā, jebkurā vietā."
+        },
+        "tournaments": {
+            "title": "Turnīru sistēma un automātiskas spēļu reportāžas",
+            "desc": "Piedalies organizētos turnīros un pēc katra mača saņem automātiski ģenerētu reportāžu, kas balstīta uz taviem reālajiem rezultātiem."
+        }
+    },
+    "closing": {
+        "title": "Gatavs uzlabot savu spēli?",
+        "lead": "Pievienojies TrainDart un sāc izsekot katram metienam jau šodien.",
+        "cta": "Sākt bez maksas"
+    }
+}

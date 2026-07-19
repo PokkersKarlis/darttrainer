@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import AuthShell from '@/layouts/AuthShell.vue';
+import { useLocale } from '@/composables/useLocale';
 import { Head, useForm } from '@inertiajs/vue3';
+
+const { t } = useLocale();
 
 const form = useForm({ password: '' });
 
@@ -12,24 +15,20 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Apstiprini paroli" />
+    <Head :title="t('auth.confirm.title')" />
 
-    <AuthShell
-        heading-line1="Secure area."
-        heading-line2="Confirm it's you."
-        lead="Šī ir droša sadaļa. Apstiprini paroli, lai turpinātu."
-    >
-        <h2 class="td-h">Apstiprini paroli</h2>
-        <p class="td-sub">Ievadi paroli, lai turpinātu.</p>
+    <AuthShell :heading-line1="t('auth.confirm.heading1')" :heading-line2="t('auth.confirm.heading2')" :lead="t('auth.confirm.lead')">
+        <h2 class="td-h">{{ t('auth.confirm.title') }}</h2>
+        <p class="td-sub">{{ t('auth.confirm.subtitle') }}</p>
 
         <form class="td-fields" @submit.prevent="submit">
             <div>
-                <label class="td-label" for="password">Parole</label>
+                <label class="td-label" for="password">{{ t('auth.field.password') }}</label>
                 <input id="password" v-model="form.password" type="password" class="td-input" required autofocus autocomplete="current-password" />
                 <p v-if="form.errors.password" class="td-error">{{ form.errors.password }}</p>
             </div>
             <button type="submit" class="td-submit" :disabled="form.processing">
-                {{ form.processing ? 'Apstiprina…' : 'Apstiprināt' }}
+                {{ form.processing ? t('auth.confirm.submitting') : t('auth.confirm.submit') }}
             </button>
         </form>
     </AuthShell>

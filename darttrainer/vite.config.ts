@@ -41,6 +41,10 @@ export default defineConfig(({ command }) => ({
         },
         watch: {
             usePolling: true,
+            interval: 300,
+            // Bez šī polling apsekoja arī vendor/ (composer), storage/logs un .git —
+            // tas ir tūkstošiem failu Windows bind-mount, kas padarīja HMR ļoti lēnu.
+            ignored: ['**/vendor/**', '**/storage/**', '**/bootstrap/cache/**', '**/node_modules/**', '**/.git/**'],
         },
     },
 }));

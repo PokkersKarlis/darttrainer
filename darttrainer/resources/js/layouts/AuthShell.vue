@@ -4,6 +4,10 @@
  * (paslēpts zem 960px) + labais formas laukums. Formu ievieto default slotā.
  */
 import BrandLogo from '@/components/BrandLogo.vue';
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
+import { useLocale } from '@/composables/useLocale';
+
+const { t } = useLocale();
 
 withDefaults(
     defineProps<{
@@ -19,7 +23,10 @@ withDefaults(
     <div class="td-auth">
         <!-- Brand panelis (desktop) -->
         <aside class="td-brand">
-            <BrandLogo :width="180" class="td-brand-logo" />
+            <div class="td-brand-top">
+                <BrandLogo :width="180" class="td-brand-logo" />
+                <LanguageSwitcher />
+            </div>
 
             <div class="td-brand-body">
                 <h1 class="td-brand-h">{{ headingLine1 }}<br />{{ headingLine2 }}</h1>
@@ -32,7 +39,7 @@ withDefaults(
                                 <rect x="4" y="12" width="4" height="8" /><rect x="10" y="6" width="4" height="14" /><rect x="16" y="9" width="4" height="11" />
                             </svg>
                         </span>
-                        <span class="td-feature-txt">Live stats: 3-dart average, checkout %, 180s</span>
+                        <span class="td-feature-txt">{{ t('auth.brand.feature1') }}</span>
                     </div>
                     <div class="td-feature">
                         <span class="td-feature-ico" style="background: rgba(34, 211, 238, 0.1)">
@@ -40,7 +47,7 @@ withDefaults(
                                 <circle cx="12" cy="12" r="2" fill="#22d3ee" /><path d="M8.5 15.5a5 5 0 010-7M15.5 15.5a5 5 0 000-7" />
                             </svg>
                         </span>
-                        <span class="td-feature-txt">Live matches and tournament brackets</span>
+                        <span class="td-feature-txt">{{ t('auth.brand.feature2') }}</span>
                     </div>
                     <div class="td-feature">
                         <span class="td-feature-ico" style="background: rgba(251, 44, 95, 0.1)">
@@ -48,18 +55,21 @@ withDefaults(
                                 <circle cx="9" cy="8" r="3" /><path d="M3 20a6 6 0 0112 0" /><circle cx="17" cy="8" r="2.5" />
                             </svg>
                         </span>
-                        <span class="td-feature-txt">Play friends and climb the weekly leaderboard</span>
+                        <span class="td-feature-txt">{{ t('auth.brand.feature3') }}</span>
                     </div>
                 </div>
             </div>
 
-            <div class="td-brand-foot">© 2026 TrainDart. All rights reserved.</div>
+            <div class="td-brand-foot">{{ t('auth.brand.copyright') }}</div>
         </aside>
 
         <!-- Formas laukums -->
         <main class="td-form-wrap">
             <div class="td-form">
-                <BrandLogo :width="140" class="td-mobile-logo" />
+                <div class="td-mobile-top">
+                    <BrandLogo :width="140" class="td-mobile-logo" />
+                    <LanguageSwitcher class="td-mobile-lang" />
+                </div>
                 <slot />
             </div>
         </main>
@@ -86,7 +96,10 @@ withDefaults(
     border-right: 1px solid #1f2937;
     background-image: radial-gradient(circle at 20% 20%, rgba(57, 255, 20, 0.06), transparent 45%);
 }
-.td-brand-logo {
+.td-brand-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     margin-bottom: 48px;
 }
 .td-brand-body {
@@ -146,16 +159,21 @@ withDefaults(
     width: 100%;
     max-width: 420px;
 }
+.td-mobile-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+}
 .td-mobile-logo {
     display: block;
-    margin-bottom: 32px;
 }
 
 @media (min-width: 960px) {
     .td-brand {
         display: flex;
     }
-    .td-mobile-logo {
+    .td-mobile-top {
         display: none;
     }
 }

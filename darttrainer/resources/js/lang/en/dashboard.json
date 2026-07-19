@@ -1,0 +1,86 @@
+{
+    "header": {
+        "title": "Dashboard",
+        "welcome": "Welcome back, {name}. Let’s hit some doubles.",
+        "search": "Search",
+        "notifications": "Notifications",
+        "openMenu": "Open menu",
+        "closeMenu": "Close menu"
+    },
+    "nav": {
+        "dashboard": "Dashboard",
+        "play": "Play",
+        "training": "Training",
+        "tournaments": "Tournaments",
+        "live": "Live Feed",
+        "friends": "Friends"
+    },
+    "usercard": {
+        "rank": "Rank #4 · Avg 74.2"
+    },
+    "menu": {
+        "profile": "Profile",
+        "password": "Password",
+        "appearance": "Appearance",
+        "logout": "Log Out"
+    },
+    "cards": {
+        "x01": {
+            "title": "X01 Multiplayer",
+            "desc": "Challenge a friend or find an opponent online.",
+            "start": "Start Match"
+        },
+        "solo": {
+            "title": "Solo Practice",
+            "desc": "Train alone. Pick a starting score.",
+            "start": "Practice Now"
+        },
+        "cricket": {
+            "title": "Cricket Mode",
+            "desc": "Close numbers 15–20 and bull before your opponent.",
+            "start": "Play Cricket"
+        },
+        "drills": {
+            "title": "Training Drills",
+            "desc": "Structured routines for doubles, trebles and finishing.",
+            "badge": "More routines coming soon",
+            "browse": "Browse Drills"
+        }
+    },
+    "panel": {
+        "stats": {
+            "title": "Performance Stats",
+            "period": "Last 7 days"
+        },
+        "form": "Form Guide — Last 10",
+        "live": {
+            "title": "Live Now"
+        }
+    },
+    "stat": {
+        "avg": "3-Dart Avg",
+        "checkout": "Checkout %",
+        "180s": "180s",
+        "legsWon": "Legs Won"
+    },
+    "live": {
+        "leg": "Leg",
+        "avg": "Avg"
+    },
+    "side": {
+        "activity": "Live Activity",
+        "friends": "Friends",
+        "leaderboard": "Weekly Leaderboard"
+    },
+    "friend": {
+        "online": "Online",
+        "inMatch": "In a match",
+        "offline": "Offline"
+    },
+    "mobile": {
+        "home": "Home",
+        "play": "Play",
+        "stats": "Stats",
+        "profile": "Profile"
+    }
+}

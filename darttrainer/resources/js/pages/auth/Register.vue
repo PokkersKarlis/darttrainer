@@ -1,39 +1,27 @@
 <script setup lang="ts">
 import AuthShell from '@/layouts/AuthShell.vue';
+import PasswordField from '@/components/PasswordField.vue';
+import { useLocale } from '@/composables/useLocale';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
+
+const { t, locale } = useLocale();
 
 const form = useForm({
     name: '',
     email: '',
     password: '',
     password_confirmation: '',
+    locale: locale.value,
 });
 
-const showPassword = ref(false);
 const termsAccepted = ref(false);
-
-/** Vienkāršs paroles stipruma novērtējums (0–4). */
-const strength = computed(() => {
-    const p = form.password;
-    let score = 0;
-    if (p.length >= 8) score++;
-    if (/[A-Z]/.test(p) && /[a-z]/.test(p)) score++;
-    if (/\d/.test(p)) score++;
-    if (/[^A-Za-z0-9]/.test(p)) score++;
-    return score;
-});
-
-const strengthMeta = computed(() => {
-    if (!form.password) return { width: '0%', color: '#1f2937', label: '' };
-    if (strength.value <= 1) return { width: '35%', color: '#fbbf24', label: 'Weak — add numbers and symbols for a stronger score' };
-    if (strength.value === 2) return { width: '60%', color: '#fbbf24', label: 'Fair — getting there' };
-    if (strength.value === 3) return { width: '80%', color: '#39ff14', label: 'Good' };
-    return { width: '100%', color: '#39ff14', label: 'Strong' };
-});
 
 const submit = () => {
     if (!termsAccepted.value) return;
+    // Nosūta pašreiz izvēlēto valodu, lai apstiprinājuma e-pasts atnāk tajā
+    // pašā valodā, kāda ir izvēlēta lietotnē (nevis vienmēr LV).
+    form.locale = locale.value;
     form.post(route('register'), {
         onFinish: () => form.reset('password', 'password_confirmation'),
     });
@@ -41,67 +29,62 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Reģistrēties" />
+    <Head :title="t('auth.register.title')" />
 
-    <AuthShell
-        heading-line1="Track every dart."
-        heading-line2="Sharpen every leg."
-        lead="Join players tracking averages, checkouts and live matches — and training with structured drills built for real improvement."
-    >
-        <h2 class="td-h">Create your account</h2>
-        <p class="td-sub">Start tracking your game in under a minute.</p>
+    <AuthShell :heading-line1="t('auth.register.heading1')" :heading-line2="t('auth.register.heading2')" :lead="t('auth.register.lead')">
+        <h2 class="td-h">{{ t('auth.register.title') }}</h2>
+        <p class="td-sub">{{ t('auth.register.subtitle') }}</p>
 
         <form class="td-fields" @submit.prevent="submit">
             <div>
-                <label class="td-label" for="name">Full Name</label>
-                <input id="name" v-model="form.name" type="text" class="td-input" placeholder="Marcus Reid" required autofocus autocomplete="name" />
+                <label class="td-label" for="name">{{ t('auth.register.name') }}</label>
+                <input
+                    id="name"
+                    v-model="form.name"
+                    type="text"
+                    class="td-input"
+                    :placeholder="t('auth.register.namePlaceholder')"
+                    required
+                    autofocus
+                    autocomplete="name"
+                />
                 <p v-if="form.errors.name" class="td-error">{{ form.errors.name }}</p>
             </div>
 
             <div>
-                <label class="td-label" for="email">Email Address</label>
-                <input id="email" v-model="form.email" type="email" class="td-input" placeholder="you@example.com" required autocomplete="email" />
+                <label class="td-label" for="email">{{ t('auth.field.email') }}</label>
+                <input
+                    id="email"
+                    v-model="form.email"
+                    type="email"
+                    class="td-input"
+                    :placeholder="t('auth.field.emailPlaceholder')"
+                    required
+                    autocomplete="email"
+                />
                 <p v-if="form.errors.email" class="td-error">{{ form.errors.email }}</p>
             </div>
 
-            <div>
-                <label class="td-label" for="password">Password</label>
-                <div class="td-input-wrap">
-                    <input
-                        id="password"
-                        v-model="form.password"
-                        :type="showPassword ? 'text' : 'password'"
-                        class="td-input"
-                        placeholder="At least 8 characters"
-                        required
-                        autocomplete="new-password"
-                    />
-                    <button type="button" class="td-eye" aria-label="Rādīt paroli" @click="showPassword = !showPassword">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" /><circle cx="12" cy="12" r="3" />
-                        </svg>
-                    </button>
-                </div>
-                <div class="td-strength-track">
-                    <div class="td-strength-fill" :style="{ width: strengthMeta.width, background: strengthMeta.color }" />
-                </div>
-                <div v-if="strengthMeta.label" class="td-strength-lbl">{{ strengthMeta.label }}</div>
-                <p v-if="form.errors.password" class="td-error">{{ form.errors.password }}</p>
-            </div>
+            <PasswordField
+                id="password"
+                v-model="form.password"
+                :label="t('auth.field.password')"
+                :placeholder="t('auth.register.passwordPlaceholder')"
+                required
+                autocomplete="new-password"
+                show-strength
+                :error="form.errors.password"
+            />
 
-            <div>
-                <label class="td-label" for="password_confirmation">Confirm Password</label>
-                <input
-                    id="password_confirmation"
-                    v-model="form.password_confirmation"
-                    type="password"
-                    class="td-input"
-                    placeholder="Re-enter your password"
-                    required
-                    autocomplete="new-password"
-                />
-                <p v-if="form.errors.password_confirmation" class="td-error">{{ form.errors.password_confirmation }}</p>
-            </div>
+            <PasswordField
+                id="password_confirmation"
+                v-model="form.password_confirmation"
+                :label="t('auth.register.confirmPassword')"
+                :placeholder="t('auth.register.confirmPasswordPlaceholder')"
+                required
+                autocomplete="new-password"
+                :error="form.errors.password_confirmation"
+            />
 
             <label class="td-check-row td-check-row--top">
                 <span class="td-check" :class="{ 'td-check--on': termsAccepted }">
@@ -111,18 +94,19 @@ const submit = () => {
                 </span>
                 <input v-model="termsAccepted" type="checkbox" class="sr-only" />
                 <span class="td-check-lbl">
-                    I agree to the <a href="#" class="td-link">Terms of Service</a> and <a href="#" class="td-link">Privacy Policy</a>
+                    {{ t('auth.register.termsPrefix') }}<a href="#" class="td-link">{{ t('auth.register.termsOfService') }}</a
+                    >{{ t('auth.register.termsAnd') }}<a href="#" class="td-link">{{ t('auth.register.privacyPolicy') }}</a>
                 </span>
             </label>
 
             <button type="submit" class="td-submit" :class="{ 'td-submit--off': !termsAccepted }" :disabled="!termsAccepted || form.processing">
-                {{ form.processing ? 'Creating…' : 'Create Account' }}
+                {{ form.processing ? t('auth.register.submitting') : t('auth.register.submit') }}
             </button>
         </form>
 
         <div class="td-foot">
-            Already have an account?
-            <Link :href="route('login')" class="td-link td-link--bold">Log in</Link>
+            {{ t('auth.register.haveAccount') }}
+            <Link :href="route('login')" class="td-link td-link--bold">{{ t('auth.register.login') }}</Link>
         </div>
     </AuthShell>
 </template>
@@ -170,38 +154,6 @@ const submit = () => {
     border-color: #39ff14;
 }
 .td-input::placeholder {
-    color: #64748b;
-}
-.td-input-wrap {
-    position: relative;
-}
-.td-eye {
-    position: absolute;
-    top: 0;
-    right: 14px;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-}
-.td-strength-track {
-    margin-top: 10px;
-    height: 4px;
-    border-radius: 4px;
-    background: #1f2937;
-    overflow: hidden;
-}
-.td-strength-fill {
-    height: 100%;
-    border-radius: 4px;
-    transition: width 0.2s;
-}
-.td-strength-lbl {
-    margin-top: 6px;
-    font-size: 12px;
     color: #64748b;
 }
 .td-link {

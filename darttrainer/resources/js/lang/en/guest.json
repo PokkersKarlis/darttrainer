@@ -1,0 +1,42 @@
+{
+    "guest": {
+        "h1Line1": "Train smarter. Play online.",
+        "h1Line2": "Climb the ranks.",
+        "lead": "From your first throw to tournament night — TrainDart combines darts training, online darts matches and a full tournament system, while auto-generated match reports turn every result into a story worth sharing.",
+        "register": "Join Now",
+        "login": "Log In",
+        "reassurance": "Free · No credit card required",
+        "nav": {
+            "login": "Already have an account? Log in"
+        }
+    },
+    "seo": {
+        "title": "TrainDart — Darts Training & Stats Platform",
+        "description": "TrainDart helps you improve accuracy with darts training programs, detailed stats and analytics, online darts matches and tournaments. Start training for free."
+    },
+    "features": {
+        "sectionTitle": "Everything you need to become a better darts player",
+        "sectionLead": "From your first throw to the top of the leaderboard — one platform for your growth.",
+        "stats": {
+            "title": "Precise stats and progress tracking",
+            "desc": "Follow your average, checkout %, 180s and more with detailed darts statistics and analytics that reveal your real progress."
+        },
+        "training": {
+            "title": "Interactive, effective training modes",
+            "desc": "Structured darts practice routines for doubles, trebles and finishing that help you improve accuracy with purpose."
+        },
+        "online": {
+            "title": "Online matches with other players",
+            "desc": "Challenge friends or find opponents in online darts matches anytime, anywhere."
+        },
+        "tournaments": {
+            "title": "Tournament system and automatic match reports",
+            "desc": "Join organized tournaments and get an automatically generated report after every match, built from your real results."
+        }
+    },
+    "closing": {
+        "title": "Ready to level up your game?",
+        "lead": "Join TrainDart and start tracking every dart today.",
+        "cta": "Start Free"
+    }
+}

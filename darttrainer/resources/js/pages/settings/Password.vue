@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import SettingsShell from '@/layouts/SettingsShell.vue';
+import PasswordField from '@/components/PasswordField.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
-const passwordInput = ref<HTMLInputElement>();
-const currentPasswordInput = ref<HTMLInputElement>();
+const passwordInput = ref<InstanceType<typeof PasswordField>>();
+const currentPasswordInput = ref<InstanceType<typeof PasswordField>>();
 
 const form = useForm({
     current_password: '',
@@ -39,23 +40,32 @@ const updatePassword = () => {
             <p class="tf-desc">Izmanto garu, nejaušu paroli, lai konts būtu drošs.</p>
 
             <form class="tf-form" @submit.prevent="updatePassword">
-                <div>
-                    <label class="tf-label" for="current_password">Pašreizējā parole</label>
-                    <input id="current_password" ref="currentPasswordInput" v-model="form.current_password" type="password" class="tf-input" autocomplete="current-password" />
-                    <p v-if="form.errors.current_password" class="tf-error">{{ form.errors.current_password }}</p>
-                </div>
+                <PasswordField
+                    id="current_password"
+                    ref="currentPasswordInput"
+                    v-model="form.current_password"
+                    label="Pašreizējā parole"
+                    autocomplete="current-password"
+                    :error="form.errors.current_password"
+                />
 
-                <div>
-                    <label class="tf-label" for="password">Jaunā parole</label>
-                    <input id="password" ref="passwordInput" v-model="form.password" type="password" class="tf-input" autocomplete="new-password" />
-                    <p v-if="form.errors.password" class="tf-error">{{ form.errors.password }}</p>
-                </div>
+                <PasswordField
+                    id="password"
+                    ref="passwordInput"
+                    v-model="form.password"
+                    label="Jaunā parole"
+                    autocomplete="new-password"
+                    show-strength
+                    :error="form.errors.password"
+                />
 
-                <div>
-                    <label class="tf-label" for="password_confirmation">Apstiprini paroli</label>
-                    <input id="password_confirmation" v-model="form.password_confirmation" type="password" class="tf-input" autocomplete="new-password" />
-                    <p v-if="form.errors.password_confirmation" class="tf-error">{{ form.errors.password_confirmation }}</p>
-                </div>
+                <PasswordField
+                    id="password_confirmation"
+                    v-model="form.password_confirmation"
+                    label="Apstiprini paroli"
+                    autocomplete="new-password"
+                    :error="form.errors.password_confirmation"
+                />
 
                 <div class="tf-actions">
                     <button type="submit" class="tf-btn tf-btn--green" :disabled="form.processing">Saglabāt paroli</button>

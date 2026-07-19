@@ -17,7 +17,24 @@ class EmailVerificationNotificationController extends Controller
             return redirect()->intended(route('home', absolute: false));
         }
 
-        $request->user()->sendEmailVerificationNotification();
+        $request->validate([
+            'locale' => ['nullable', 'in:lv,en'],
+        ]);
+
+        if ($request->filled('locale')) {
+            app()->setLocale($request->string('locale')->toString());
+        }
+
+        // Ja e-pasta nosūtīšana neizdodas (SMTP/DNS/tīkla kļūda), nedrīkst
+        // nogāzt pieprasījumu — parādām lietotājam skaidru kļūdas statusu,
+        // nevis 500 lapu.
+        try {
+            $request->user()->sendEmailVerificationNotification();
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('status', 'verification-link-failed');
+        }
 
         return back()->with('status', 'verification-link-sent');
     }
