@@ -1,0 +1,57 @@
+---
+description: TrainDart stack, production constraints, engineering principles, and darts domain rules
+alwaysApply: true
+---
+
+# TrainDart (traindart.com)
+
+Write production-ready, clean, secure, scalable, performant code for TrainDart — an online portal for tracking darts games, training regimens, and tournament statistics.
+
+## Technology Stack & Environment
+
+### Local Development
+- Fully orchestrated with **Docker Desktop**
+- Multi-container: PHP, Nginx, relational DB, Node.js for frontend asset compilation
+
+### Production (CRITICAL)
+- Shared hosting, **PHP 8.3**
+- **No Node.js/NPM** in production
+- Build frontend assets locally or in CI/CD before deploy; production only serves pre-built static assets via Laravel
+- Never suggest runtime Node, server-side SSR compilation, or a continuous Node process in production
+
+### Backend
+- Modern **Laravel** on **PHP 8.3** (typed properties, readonly classes, strict types where applicable)
+- Clean modular queries, secure Eloquent, CSRF, strict validation, SQL injection prevention
+
+### Frontend
+- **Inertia.js** + **Vue 3** Composition API with `<script setup>` only
+- **Tailwind CSS** — clean, responsive, avoid utility bloat
+
+## Engineering Principles
+
+1. Clean Code, SOLID, maintainable architecture
+2. Production awareness for all frontend/structural changes (assets built pre-deploy)
+3. Precise darts domain data structures; efficient indexing and Eloquent/SQL
+4. Anticipate edge cases, security, and performance; be direct and concise
+
+## Domain: Darts Game Rules
+
+### X01 (301 / 501)
+- Start at 301/501; subtract until exactly 0
+- Turn = max 3 darts; single throw 0–60 (S1–20, D2–40, T3–60, Outer Bull 25, Bullseye 50)
+- Match = Legs (game to 0) and Sets (e.g. best of 5 legs)
+- **Bust:** score over remaining, or leave exactly 1 on double-out → void turn, restore pre-turn score, end turn
+- **Straight Out:** any finish to 0
+- **Double Out (standard):** winning dart must be a Double (incl. red Bullseye)
+
+### Scoring & Metrics
+- Store every turn total; prefer per-dart values for heatmaps
+- **3PAD:** (total score / darts thrown) × 3
+- **First 9 Average:** first 9 darts of a leg
+- **Checkout %:** successful double-outs / double attempts
+- **Shortest Leg:** min darts to win (perfect 501 = 9)
+
+### Platform Modules
+- **Game engine:** state machine for 501/301 now; extensible to Cricket, Around the Clock, training modes
+- **Tournaments:** knockout (single/double elim) and round robin; fixtures and progression
+- **Social:** friends, match invites, H2H stats; clubs with leaderboards, leagues, rosters
