@@ -34,11 +34,11 @@ class SetLocale
             $locale,
             60 * 24 * 365,
             '/',
-            null,
-            null,
+            config('session.domain'),
+            (bool) config('session.secure'),
             false,
             false,
-            'lax',
+            config('session.same_site', 'lax'),
         ));
     }
 }

@@ -120,4 +120,4 @@ jobs:
         # SSH komanda izmanto atslēgu no aģenta (bez -i karodziņa)
         ssh -p $PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
           traindar@${{ secrets.SSH_HOST }} \
-          "cd /home/traindar/public_html/darttrainer/darttrainer && php artisan optimize:clear"
+          "cd /home/traindar/public_html/darttrainer/darttrainer && php artisan migrate --force && php artisan optimize:clear"
