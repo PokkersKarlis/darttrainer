@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import SettingsShell from '@/layouts/SettingsShell.vue';
 import PasswordField from '@/components/PasswordField.vue';
+import SettingsShell from '@/layouts/SettingsShell.vue';
+import { useLocale } from '@/composables/useLocale';
 import { Head, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
+const { t } = useLocale();
 const passwordInput = ref<InstanceType<typeof PasswordField>>();
 const currentPasswordInput = ref<InstanceType<typeof PasswordField>>();
 
@@ -32,19 +34,19 @@ const updatePassword = () => {
 </script>
 
 <template>
-    <Head title="Paroles iestatījumi" />
+    <Head :title="t('settings.password.head')" />
 
     <SettingsShell>
         <section class="tf-section">
-            <h2 class="tf-h">Mainīt paroli</h2>
-            <p class="tf-desc">Izmanto garu, nejaušu paroli, lai konts būtu drošs.</p>
+            <h2 class="tf-h">{{ t('settings.password.title') }}</h2>
+            <p class="tf-desc">{{ t('settings.password.desc') }}</p>
 
             <form class="tf-form" @submit.prevent="updatePassword">
                 <PasswordField
                     id="current_password"
                     ref="currentPasswordInput"
                     v-model="form.current_password"
-                    label="Pašreizējā parole"
+                    :label="t('settings.password.current')"
                     autocomplete="current-password"
                     :error="form.errors.current_password"
                 />
@@ -53,7 +55,7 @@ const updatePassword = () => {
                     id="password"
                     ref="passwordInput"
                     v-model="form.password"
-                    label="Jaunā parole"
+                    :label="t('settings.password.new')"
                     autocomplete="new-password"
                     show-strength
                     :error="form.errors.password"
@@ -62,14 +64,14 @@ const updatePassword = () => {
                 <PasswordField
                     id="password_confirmation"
                     v-model="form.password_confirmation"
-                    label="Apstiprini paroli"
+                    :label="t('settings.password.confirm')"
                     autocomplete="new-password"
                     :error="form.errors.password_confirmation"
                 />
 
                 <div class="tf-actions">
-                    <button type="submit" class="tf-btn tf-btn--green" :disabled="form.processing">Saglabāt paroli</button>
-                    <span v-if="form.recentlySuccessful" class="tf-saved">Saglabāts.</span>
+                    <button type="submit" class="tf-btn tf-btn--green" :disabled="form.processing">{{ t('settings.password.save') }}</button>
+                    <span v-if="form.recentlySuccessful" class="tf-saved">{{ t('settings.saved') }}</span>
                 </div>
             </form>
         </section>
@@ -98,34 +100,6 @@ const updatePassword = () => {
     flex-direction: column;
     gap: 16px;
     max-width: 460px;
-}
-.tf-label {
-    display: block;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #94a3b8;
-    margin-bottom: 8px;
-}
-.tf-input {
-    width: 100%;
-    padding: 12px 14px;
-    border-radius: 10px;
-    background: #131a26;
-    border: 1px solid #1f2937;
-    color: #f4f4f5;
-    font-size: 14px;
-    font-family: Inter, sans-serif;
-    outline: none;
-}
-.tf-input:focus {
-    border-color: #39ff14;
-}
-.tf-error {
-    margin-top: 6px;
-    font-size: 12px;
-    color: #fb2c5f;
 }
 .tf-actions {
     display: flex;

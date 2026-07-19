@@ -6,7 +6,7 @@ import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import { initializeTheme } from './composables/useAppearance';
-import { i18n } from './i18n';
+import { applyLocale, i18n, isLocale } from './i18n';
 
 // Extend ImportMeta interface for Vite...
 declare module 'vite/client' {
@@ -27,6 +27,11 @@ createInertiaApp({
     title: (title) => `${title} - ${appName}`,
     resolve: (name) => resolvePageComponent(`./pages/${name}.vue`, import.meta.glob<DefineComponent>('./pages/**/*.vue')),
     setup({ el, App, props, plugin }) {
+        const sharedLocale = props.initialPage.props.locale;
+        if (isLocale(sharedLocale)) {
+            applyLocale(sharedLocale);
+        }
+
         createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(ZiggyVue)

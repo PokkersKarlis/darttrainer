@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Support\AppLocale;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
@@ -30,15 +31,10 @@ class PasswordResetLinkController extends Controller
     {
         $request->validate([
             'email' => 'required|email',
-            'locale' => ['nullable', 'in:lv,en'],
+            'locale' => ['nullable', 'in:'.implode(',', AppLocale::SUPPORTED)],
         ]);
 
-        // E-pastam jāatnāk tajā valodā, kas bija izvēlēta lietotnē tobrīd, kad
-        // lietotājs pieprasīja atjaunošanas saiti (frontend to nosūta kā
-        // 'locale' lauku).
-        if ($request->filled('locale')) {
-            app()->setLocale($request->string('locale')->toString());
-        }
+        // Locale is applied by SetLocale middleware from request/session/cookie.
 
         // Ietin mēģinājumu try/catch: ja e-pasta serviss (SMTP/DNS/tīkls) nav
         // sasniedzams, šai kļūdai NEDRĪKST nogāzt visu pieprasījumu ar 500 —

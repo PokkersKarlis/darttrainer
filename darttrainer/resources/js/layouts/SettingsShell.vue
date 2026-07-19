@@ -1,14 +1,18 @@
 <script setup lang="ts">
 /** TrainDart tumšais iestatījumu apvalks: augšjosla + cilnes + saturs. */
 import BrandLogo from '@/components/BrandLogo.vue';
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
+import { useLocale } from '@/composables/useLocale';
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
-const tabs = [
-    { label: 'Profils', href: '/settings/profile' },
-    { label: 'Parole', href: '/settings/password' },
-    { label: 'Izskats', href: '/settings/appearance' },
-];
+const { t } = useLocale();
+
+const tabs = computed(() => [
+    { label: t('settings.tabs.profile'), href: '/settings/profile' },
+    { label: t('settings.tabs.password'), href: '/settings/password' },
+    { label: t('settings.tabs.appearance'), href: '/settings/appearance' },
+]);
 
 const currentPath = computed(() => (typeof window !== 'undefined' ? window.location.pathname : ''));
 </script>
@@ -17,22 +21,25 @@ const currentPath = computed(() => (typeof window !== 'undefined' ? window.locat
     <div class="ts">
         <header class="ts-top">
             <Link href="/" class="ts-brand"><BrandLogo :width="150" /></Link>
-            <Link href="/" class="ts-back">← Atpakaļ</Link>
+            <div class="ts-top-actions">
+                <LanguageSwitcher />
+                <Link href="/" class="ts-back">← {{ t('settings.back') }}</Link>
+            </div>
         </header>
 
         <main class="ts-main">
-            <h1 class="ts-title">Iestatījumi</h1>
-            <p class="ts-sub">Pārvaldi savu profilu un konta iestatījumus.</p>
+            <h1 class="ts-title">{{ t('settings.title') }}</h1>
+            <p class="ts-sub">{{ t('settings.subtitle') }}</p>
 
             <nav class="ts-tabs">
                 <Link
-                    v-for="t in tabs"
-                    :key="t.href"
-                    :href="t.href"
+                    v-for="tab in tabs"
+                    :key="tab.href"
+                    :href="tab.href"
                     class="ts-tab"
-                    :class="{ 'ts-tab--on': currentPath === t.href }"
+                    :class="{ 'ts-tab--on': currentPath === tab.href }"
                 >
-                    {{ t.label }}
+                    {{ tab.label }}
                 </Link>
             </nav>
 
@@ -54,12 +61,18 @@ const currentPath = computed(() => (typeof window !== 'undefined' ? window.locat
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 16px;
     padding: 20px 28px;
     border-bottom: 1px solid #1f2937;
 }
 .ts-brand {
     display: inline-flex;
     text-decoration: none;
+}
+.ts-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
 }
 .ts-back {
     color: #94a3b8;

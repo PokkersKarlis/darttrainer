@@ -1,7 +1,8 @@
 {
-    "lang": {
+        "lang": {
         "lv": "LV",
-        "en": "EN"
+        "en": "EN",
+        "label": "Language"
     },
     "pwd": {
         "show": "Show password",

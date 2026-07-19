@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\AppLocale;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -34,20 +35,20 @@ class RegisteredUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'locale' => ['nullable', 'in:lv,en'],
+            'locale' => ['nullable', 'in:'.implode(',', AppLocale::SUPPORTED)],
         ]);
+
+        $locale = AppLocale::resolve($request->input('locale'), app()->getLocale());
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'locale' => $locale,
         ]);
 
-        // E-pastam jāatnāk tajā valodā, kas bija izvēlēta lietotnē reģistrācijas
-        // brīdī (frontend to nosūta līdzi kā 'locale' lauku).
-        if ($request->filled('locale')) {
-            app()->setLocale($request->string('locale')->toString());
-        }
+        $request->session()->put(AppLocale::SESSION_KEY, $locale);
+        app()->setLocale($locale);
 
         // Registered event nosūta e-pasta apstiprinājuma vēstuli. Ja e-pasta
         // serviss tobrīd nav sasniedzams, konta izveide un pieteikšanās

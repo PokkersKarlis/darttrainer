@@ -1,12 +1,12 @@
 <script setup lang="ts">
-/** LV/EN valodas pārslēgs. Saglabā izvēli localStorage (skat. useLocale composable). */
+/** LV/EN valodas pārslēgs. Saglabā izvēli serverī (session/cookie/user) caur useLocale. */
 import { useLocale } from '@/composables/useLocale';
 
 const { locale, setLocale, t } = useLocale();
 </script>
 
 <template>
-    <div class="lang-switch" role="group" aria-label="Language">
+    <div class="lang-switch" role="group" :aria-label="t('lang.label')">
         <button type="button" class="lang-btn" :class="{ 'lang-btn--on': locale === 'lv' }" @click="setLocale('lv')">
             {{ t('lang.lv') }}
         </button>

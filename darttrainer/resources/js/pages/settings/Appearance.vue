@@ -1,25 +1,28 @@
 <script setup lang="ts">
 import SettingsShell from '@/layouts/SettingsShell.vue';
 import { useAppearance } from '@/composables/useAppearance';
+import { useLocale } from '@/composables/useLocale';
 import { Head } from '@inertiajs/vue3';
 import { Monitor, Moon, Sun } from 'lucide-vue-next';
+import { computed } from 'vue';
 
+const { t } = useLocale();
 const { appearance, updateAppearance } = useAppearance();
 
-const options = [
-    { value: 'light', Icon: Sun, label: 'Gaišs' },
-    { value: 'dark', Icon: Moon, label: 'Tumšs' },
-    { value: 'system', Icon: Monitor, label: 'Sistēma' },
-] as const;
+const options = computed(() => [
+    { value: 'light' as const, Icon: Sun, label: t('settings.appearance.light') },
+    { value: 'dark' as const, Icon: Moon, label: t('settings.appearance.dark') },
+    { value: 'system' as const, Icon: Monitor, label: t('settings.appearance.system') },
+]);
 </script>
 
 <template>
-    <Head title="Izskata iestatījumi" />
+    <Head :title="t('settings.appearance.head')" />
 
     <SettingsShell>
         <section>
-            <h2 class="tf-h">Izskats</h2>
-            <p class="tf-desc">Izvēlies lietotnes krāsu tēmu.</p>
+            <h2 class="tf-h">{{ t('settings.appearance.title') }}</h2>
+            <p class="tf-desc">{{ t('settings.appearance.desc') }}</p>
 
             <div class="ap-tabs">
                 <button
@@ -73,8 +76,6 @@ const options = [
     font-weight: 600;
     cursor: pointer;
     outline: none;
-    /* Pārlūka noklusējuma fokusa gredzens (parasti gaiši zils) citādi pēc klikšķa
-       nogulstas virs neona zaļā fona un padara aktīvo cilni izbalējušu. */
 }
 .ap-tab:hover {
     color: #f4f4f5;

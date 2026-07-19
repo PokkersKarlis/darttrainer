@@ -1,7 +1,8 @@
 {
-    "lang": {
+        "lang": {
         "lv": "LV",
-        "en": "EN"
+        "en": "EN",
+        "label": "Valoda"
     },
     "pwd": {
         "show": "Rādīt paroli",

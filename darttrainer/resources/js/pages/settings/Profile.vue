@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import SettingsShell from '@/layouts/SettingsShell.vue';
+import { useLocale } from '@/composables/useLocale';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import type { SharedData, User } from '@/types';
@@ -10,6 +11,7 @@ interface Props {
 }
 defineProps<Props>();
 
+const { t, locale } = useLocale();
 const page = usePage<SharedData>();
 const user = page.props.auth.user as User;
 
@@ -22,75 +24,76 @@ const submit = () => {
     form.patch(route('profile.update'), { preserveScroll: true });
 };
 
-// ── Konta dzēšana ──
 const confirmingDelete = ref(false);
 const deleteForm = useForm({ password: '' });
 
 const deleteAccount = () => {
     deleteForm.delete(route('profile.destroy'), {
         preserveScroll: true,
-        onError: () => {
-            /* parole nepareiza — kļūda paliek formā */
-        },
     });
 };
 </script>
 
 <template>
-    <Head title="Profila iestatījumi" />
+    <Head :title="t('settings.profile.head')" />
 
     <SettingsShell>
         <section class="tf-section">
-            <h2 class="tf-h">Profila informācija</h2>
-            <p class="tf-desc">Atjaunini savu vārdu un e-pasta adresi.</p>
+            <h2 class="tf-h">{{ t('settings.profile.title') }}</h2>
+            <p class="tf-desc">{{ t('settings.profile.desc') }}</p>
 
             <form class="tf-form" @submit.prevent="submit">
                 <div>
-                    <label class="tf-label" for="name">Vārds</label>
+                    <label class="tf-label" for="name">{{ t('settings.profile.name') }}</label>
                     <input id="name" v-model="form.name" type="text" class="tf-input" required autocomplete="name" />
                     <p v-if="form.errors.name" class="tf-error">{{ form.errors.name }}</p>
                 </div>
 
                 <div>
-                    <label class="tf-label" for="email">E-pasts</label>
+                    <label class="tf-label" for="email">{{ t('settings.profile.email') }}</label>
                     <input id="email" v-model="form.email" type="email" class="tf-input" required autocomplete="username" />
                     <p v-if="form.errors.email" class="tf-error">{{ form.errors.email }}</p>
                 </div>
 
                 <div v-if="mustVerifyEmail && !user.email_verified_at" class="tf-note">
-                    E-pasts nav apstiprināts.
-                    <Link :href="route('verification.send')" method="post" as="button" class="tf-note-link">
-                        Nosūtīt apstiprinājuma saiti vēlreiz
+                    {{ t('settings.profile.unverified') }}
+                    <Link
+                        :href="route('verification.send')"
+                        method="post"
+                        as="button"
+                        class="tf-note-link"
+                        :data="{ locale }"
+                    >
+                        {{ t('settings.profile.resend') }}
                     </Link>
-                    <span v-if="status === 'verification-link-sent'" class="tf-note-ok">Saite nosūtīta.</span>
+                    <span v-if="status === 'verification-link-sent'" class="tf-note-ok">{{ t('settings.profile.linkSent') }}</span>
                 </div>
 
                 <div class="tf-actions">
-                    <button type="submit" class="tf-btn tf-btn--green" :disabled="form.processing">Saglabāt</button>
-                    <span v-if="form.recentlySuccessful" class="tf-saved">Saglabāts.</span>
+                    <button type="submit" class="tf-btn tf-btn--green" :disabled="form.processing">{{ t('settings.profile.save') }}</button>
+                    <span v-if="form.recentlySuccessful" class="tf-saved">{{ t('settings.saved') }}</span>
                 </div>
             </form>
         </section>
 
-        <!-- Danger zone -->
         <section class="tf-danger">
-            <h2 class="tf-h tf-h--danger">Dzēst kontu</h2>
-            <p class="tf-desc">Kad konts izdzēsts, visi dati tiek neatgriezeniski dzēsti.</p>
+            <h2 class="tf-h tf-h--danger">{{ t('settings.profile.deleteTitle') }}</h2>
+            <p class="tf-desc">{{ t('settings.profile.deleteDesc') }}</p>
 
             <button v-if="!confirmingDelete" type="button" class="tf-btn tf-btn--danger" @click="confirmingDelete = true">
-                Dzēst kontu
+                {{ t('settings.profile.delete') }}
             </button>
 
             <form v-else class="tf-form" @submit.prevent="deleteAccount">
-                <p class="tf-desc">Apstiprini ar paroli, lai dzēstu kontu.</p>
+                <p class="tf-desc">{{ t('settings.profile.deleteConfirm') }}</p>
                 <div>
-                    <label class="tf-label" for="del-pw">Parole</label>
+                    <label class="tf-label" for="del-pw">{{ t('settings.profile.password') }}</label>
                     <input id="del-pw" v-model="deleteForm.password" type="password" class="tf-input" autocomplete="current-password" />
                     <p v-if="deleteForm.errors.password" class="tf-error">{{ deleteForm.errors.password }}</p>
                 </div>
                 <div class="tf-actions">
-                    <button type="submit" class="tf-btn tf-btn--danger" :disabled="deleteForm.processing">Dzēst neatgriezeniski</button>
-                    <button type="button" class="tf-btn tf-btn--ghost" @click="confirmingDelete = false; deleteForm.reset()">Atcelt</button>
+                    <button type="submit" class="tf-btn tf-btn--danger" :disabled="deleteForm.processing">{{ t('settings.profile.deleteForever') }}</button>
+                    <button type="button" class="tf-btn tf-btn--ghost" @click="confirmingDelete = false; deleteForm.reset()">{{ t('settings.profile.cancel') }}</button>
                 </div>
             </form>
         </section>

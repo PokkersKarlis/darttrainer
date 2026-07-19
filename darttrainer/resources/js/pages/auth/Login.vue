@@ -31,7 +31,8 @@ const submit = () => {
         <h2 class="td-h">{{ t('auth.login.title') }}</h2>
         <p class="td-sub">{{ t('auth.login.subtitle') }}</p>
 
-        <div v-if="status" class="td-status">{{ status }}</div>
+        <div v-if="status === 'password-reset'" class="td-status">{{ t('auth.status.password-reset') }}</div>
+        <div v-else-if="status" class="td-status">{{ status }}</div>
 
         <form class="td-fields" @submit.prevent="submit">
             <div>
