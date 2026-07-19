@@ -96,4 +96,29 @@ class ProfileUpdateTest extends TestCase
 
         $this->assertNotNull($user->fresh());
     }
+
+    public function test_profile_update_ignores_privileged_fields(): void
+    {
+        $user = User::factory()->create([
+            'is_admin' => false,
+            'is_banned' => false,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/settings/profile', [
+                'name' => 'Updated Name',
+                'email' => $user->email,
+                'is_admin' => true,
+                'is_banned' => true,
+            ]);
+
+        $response->assertSessionHasNoErrors()->assertRedirect('/settings/profile');
+
+        $user->refresh();
+
+        $this->assertSame('Updated Name', $user->name);
+        $this->assertFalse((bool) $user->is_admin);
+        $this->assertFalse((bool) $user->is_banned);
+    }
 }

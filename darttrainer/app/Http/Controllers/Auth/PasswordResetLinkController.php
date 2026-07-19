@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Support\AppLocale;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
@@ -30,12 +31,28 @@ class PasswordResetLinkController extends Controller
     {
         $request->validate([
             'email' => 'required|email',
+            'locale' => ['nullable', 'in:'.implode(',', AppLocale::SUPPORTED)],
         ]);
 
-        Password::sendResetLink(
-            $request->only('email')
-        );
+        // Locale is applied by SetLocale middleware from request/session/cookie.
 
-        return back()->with('status', __('A reset link will be sent if the account exists.'));
+        // Ietin mēģinājumu try/catch: ja e-pasta serviss (SMTP/DNS/tīkls) nav
+        // sasniedzams, šai kļūdai NEDRĪKST nogāzt visu pieprasījumu ar 500 —
+        // lietotājam vienalga jāredz normāla atbilde. Kļūdu pierakstām logā,
+        // lai to var izmeklēt, bet nekad neatklājam, vai konkrētais e-pasts
+        // eksistē (tas paliktu vienāds neatkarīgi no rezultāta).
+        try {
+            Password::sendResetLink(
+                $request->only('email')
+            );
+        } catch (\Throwable $e) {
+            report($e);
+
+            // Fiksēta atslēga (nevis brīvs teksts) — frontend to iztulko un
+            // parāda kā kļūdu. Neatklājam, vai konkrētais e-pasts eksistē.
+            return back()->with('status', 'reset-link-failed');
+        }
+
+        return back()->with('status', 'reset-link-sent');
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Support\AppLocale;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -17,7 +18,22 @@ class EmailVerificationNotificationController extends Controller
             return redirect()->intended(route('home', absolute: false));
         }
 
-        $request->user()->sendEmailVerificationNotification();
+        $request->validate([
+            'locale' => ['nullable', 'in:'.implode(',', AppLocale::SUPPORTED)],
+        ]);
+
+        // Locale is applied by SetLocale middleware from request/session/user.
+
+        // Ja e-pasta nosūtīšana neizdodas (SMTP/DNS/tīkla kļūda), nedrīkst
+        // nogāzt pieprasījumu — parādām lietotājam skaidru kļūdas statusu,
+        // nevis 500 lapu.
+        try {
+            $request->user()->sendEmailVerificationNotification();
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('status', 'verification-link-failed');
+        }
 
         return back()->with('status', 'verification-link-sent');
     }

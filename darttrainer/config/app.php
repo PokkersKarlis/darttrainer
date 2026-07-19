@@ -17,6 +17,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Application Version
+    |--------------------------------------------------------------------------
+    |
+    | Optional override for display and Inertia asset versioning. When empty,
+    | resolves from storage/app/build-version.txt (npm run build) or git.
+    |
+    */
+
+    'version' => env('APP_VERSION'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------
     |

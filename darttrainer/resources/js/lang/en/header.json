@@ -1,0 +1,12 @@
+{
+    "header": {
+        "home": "TrainDart home",
+        "guestNav": "Guest navigation",
+        "accountMenu": "Account menu",
+        "verifyEmail": "Verify your email address"
+    },
+    "menu": {
+        "settings": "Settings",
+        "logout": "Log out"
+    }
+}

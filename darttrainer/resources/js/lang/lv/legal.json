@@ -1,0 +1,60 @@
+{
+    "legal": {
+        "back": "Atpakaļ uz sākumu",
+        "updated": "Pēdējoreiz atjaunināts: 2026. gada marts",
+        "footer": {
+            "terms": "Lietošanas noteikumi",
+            "privacy": "Privātuma politika"
+        },
+        "terms": {
+            "title": "Lietošanas noteikumi",
+            "sections": [
+                {
+                    "title": "1. Pieņemšana",
+                    "body": "Izmantojot TrainDart, tu piekrīti šiem noteikumiem."
+                },
+                {
+                    "title": "2. Pakalpojums",
+                    "body": "Mēs nodrošinām snieguma izsekošanu un AI analīzi. Nākotnē var tikt ieviestas premium funkcijas."
+                },
+                {
+                    "title": "3. Drošība un boti",
+                    "body": "Lai novērstu ļaunprātīgu izmantošanu, mēs reģistrējam IP adreses un tehniskos ierīces identifikatorus. Automatizēta ļaunprātīga izmantošana rezultējas konta slēgšanā."
+                },
+                {
+                    "title": "4. Īpašumtiesības",
+                    "body": "Tavas statistikas pieder tev. Tu piešķir mums licenci tās apstrādāt AI reportāžām un turnīru rezultātiem."
+                },
+                {
+                    "title": "5. Atbildība",
+                    "body": "Pakalpojums tiek sniegts \"kā ir\"."
+                }
+            ]
+        },
+        "privacy": {
+            "title": "Privātuma politika",
+            "sections": [
+                {
+                    "title": "1. Apkopotie dati",
+                    "body": "Konta dati (e-pasts), snieguma dati (metieni/mači) un tehniskie dati (IP, pārlūks, ierīces informācija drošībai un krāpšanas novēršanai)."
+                },
+                {
+                    "title": "2. Lietojums",
+                    "body": "Datus izmantojam pakalpojumu sniegšanai, AI reportāžu ģenerēšanai un krāpšanas/botu aktivitātes novēršanai."
+                },
+                {
+                    "title": "3. Analītika",
+                    "body": "Lietojam trešo pušu rīkus (piem., Google Analytics), lai uzlabotu lietotni."
+                },
+                {
+                    "title": "4. Datu kopīgošana",
+                    "body": "Mēs nepārdodam datus. Anonimizēti dati var tikt kopīgoti caur API integrācijām turnīru partneriem."
+                },
+                {
+                    "title": "5. Tavas tiesības",
+                    "body": "Jebkurā laikā vari pieprasīt piekļuvi datiem vai to dzēšanu."
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,23 @@
+# TrainDart — Cursor rules
+
+## Privacy & compliance (GDPR / ePrivacy)
+
+- All frontend changes must respect the **GDPR** and **ePrivacy Directive**.
+- Do not add non-essential cookies, local storage, fingerprinting, or third-party trackers without an explicit, informed user choice.
+- Prefer privacy-by-default: essential functionality only until consent is given where required.
+
+## Cookie consent
+
+- Any new feature involving **tracking, analytics, advertising, or non-essential data collection** MUST be integrated with the project's **CookieConsent** logic before shipping.
+- Do not load third-party scripts (e.g. Google Analytics) until the user has opted in via CookieConsent.
+- When adding a new data-collecting integration, wire it to the same consent categories and document what is stored and why.
+
+## Bot prevention
+
+- Always implement **honeypot fields** on **public forms** (registration, contact, password reset, guest flows, etc.) for bot prevention.
+- Honeypots must be hidden from users (off-screen or equivalent), excluded from tab order, and validated server-side; reject submissions silently or with a generic error—never reveal the honeypot mechanism.
+
+## Legal documents
+
+- If modifying **user data handling** (what is collected, how it is used, shared, retained, or processed—including AI, analytics, IP logging, or third-party services), ensure **Terms of Service** and **Privacy Policy** content and i18n (`resources/js/lang/{en,lv}/legal.json`) are updated to match.
+- Registration and other consent surfaces must remain linked to the current Terms and Privacy pages.

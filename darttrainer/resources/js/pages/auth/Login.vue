@@ -1,18 +1,15 @@
 <script setup lang="ts">
-import InputError from '@/components/InputError.vue';
-import TextLink from '@/components/TextLink.vue';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import AuthBase from '@/layouts/AuthLayout.vue';
-import { Head, useForm } from '@inertiajs/vue3';
-import { LoaderCircle } from 'lucide-vue-next';
+import AuthShell from '@/layouts/AuthShell.vue';
+import PasswordField from '@/components/PasswordField.vue';
+import { useLocale } from '@/composables/useLocale';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 
 defineProps<{
     status?: string;
     canResetPassword: boolean;
 }>();
+
+const { t } = useLocale();
 
 const form = useForm({
     email: '',
@@ -28,64 +25,212 @@ const submit = () => {
 </script>
 
 <template>
-    <AuthBase title="Log in to your account" description="Enter your email and password below to log in">
-        <Head title="Log in" />
+    <Head :title="t('auth.login.title')" />
 
-        <div v-if="status" class="mb-4 text-center text-sm font-medium text-green-600">
-            {{ status }}
-        </div>
+    <AuthShell :heading-line1="t('auth.login.heading1')" :heading-line2="t('auth.login.heading2')" :lead="t('auth.login.lead')">
+        <h2 class="td-h">{{ t('auth.login.title') }}</h2>
+        <p class="td-sub">{{ t('auth.login.subtitle') }}</p>
 
-        <form @submit.prevent="submit" class="flex flex-col gap-6">
-            <div class="grid gap-6">
-                <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        required
-                        autofocus
-                        tabindex="1"
-                        autocomplete="email"
-                        v-model="form.email"
-                        placeholder="email@example.com"
-                    />
-                    <InputError :message="form.errors.email" />
-                </div>
+        <div v-if="status === 'password-reset'" class="td-status">{{ t('auth.status.password-reset') }}</div>
+        <div v-else-if="status" class="td-status">{{ status }}</div>
 
-                <div class="grid gap-2">
-                    <div class="flex items-center justify-between">
-                        <Label for="password">Password</Label>
-                        <TextLink v-if="canResetPassword" :href="route('password.request')" class="text-sm" tabindex="5"> Forgot password? </TextLink>
-                    </div>
-                    <Input
-                        id="password"
-                        type="password"
-                        required
-                        tabindex="2"
-                        autocomplete="current-password"
-                        v-model="form.password"
-                        placeholder="Password"
-                    />
-                    <InputError :message="form.errors.password" />
-                </div>
-
-                <div class="flex items-center justify-between" tabindex="3">
-                    <Label for="remember" class="flex items-center space-x-3">
-                        <Checkbox id="remember" v-model:checked="form.remember" tabindex="4" />
-                        <span>Remember me</span>
-                    </Label>
-                </div>
-
-                <Button type="submit" class="mt-4 w-full" tabindex="4" :disabled="form.processing">
-                    <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
-                    Log in
-                </Button>
+        <form class="td-fields" @submit.prevent="submit">
+            <div>
+                <label class="td-label" for="email">{{ t('auth.field.email') }}</label>
+                <input
+                    id="email"
+                    v-model="form.email"
+                    type="email"
+                    class="td-input"
+                    :placeholder="t('auth.field.emailPlaceholder')"
+                    required
+                    autofocus
+                    autocomplete="email"
+                />
+                <p v-if="form.errors.email" class="td-error">{{ form.errors.email }}</p>
             </div>
 
-            <div class="text-center text-sm text-muted-foreground">
-                Don't have an account?
-                <TextLink :href="route('register')" :tabindex="5">Sign up</TextLink>
+            <div>
+                <div class="td-label-row">
+                    <label class="td-label" for="password">{{ t('auth.field.password') }}</label>
+                    <Link v-if="canResetPassword" :href="route('password.request')" class="td-link">{{ t('auth.login.forgot') }}</Link>
+                </div>
+                <PasswordField
+                    id="password"
+                    v-model="form.password"
+                    :label="''"
+                    :placeholder="t('auth.login.passwordPlaceholder')"
+                    required
+                    autocomplete="current-password"
+                    :error="form.errors.password"
+                />
             </div>
+
+            <label class="td-check-row">
+                <span class="td-check" :class="{ 'td-check--on': form.remember }">
+                    <svg v-if="form.remember" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0b0f19" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                </span>
+                <input v-model="form.remember" type="checkbox" class="sr-only" />
+                <span class="td-check-lbl">{{ t('auth.login.remember') }}</span>
+            </label>
+
+            <button type="submit" class="td-submit" :disabled="form.processing">
+                {{ form.processing ? t('auth.login.submitting') : t('auth.login.submit') }}
+            </button>
         </form>
-    </AuthBase>
+
+        <div class="td-foot">
+            {{ t('auth.login.noAccount') }}
+            <Link :href="route('register')" class="td-link td-link--bold">{{ t('auth.login.signUp') }}</Link>
+        </div>
+    </AuthShell>
 </template>
+
+<style scoped>
+.td-h {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 30px;
+    margin: 0 0 8px;
+}
+.td-sub {
+    color: #64748b;
+    font-size: 14px;
+    margin: 0 0 28px;
+}
+.td-status {
+    margin-bottom: 16px;
+    border-radius: 10px;
+    background: rgba(57, 255, 20, 0.08);
+    border: 1px solid rgba(57, 255, 20, 0.25);
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #39ff14;
+}
+.td-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.td-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #94a3b8;
+    margin-bottom: 8px;
+}
+.td-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+.td-label-row .td-label {
+    margin-bottom: 0;
+}
+.td-input {
+    width: 100%;
+    padding: 13px 16px;
+    border-radius: 10px;
+    background: #131a26;
+    border: 1px solid #1f2937;
+    color: #f4f4f5;
+    font-size: 14px;
+    font-family: Inter, sans-serif;
+    outline: none;
+}
+.td-input:focus {
+    border-color: #39ff14;
+}
+.td-input::placeholder {
+    color: #64748b;
+}
+.td-input-wrap {
+    position: relative;
+}
+.td-eye {
+    position: absolute;
+    top: 0;
+    right: 14px;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+.td-link {
+    font-size: 12px;
+    color: #39ff14;
+    text-decoration: none;
+}
+.td-link--bold {
+    font-weight: 600;
+    font-size: 14px;
+}
+.td-check-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+.td-check {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid #334155;
+    transition: all 0.15s;
+}
+.td-check--on {
+    background: #39ff14;
+    border-color: #39ff14;
+}
+.td-check-lbl {
+    font-size: 13px;
+    color: #94a3b8;
+}
+.td-submit {
+    margin-top: 8px;
+    padding: 14px;
+    text-align: center;
+    border-radius: 10px;
+    background: #39ff14;
+    color: #0b0f19;
+    font-weight: 800;
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s;
+    box-shadow: 0 0 20px rgba(57, 255, 20, 0.2);
+}
+.td-submit:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+.td-error {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #fb2c5f;
+}
+.td-foot {
+    text-align: center;
+    margin-top: 28px;
+    font-size: 14px;
+    color: #64748b;
+}
+</style>

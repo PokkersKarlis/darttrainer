@@ -25,9 +25,31 @@ class PasswordResetTest extends TestCase
 
         $user = User::factory()->create();
 
-        $this->post('/forgot-password', ['email' => $user->email]);
+        $response = $this->post('/forgot-password', ['email' => $user->email]);
 
         Notification::assertSentTo($user, ResetPassword::class);
+        $response->assertSessionHas('status', 'reset-link-sent');
+    }
+
+    /**
+     * The reset-link request must never crash (500) if the mail server is
+     * unreachable — the user should still get a normal response, just with
+     * a "failed" status instead of a silent server error.
+     */
+    public function test_reset_password_link_request_does_not_crash_when_mail_fails()
+    {
+        $user = User::factory()->create();
+
+        config([
+            'mail.default' => 'smtp',
+            'mail.mailers.smtp.host' => '127.0.0.1',
+            'mail.mailers.smtp.port' => 1,
+        ]);
+
+        $response = $this->from('/forgot-password')->post('/forgot-password', ['email' => $user->email]);
+
+        $response->assertRedirect('/forgot-password');
+        $response->assertSessionHas('status', 'reset-link-failed');
     }
 
     public function test_reset_password_screen_can_be_rendered()
@@ -59,13 +81,14 @@ class PasswordResetTest extends TestCase
             $response = $this->post('/reset-password', [
                 'token' => $notification->token,
                 'email' => $user->email,
-                'password' => 'password',
-                'password_confirmation' => 'password',
+                'password' => 'Password123',
+                'password_confirmation' => 'Password123',
             ]);
 
             $response
                 ->assertSessionHasNoErrors()
-                ->assertRedirect(route('login'));
+                ->assertRedirect(route('login'))
+                ->assertSessionHas('status', 'password-reset');
 
             return true;
         });

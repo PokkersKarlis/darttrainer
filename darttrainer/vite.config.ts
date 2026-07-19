@@ -5,11 +5,13 @@ import path from 'path';
 import tailwindcss from 'tailwindcss';
 import { defineConfig } from 'vite';
 
-export default defineConfig({
-    base: '/darttrainer/darttrainer/public/build/',
+export default defineConfig(({ command }) => ({
+    // Produkcijā (build): asseti dzīvo shared hosting apakšceļā.
+    // Izstrādē (serve): sakne '/', lai Vite dev serveris + HMR strādā uz localhost.
+    base: command === 'build' ? '/darttrainer/darttrainer/public/build/' : '/',
     plugins: [
         laravel({
-            input: ['resources/js/app.ts'], // Tavs TypeScript ieejas punkts
+            input: ['resources/js/app.ts'], // TypeScript ieejas punkts
             refresh: true,
         }),
         vue({
@@ -31,14 +33,18 @@ export default defineConfig({
             plugins: [tailwindcss, autoprefixer],
         },
     },
-    // ---- Pievienojam šo bloku Docker vides atbalstam ----
+    // Docker vides atbalsts (HMR caur konteineri / Windows bind-mount)
     server: {
-        host: '0.0.0.0', // Ļauj konteineram klausīties visus tīkla pieprasījumus
+        host: '0.0.0.0',
         hmr: {
-            host: 'localhost', // Pārlūks meklēs karsto izmaiņu serveri uz localhost
+            host: 'localhost',
         },
         watch: {
-            usePolling: true, // Nodrošina tūlītēju koda maiņas uztveršanu caur Docker volumes
+            usePolling: true,
+            interval: 300,
+            // Bez šī polling apsekoja arī vendor/ (composer), storage/logs un .git —
+            // tas ir tūkstošiem failu Windows bind-mount, kas padarīja HMR ļoti lēnu.
+            ignored: ['**/vendor/**', '**/storage/**', '**/bootstrap/cache/**', '**/node_modules/**', '**/.git/**'],
         },
     },
-});
+}));

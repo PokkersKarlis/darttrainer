@@ -1,0 +1,14 @@
+---
+description: Keep .gitignore clear, intentional, and reviewed when adding ignoreable artifacts
+alwaysApply: true
+---
+
+# .gitignore hygiene
+
+Always check and maintain a **clear** `.gitignore` (root and `darttrainer/`):
+
+1. **Before adding** generated files, secrets, caches, or local tooling — confirm they are ignored (or should be committed).
+2. **Keep sections labeled** (OS, editors, env/secrets, build, deps, AI local). Prefer short comments over clutter.
+3. **Do not ignore** what the team needs: app source, `darttrainer/.env.example`, CI (`.github/`), and `.cursor/rules/` (project AI guidance).
+4. **Do ignore** secrets (`.env`, keys), `vendor`/`node_modules`, build output (`public/build`), IDE folders, and local AI scaffolding (`memory/`, OpenClaw/agent personal files).
+5. When cleaning the repo, update `.gitignore` so removed local patterns stay ignored if they might reappear.

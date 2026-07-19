@@ -4,8 +4,10 @@ namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
+use Illuminate\Auth\Notifications\VerifyEmail as VerifyEmailNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
@@ -54,5 +56,41 @@ class EmailVerificationTest extends TestCase
         $this->actingAs($user)->get($verificationUrl);
 
         $this->assertFalse($user->fresh()->hasVerifiedEmail());
+    }
+
+    public function test_verification_notification_can_be_resent()
+    {
+        Notification::fake();
+
+        $user = User::factory()->unverified()->create([
+            'email_verification_sent_at' => now()->subMinutes(10),
+        ]);
+
+        $response = $this->actingAs($user)->post('/email/verification-notification');
+
+        Notification::assertSentTo($user, VerifyEmailNotification::class);
+        $response->assertSessionHas('status', 'verification-link-sent');
+        $this->assertNotNull($user->fresh()->email_verification_sent_at);
+    }
+
+    /**
+     * Resending the verification email must never crash (500) if the mail
+     * server is unreachable — the user should see a "failed" status instead
+     * of a server error.
+     */
+    public function test_resend_verification_email_does_not_crash_when_mail_fails()
+    {
+        $user = User::factory()->unverified()->create();
+
+        config([
+            'mail.default' => 'smtp',
+            'mail.mailers.smtp.host' => '127.0.0.1',
+            'mail.mailers.smtp.port' => 1,
+        ]);
+
+        $response = $this->actingAs($user)->from('/verify-email')->post('/email/verification-notification');
+
+        $response->assertRedirect('/verify-email');
+        $response->assertSessionHas('status', 'verification-link-failed');
     }
 }

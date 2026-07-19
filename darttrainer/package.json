@@ -2,7 +2,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build",
+        "build": "node scripts/write-build-version.mjs && vite build",
         "build:ssr": "vite build && vite build --ssr",
         "dev": "vite",
         "format": "prettier --write resources/",
@@ -42,6 +42,7 @@
         "typescript": "^5.2.2",
         "vite": "^8.1.5",
         "vue": "^3.5.13",
+        "vue-i18n": "^11.4.5",
         "vue-tsc": "^2.2.0",
         "ziggy-js": "^2.4.2"
     },

@@ -1,0 +1,60 @@
+{
+    "legal": {
+        "back": "Back to home",
+        "updated": "Last updated: March 2026",
+        "footer": {
+            "terms": "Terms of Service",
+            "privacy": "Privacy Policy"
+        },
+        "terms": {
+            "title": "Terms of Service",
+            "sections": [
+                {
+                    "title": "1. Acceptance",
+                    "body": "By using TrainDart, you agree to these terms."
+                },
+                {
+                    "title": "2. Service",
+                    "body": "We provide performance tracking and AI analysis. Future premium features may be introduced."
+                },
+                {
+                    "title": "3. Security & Bots",
+                    "body": "To prevent abuse, we log IP addresses and technical device identifiers. Automated abuse results in account termination."
+                },
+                {
+                    "title": "4. Ownership",
+                    "body": "You own your stats. You grant us a license to process them for AI reports and tournament results."
+                },
+                {
+                    "title": "5. Liability",
+                    "body": "Service provided \"as-is\"."
+                }
+            ]
+        },
+        "privacy": {
+            "title": "Privacy Policy",
+            "sections": [
+                {
+                    "title": "1. Data Collected",
+                    "body": "Account data (email), Performance data (throws/matches), and Technical data (IP, browser, device info for security/fraud prevention)."
+                },
+                {
+                    "title": "2. Usage",
+                    "body": "We use data to provide services, generate AI reports, and prevent fraud/bot activity."
+                },
+                {
+                    "title": "3. Analytics",
+                    "body": "We use third-party tools (e.g., Google Analytics) to improve the app."
+                },
+                {
+                    "title": "4. Data Sharing",
+                    "body": "We do not sell data. Anonymized data may be shared via API integrations for tournament partners."
+                },
+                {
+                    "title": "5. Your Rights",
+                    "body": "You can request data access or deletion at any time."
+                }
+            ]
+        }
+    }
+}

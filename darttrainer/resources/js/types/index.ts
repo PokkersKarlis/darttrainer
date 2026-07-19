@@ -18,8 +18,12 @@ export interface NavItem {
 
 export interface SharedData {
     name: string;
+    appVersion: string;
+    locale: 'lv' | 'en';
     quote: { message: string; author: string };
     auth: Auth;
+    emailVerified: boolean;
+    emailVerificationSentAt: string | null;
     ziggy: {
         location: string;
         url: string;
@@ -33,6 +37,7 @@ export interface User {
     id: number;
     name: string;
     email: string;
+    locale?: string | null;
     avatar?: string;
     email_verified_at: string | null;
     created_at: string;
@@ -40,3 +45,5 @@ export interface User {
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;
+
+export type { HeaderMenuItem, HeaderMenuItemVariant } from './header';

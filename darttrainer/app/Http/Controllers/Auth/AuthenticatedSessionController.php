@@ -46,6 +46,10 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
+        // Dzēš Inertia vēstures šifrēšanas atslēgu, lai pārlūka "Atpakaļ" poga
+        // nevarētu atjaunot kešoto (bfcache) autentificētā lietotāja skatu.
+        Inertia::clearHistory();
+
         return redirect('/');
     }
 }

@@ -1,8 +1,32 @@
-# Ignore all files and directories within the .idea directory
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editors / IDEs
 .idea/
+.vscode/
+.zed/
+.fleet/
+.nova/
+*.swp
+*.swo
+
+# Hosting / server local
 .htaccess
 
-# Cursor / Claude / lokālais AI konteksts (necommitot)
-.cursor/
+# Cursor — ignore local state; keep project rules versioned
+.cursor/*
+
+# Other AI / agent scaffolding (local only)
 .claude/
 AGENTS.md
+SOUL.md
+USER.md
+IDENTITY.md
+TOOLS.md
+HEARTBEAT.md
+MEMORY.md
+memory/
+openclaw.system.md
+openclaw-workspace-state.json

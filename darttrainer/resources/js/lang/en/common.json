@@ -1,0 +1,18 @@
+{
+    "version": "· {version}",
+    "lang": {
+        "lv": "LV",
+        "en": "EN",
+        "label": "Language"
+    },
+    "pwd": {
+        "show": "Show password",
+        "hide": "Hide password",
+        "strength": {
+            "weak": "Weak — add numbers and symbols",
+            "fair": "Fair — getting there",
+            "good": "Good",
+            "strong": "Strong"
+        }
+    }
+}

@@ -1,0 +1,80 @@
+{
+    "header": {
+        "title": "Sākums",
+        "welcome": "Sveiks atpakaļ, {name}. Ķersim dubultniekus.",
+        "search": "Meklēt",
+        "notifications": "Paziņojumi",
+        "openMenu": "Atvērt izvēlni",
+        "closeMenu": "Aizvērt izvēlni"
+    },
+    "nav": {
+        "dashboard": "Sākums",
+        "play": "Spēlēt",
+        "training": "Treniņš",
+        "tournaments": "Turnīri",
+        "live": "Tiešraide",
+        "friends": "Draugi"
+    },
+    "usercard": {
+        "rank": "4. vieta · Vid. 74.2"
+    },
+    "cards": {
+        "x01": {
+            "title": "X01 vairākiem spēlētājiem",
+            "desc": "Izaicini draugu vai atrodi pretinieku tiešsaistē.",
+            "start": "Sākt spēli"
+        },
+        "solo": {
+            "title": "Individuāls treniņš",
+            "desc": "Trenējies viens. Izvēlies sākuma punktus.",
+            "start": "Trenēties tagad"
+        },
+        "cricket": {
+            "title": "Cricket režīms",
+            "desc": "Aizver 15.–20. lauciņus un bulli ātrāk par pretinieku.",
+            "start": "Spēlēt Cricket"
+        },
+        "drills": {
+            "title": "Treniņu vingrinājumi",
+            "desc": "Strukturētas rutīnas dubultniekiem un finišiem.",
+            "badge": "Drīzumā vairāk",
+            "browse": "Skatīt vingrinājumus"
+        }
+    },
+    "panel": {
+        "stats": {
+            "title": "Sniegums",
+            "period": "Pēdējās 7 dienas"
+        },
+        "form": "Forma — pēdējās 10",
+        "live": {
+            "title": "Notiek tagad"
+        }
+    },
+    "stat": {
+        "avg": "3-metienu vid.",
+        "checkout": "Checkout %",
+        "180s": "180-i",
+        "legsWon": "Uzvarētās lejas"
+    },
+    "live": {
+        "leg": "Leja",
+        "avg": "Vid."
+    },
+    "side": {
+        "activity": "Aktivitāte",
+        "friends": "Draugi",
+        "leaderboard": "Nedēļas līderi"
+    },
+    "friend": {
+        "online": "Tiešsaistē",
+        "inMatch": "Spēlē maču",
+        "offline": "Nesaistē"
+    },
+    "mobile": {
+        "home": "Sākums",
+        "play": "Spēlēt",
+        "stats": "Statistika",
+        "profile": "Profils"
+    }
+}

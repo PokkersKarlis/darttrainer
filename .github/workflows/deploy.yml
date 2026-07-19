@@ -4,11 +4,56 @@ on:
   push:
     branches:
       - main
+      - feat/index-page-visuals-only
   # Izslēdzam pull_request deployu, lai kods nesūtītos uz serveri pirms laika, kad kāds tikai taisa PR
-  
+
 jobs:
+  # ── Testi VISPIRMS. Ja krīt — deploy NENOTIEK. ──
+  test:
+    name: Tests (Pest)
+    runs-on: ubuntu-latest
+    steps:
+    - name: 🚚 Get latest code
+      uses: actions/checkout@v4
+
+    - name: 🐘 Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: mbstring, pdo, pdo_sqlite, bcmath, intl
+        tools: composer:v2
+        coverage: none
+
+    - name: 📥 Install Composer Dependencies
+      working-directory: darttrainer
+      run: composer install --no-progress --no-interaction --prefer-dist --ignore-platform-reqs --ignore-platform-req=php
+
+    - name: 🟢 Setup Node.js (Vite assetiem testos)
+      uses: actions/setup-node@v4
+      with:
+        node-version: '24'
+
+    - name: 🛠️ Install & Build NPM Assets for Tests
+      working-directory: darttrainer
+      run: |
+        npm install
+        npm run build  # Izveido manifest.json, lai Feature testi nesabrūk!
+
+    - name: ⚙️ Sagatavo vidi
+      working-directory: darttrainer
+      run: |
+        cp .env.example .env
+        php artisan key:generate
+
+    - name: 🧪 Palaid Pest testus
+      working-directory: darttrainer
+      env:
+        VITE_BUILD_DIR: "build" # Garantējam, ka testos Laravel meklē tieši /public/build mapi
+      run: php artisan test
+
   build-and-deploy:
     name: Build Frontend & Deploy
+    needs: test          # ← deploy tikai, ja "test" jobs izgāja veiksmīgi
     runs-on: ubuntu-latest
 
     steps:
@@ -42,11 +87,11 @@ jobs:
       working-directory: darttrainer
       run: npm run build
 
-    - name: ⚙️ Install SSH Key (Automātiskā formāta labošana)
+    - name: ⚙️ Install SSH Key
       uses: shimataro/ssh-key-action@v2
       with:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        known_hosts: "unnecessary_because_we_ignore_it" # šo ignorēsim nākamajā solī
+        known_hosts: "unnecessary_because_we_ignore_it"
         if_key_exists: replace
 
     - name: 🚚 Deploy via Native Rsync to cPanel
@@ -57,8 +102,8 @@ jobs:
           PORT="722"
         fi
         
-        # 2. Viens tīrs un elegants Rsync uz projekta mapi
-        rsync -az --stats -e "ssh -i ~/.ssh/id_ed25519 -p $PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
+        # 2. Rsync izmanto atslēgu no aģenta (bez -i karodziņa)
+        rsync -az --stats -e "ssh -p $PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
           --exclude='node_modules' \
           --exclude='.git' \
           --exclude='.github' \
@@ -72,6 +117,7 @@ jobs:
           PORT="722"
         fi
 
-        ssh -i ~/.ssh/id_ed25519 -p $PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+        # SSH komanda izmanto atslēgu no aģenta (bez -i karodziņa)
+        ssh -p $PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
           traindar@${{ secrets.SSH_HOST }} \
           "cd /home/traindar/public_html/darttrainer/darttrainer && php artisan optimize:clear"

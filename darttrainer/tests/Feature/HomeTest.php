@@ -6,8 +6,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-// Piezīme: dashboard ir noņemts — sākumlapa (/) ir publiska.
-// Pārsauc failu par HomeTest.php, kad ērti.
+// Sākumlapa (/) ir publiska (guest Welcome).
 class HomeTest extends TestCase
 {
     use RefreshDatabase;

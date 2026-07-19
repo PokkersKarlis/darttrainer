@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\AppVersion;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -24,7 +25,7 @@ class HandleInertiaRequests extends Middleware
      */
     public function version(Request $request): ?string
     {
-        return parent::version($request);
+        return AppVersion::current();
     }
 
     /**
@@ -38,13 +39,17 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
-        return array_merge(parent::share($request), [
+        return [
             ...parent::share($request),
             'name' => config('app.name'),
+            'appVersion' => AppVersion::current(),
+            'locale' => app()->getLocale(),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
                 'user' => $request->user(),
             ],
-        ]);
+            'emailVerified' => (bool) $request->user()?->hasVerifiedEmail(),
+            'emailVerificationSentAt' => $request->user()?->email_verification_sent_at?->toIso8601String(),
+        ];
     }
 }

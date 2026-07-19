@@ -54,7 +54,10 @@ services:
   #     - traindart-network
 
   node:
-    image: node:20-alpine
+    # node:22 (glibc), NEVIS alpine (musl) — Vite 8 / rolldown native binārie
+    # ir linux-x64-gnu (glibc); alpine musl vidē tie krīt ("Cannot find binding musl").
+    # Uzlabots no node:20 uz node:22, jo vue-i18n ^11 pieprasa Node >= 22 (engines).
+    image: node:22
     working_dir: /var/www
     volumes:
       - .:/var/www
@@ -63,6 +66,16 @@ services:
     environment:
       - CHOKIDAR_USEPOLLING=true
     command: npm run dev -- --host
+    networks:
+      - traindart-network
+
+  # E-pastu ķērājs izstrādei: SMTP uz 1025, web UI uz http://localhost:8025
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+      - "1025:1025"
     networks:
       - traindart-network
 
