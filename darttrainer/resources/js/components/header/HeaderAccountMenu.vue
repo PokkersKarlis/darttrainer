@@ -18,7 +18,7 @@ const props = withDefaults(
 const menuOpen = ref(false);
 const menuRef = ref<HTMLElement | null>(null);
 
-const { user, hasNotification, notificationMessage, items } = useHeaderAccountMenu();
+const { user, hasNotification, notificationMessage, notificationTitle, items } = useHeaderAccountMenu();
 
 const menuItems = computed(() => [...items.value, ...props.extraItems]);
 
@@ -40,6 +40,7 @@ function closeMenu() {
         <HeaderUserTrigger
             :name="user.name"
             :show-notification="hasNotification"
+            :notification-title="notificationTitle"
             :expanded="menuOpen"
             @toggle="toggleMenu"
         />

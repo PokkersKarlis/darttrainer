@@ -40,6 +40,10 @@
                 "x01Multiplayer": "X01 Multiplayer",
                 "comingSoon": "Coming soon",
                 "verifyToUnlock": "Verify email to unlock"
+            },
+            "social": {
+                "title": "Social",
+                "friends": "Friends"
             }
         },
         "emailNotice": {

@@ -24,6 +24,7 @@ export interface SharedData {
     auth: Auth;
     emailVerified: boolean;
     emailVerificationSentAt: string | null;
+    pendingFriendRequestsCount: number;
     ziggy: {
         location: string;
         url: string;

@@ -40,6 +40,10 @@
                 "x01Multiplayer": "X01 Daudzspēlētāju",
                 "comingSoon": "Drīzumā",
                 "verifyToUnlock": "Apstiprini e-pastu, lai atbloķētu"
+            },
+            "social": {
+                "title": "Sociālais",
+                "friends": "Draugi"
             }
         },
         "emailNotice": {

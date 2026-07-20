@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -61,5 +62,20 @@ class User extends Authenticatable implements MustVerifyEmail
         $this->forceFill([
             'email_verification_sent_at' => $this->freshTimestamp(),
         ])->save();
+    }
+
+    public function friendshipsAsRequester(): HasMany
+    {
+        return $this->hasMany(Friendship::class, 'requester_id');
+    }
+
+    public function friendshipsAsAddressee(): HasMany
+    {
+        return $this->hasMany(Friendship::class, 'addressee_id');
+    }
+
+    public function pendingFriendRequestsCount(): int
+    {
+        return Friendship::pendingIncomingCountFor($this);
     }
 }

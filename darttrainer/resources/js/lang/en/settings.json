@@ -4,7 +4,8 @@
         "subtitle": "Manage your profile and account settings.",
         "tabs": {
             "profile": "Profile",
-            "password": "Password"
+            "password": "Password",
+            "friends": "Friends"
         },
         "saved": "Saved.",
         "profile": {
@@ -33,6 +34,40 @@
             "new": "New password",
             "confirm": "Confirm password",
             "save": "Save password"
+        },
+        "friends": {
+            "head": "Friends",
+            "inviteTitle": "Add a friend",
+            "inviteDesc": "Send an invite using their TrainDart email address.",
+            "email": "Email",
+            "emailPlaceholder": "friend@example.com",
+            "sendInvite": "Send invite",
+            "incomingTitle": "Incoming requests",
+            "incomingDesc": "You have {count} pending request(s).",
+            "outgoingTitle": "Sent invites",
+            "outgoingDesc": "Waiting for others to accept your invite.",
+            "listTitle": "Your friends",
+            "listDesc": "Players you're connected with on TrainDart.",
+            "accept": "Accept",
+            "decline": "Decline",
+            "cancel": "Cancel invite",
+            "remove": "Remove",
+            "pending": "Pending",
+            "emptyTitle": "No friends yet",
+            "emptyDesc": "Invite someone by email to start building your squad.",
+            "status": {
+                "friendship-invite-sent": "Invite sent.",
+                "friendship-accepted": "You're now friends!",
+                "friendship-declined": "Request declined.",
+                "friendship-cancelled": "Invite cancelled.",
+                "friendship-removed": "Friend removed."
+            },
+            "errors": {
+                "friendship-self": "You can't add yourself.",
+                "friendship-not-found": "No account found with this email.",
+                "friendship-already-friends": "You're already friends with this player.",
+                "friendship-already-sent": "An invite is already pending."
+            }
         }
     }
 }

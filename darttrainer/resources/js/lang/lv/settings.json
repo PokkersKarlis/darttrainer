@@ -4,7 +4,8 @@
         "subtitle": "Pārvaldi savu profilu un konta iestatījumus.",
         "tabs": {
             "profile": "Profils",
-            "password": "Parole"
+            "password": "Parole",
+            "friends": "Draugi"
         },
         "saved": "Saglabāts.",
         "profile": {
@@ -33,6 +34,40 @@
             "new": "Jaunā parole",
             "confirm": "Apstiprini paroli",
             "save": "Saglabāt paroli"
+        },
+        "friends": {
+            "head": "Draugi",
+            "inviteTitle": "Pievienot draugu",
+            "inviteDesc": "Nosūti uzaicinājumu, izmantojot viņa TrainDart e-pasta adresi.",
+            "email": "E-pasts",
+            "emailPlaceholder": "draugs@example.com",
+            "sendInvite": "Nosūtīt uzaicinājumu",
+            "incomingTitle": "Saņemtie uzaicinājumi",
+            "incomingDesc": "Tev ir {count} gaidošs(-i) uzaicinājums(-i).",
+            "outgoingTitle": "Nosūtītie uzaicinājumi",
+            "outgoingDesc": "Gaida, kamēr otrs lietotājs pieņems uzaicinājumu.",
+            "listTitle": "Tavi draugi",
+            "listDesc": "Spēlētāji, ar kuriem esi savienots TrainDart.",
+            "accept": "Pieņemt",
+            "decline": "Noraidīt",
+            "cancel": "Atcelt uzaicinājumu",
+            "remove": "Noņemt",
+            "pending": "Gaida",
+            "emptyTitle": "Vēl nav draugu",
+            "emptyDesc": "Uzaicini kādu pa e-pastu un sāc veidot savu komandu.",
+            "status": {
+                "friendship-invite-sent": "Uzaicinājums nosūtīts.",
+                "friendship-accepted": "Tagad esat draugi!",
+                "friendship-declined": "Uzaicinājums noraidīts.",
+                "friendship-cancelled": "Uzaicinājums atcelts.",
+                "friendship-removed": "Draugs noņemts."
+            },
+            "errors": {
+                "friendship-self": "Nevari pievienot sevi.",
+                "friendship-not-found": "Konts ar šo e-pastu nav atrasts.",
+                "friendship-already-friends": "Jūs jau esat draugi ar šo spēlētāju.",
+                "friendship-already-sent": "Uzaicinājums jau ir nosūtīts."
+            }
         }
     }
 }

@@ -9,6 +9,7 @@ defineProps<{
     hint?: string;
     icon: LucideIcon;
     disabled?: boolean;
+    badge?: number;
 }>();
 </script>
 
@@ -25,7 +26,10 @@ defineProps<{
             <component :is="icon" :size="18" :stroke-width="2.2" />
         </span>
         <span class="ix-nav-item-copy">
-            <span class="ix-nav-item-label">{{ label }}</span>
+            <span class="ix-nav-item-label-row">
+                <span class="ix-nav-item-label">{{ label }}</span>
+                <span v-if="badge" class="ix-nav-item-badge">{{ badge }}</span>
+            </span>
             <span v-if="disabled && hint" class="ix-nav-item-hint">
                 <Lock :size="12" :stroke-width="2.4" class="ix-nav-item-lock" aria-hidden="true" />
                 {{ hint }}
@@ -90,6 +94,29 @@ defineProps<{
     letter-spacing: 0.04em;
     text-transform: uppercase;
     line-height: 1.1;
+}
+
+.ix-nav-item-label-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ix-nav-item-badge {
+    display: inline-flex;
+    min-width: calc(18px * var(--ix-scale, 1));
+    height: calc(18px * var(--ix-scale, 1));
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    border-radius: 999px;
+    font-family: Inter, sans-serif;
+    font-size: calc(10px * var(--ix-scale, 1));
+    font-weight: 800;
+    line-height: 1;
+    color: #fff;
+    background: #fb2c5f;
+    box-shadow: 0 0 10px rgba(251, 44, 95, 0.45);
 }
 
 .ix-nav-item-hint {

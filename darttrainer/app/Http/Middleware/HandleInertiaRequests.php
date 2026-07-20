@@ -50,6 +50,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'emailVerified' => (bool) $request->user()?->hasVerifiedEmail(),
             'emailVerificationSentAt' => $request->user()?->email_verification_sent_at?->toIso8601String(),
+            'pendingFriendRequestsCount' => $request->user()?->pendingFriendRequestsCount() ?? 0,
         ];
     }
 }

@@ -7,6 +7,7 @@ import { computed } from 'vue';
 const props = defineProps<{
     name?: string;
     showNotification?: boolean;
+    notificationTitle?: string;
     expanded?: boolean;
 }>();
 
@@ -28,7 +29,7 @@ const initials = computed(() => getInitials(props.name));
         @click="$emit('toggle')"
     >
         <span class="hdr-user-avatar" aria-hidden="true">{{ initials }}</span>
-        <HeaderNotificationDot v-if="showNotification" :title="t('header.verifyEmail')" />
+        <HeaderNotificationDot v-if="showNotification" :title="notificationTitle || t('header.verifyEmail')" />
     </button>
 </template>
 

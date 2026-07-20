@@ -4,10 +4,14 @@
  */
 import AppTopBar from '@/components/AppTopBar.vue';
 import { useLocale } from '@/composables/useLocale';
-import { Link } from '@inertiajs/vue3';
+import type { SharedData } from '@/types';
+import { Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 const { t } = useLocale();
+const page = usePage<SharedData>();
+
+const pendingFriendRequestsCount = computed(() => page.props.pendingFriendRequestsCount ?? 0);
 
 const tabs = computed(() => [
     {
@@ -19,6 +23,12 @@ const tabs = computed(() => [
         label: t('settings.tabs.password'),
         href: '/settings/password',
         kind: 'password' as const,
+    },
+    {
+        label: t('settings.tabs.friends'),
+        href: '/settings/friends',
+        kind: 'friends' as const,
+        badge: pendingFriendRequestsCount.value > 0 ? pendingFriendRequestsCount.value : undefined,
     },
 ]);
 
@@ -62,12 +72,18 @@ const currentPath = computed(() => (typeof window !== 'undefined' ? window.locat
                             <circle cx="12" cy="8" r="4" />
                             <path d="M4 20a8 8 0 0116 0" />
                         </svg>
-                        <svg v-else width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <svg v-else-if="tab.kind === 'password'" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                             <rect x="5" y="11" width="14" height="10" rx="2" />
                             <path d="M8 11V7a4 4 0 018 0v4" />
                         </svg>
+                        <svg v-else width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+                        </svg>
                     </span>
                     {{ tab.label }}
+                    <span v-if="tab.badge" class="ts-tab-badge">{{ tab.badge }}</span>
                 </Link>
             </nav>
 
@@ -245,6 +261,21 @@ const currentPath = computed(() => (typeof window !== 'undefined' ? window.locat
 }
 .ts-tab--on .ts-tab-ico {
     opacity: 1;
+}
+.ts-tab-badge {
+    display: inline-flex;
+    min-width: 18px;
+    height: 18px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1;
+    color: #0b0f19;
+    background: #fb2c5f;
+    box-shadow: 0 0 10px rgba(251, 44, 95, 0.45);
 }
 
 .ts-panel {

@@ -3,10 +3,12 @@
         "home": "TrainDart home",
         "guestNav": "Guest navigation",
         "accountMenu": "Account menu",
-        "verifyEmail": "Verify your email address"
+        "verifyEmail": "Verify your email address",
+        "friendRequests": "You have {count} friend request(s)"
     },
     "menu": {
         "settings": "Settings",
+        "friends": "Friends",
         "logout": "Log out"
     }
 }
