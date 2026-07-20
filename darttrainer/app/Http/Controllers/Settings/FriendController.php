@@ -18,11 +18,14 @@ class FriendController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
+        $searchQuery = trim($request->string('q')->toString());
 
         return Inertia::render('settings/Friends', [
             'friends' => $this->acceptedFriends($user),
             'incoming' => $this->pendingIncoming($user),
             'outgoing' => $this->pendingOutgoing($user),
+            'searchQuery' => $searchQuery,
+            'searchResults' => $this->searchUsers($user, $searchQuery),
             'status' => $request->session()->get('status'),
         ]);
     }
@@ -30,15 +33,7 @@ class FriendController extends Controller
     public function store(FriendInviteRequest $request): RedirectResponse
     {
         $user = $request->user();
-        $email = strtolower($request->validated('email'));
-
-        if (strtolower($user->email) === $email) {
-            throw ValidationException::withMessages([
-                'email' => ['friendship-self'],
-            ]);
-        }
-
-        $addressee = User::query()->whereRaw('LOWER(email) = ?', [$email])->first();
+        $addressee = $this->resolveAddressee($request);
 
         if ($addressee === null) {
             throw ValidationException::withMessages([
@@ -46,35 +41,7 @@ class FriendController extends Controller
             ]);
         }
 
-        $existing = Friendship::findBetween($user, $addressee);
-
-        if ($existing !== null) {
-            if ($existing->isAccepted()) {
-                throw ValidationException::withMessages([
-                    'email' => ['friendship-already-friends'],
-                ]);
-            }
-
-            if ($existing->isPending()) {
-                if ($existing->requester_id === $addressee->id) {
-                    $existing->accept();
-
-                    return to_route('friends.edit')->with('status', 'friendship-accepted');
-                }
-
-                throw ValidationException::withMessages([
-                    'email' => ['friendship-already-sent'],
-                ]);
-            }
-        }
-
-        Friendship::query()->create([
-            'requester_id' => $user->id,
-            'addressee_id' => $addressee->id,
-            'status' => FriendshipStatus::Pending,
-        ]);
-
-        return to_route('friends.edit')->with('status', 'friendship-invite-sent');
+        return $this->sendInvite($user, $addressee);
     }
 
     public function accept(Request $request, Friendship $friendship): RedirectResponse
@@ -127,6 +94,123 @@ class FriendController extends Controller
         }
 
         abort(403);
+    }
+
+    private function sendInvite(User $requester, User $addressee): RedirectResponse
+    {
+        if ($requester->id === $addressee->id) {
+            throw ValidationException::withMessages([
+                'email' => ['friendship-self'],
+            ]);
+        }
+
+        $existing = Friendship::findBetween($requester, $addressee);
+
+        if ($existing !== null) {
+            if ($existing->isAccepted()) {
+                throw ValidationException::withMessages([
+                    'email' => ['friendship-already-friends'],
+                ]);
+            }
+
+            if ($existing->isPending()) {
+                if ($existing->requester_id === $addressee->id) {
+                    $existing->accept();
+
+                    return to_route('friends.edit')->with('status', 'friendship-accepted');
+                }
+
+                throw ValidationException::withMessages([
+                    'email' => ['friendship-already-sent'],
+                ]);
+            }
+        }
+
+        Friendship::query()->create([
+            'requester_id' => $requester->id,
+            'addressee_id' => $addressee->id,
+            'status' => FriendshipStatus::Pending,
+        ]);
+
+        return to_route('friends.edit')->with('status', 'friendship-invite-sent');
+    }
+
+    private function resolveAddressee(FriendInviteRequest $request): ?User
+    {
+        if ($request->filled('user_id')) {
+            return User::query()->find($request->integer('user_id'));
+        }
+
+        $email = strtolower((string) $request->validated('email'));
+
+        return User::query()->whereRaw('LOWER(email) = ?', [$email])->first();
+    }
+
+    /**
+     * @return list<array{
+     *     id: int,
+     *     name: string,
+     *     email: string,
+     *     friendship_status: string,
+     *     friendship_id: int|null
+     * }>
+     */
+    private function searchUsers(User $viewer, string $query): array
+    {
+        if (mb_strlen($query) < 2) {
+            return [];
+        }
+
+        $needle = '%'.addcslashes(mb_strtolower($query), '%_\\').'%';
+
+        return User::query()
+            ->where('id', '!=', $viewer->id)
+            ->where(function ($builder) use ($needle): void {
+                $builder->whereRaw('LOWER(name) LIKE ?', [$needle])
+                    ->orWhereRaw('LOWER(email) LIKE ?', [$needle]);
+            })
+            ->orderBy('name')
+            ->limit(10)
+            ->get()
+            ->map(fn (User $candidate) => $this->serializeSearchResult($viewer, $candidate))
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return array{
+     *     id: int,
+     *     name: string,
+     *     email: string,
+     *     friendship_status: string,
+     *     friendship_id: int|null
+     * }
+     */
+    private function serializeSearchResult(User $viewer, User $candidate): array
+    {
+        $friendship = Friendship::findBetween($viewer, $candidate);
+        $status = 'none';
+        $friendshipId = null;
+
+        if ($friendship !== null) {
+            $friendshipId = $friendship->id;
+
+            if ($friendship->isAccepted()) {
+                $status = 'friends';
+            } elseif ($friendship->isPending()) {
+                $status = $friendship->requester_id === $viewer->id
+                    ? 'pending_outgoing'
+                    : 'pending_incoming';
+            }
+        }
+
+        return [
+            'id' => $candidate->id,
+            'name' => $candidate->name,
+            'email' => $candidate->email,
+            'friendship_status' => $status,
+            'friendship_id' => $friendshipId,
+        ];
     }
 
     /**

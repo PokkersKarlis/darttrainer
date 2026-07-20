@@ -3,7 +3,8 @@ import SettingsShell from '@/layouts/SettingsShell.vue';
 import { getInitials } from '@/composables/useInitials';
 import { useLocale } from '@/composables/useLocale';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { useDebounceFn } from '@vueuse/core';
+import { computed, ref, watch } from 'vue';
 
 interface FriendUser {
     id: number;
@@ -17,18 +18,38 @@ interface FriendEntry {
     created_at: string;
 }
 
+type FriendshipStatus = 'none' | 'pending_outgoing' | 'pending_incoming' | 'friends';
+
+interface SearchResult {
+    id: number;
+    name: string;
+    email: string;
+    friendship_status: FriendshipStatus;
+    friendship_id: number | null;
+}
+
 interface Props {
     friends: FriendEntry[];
     incoming: FriendEntry[];
     outgoing: FriendEntry[];
+    searchQuery?: string;
+    searchResults?: SearchResult[];
     status?: string;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+    searchQuery: '',
+    searchResults: () => [],
+});
 
 const { t } = useLocale();
 
+const searchInput = ref(props.searchQuery);
+const searching = ref(false);
+const invitingUserId = ref<number | null>(null);
+
 const inviteForm = useForm({
+    user_id: null as number | null,
     email: '',
 });
 
@@ -43,23 +64,71 @@ const statusMessage = computed(() => {
     return translated === key ? '' : translated;
 });
 
-const inviteError = computed(() => {
-    const raw = inviteForm.errors.email;
-    if (!raw) {
-        return '';
+const showSearchHint = computed(() => searchInput.value.trim().length > 0 && searchInput.value.trim().length < 2);
+
+const showSearchEmpty = computed(
+    () => !searching.value && searchInput.value.trim().length >= 2 && props.searchResults.length === 0,
+);
+
+const runSearch = useDebounceFn((query: string) => {
+    const trimmed = query.trim();
+
+    if (trimmed.length < 2) {
+        router.get(
+            route('friends.edit'),
+            {},
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+                only: ['searchQuery', 'searchResults'],
+            },
+        );
+
+        return;
     }
 
-    const key = `settings.friends.errors.${raw}`;
-    const translated = t(key);
+    searching.value = true;
 
-    return translated === key ? raw : translated;
+    router.get(
+        route('friends.edit'),
+        { q: trimmed },
+        {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+            only: ['searchQuery', 'searchResults'],
+            onFinish: () => {
+                searching.value = false;
+            },
+        },
+    );
+}, 350);
+
+watch(searchInput, (value) => {
+    runSearch(value);
 });
 
-function submitInvite() {
-    inviteForm.post(route('friends.store'), {
-        preserveScroll: true,
-        onSuccess: () => inviteForm.reset('email'),
-    });
+watch(
+    () => props.searchQuery,
+    (value) => {
+        if (value !== searchInput.value) {
+            searchInput.value = value;
+        }
+    },
+);
+
+function inviteUser(userId: number) {
+    invitingUserId.value = userId;
+
+    inviteForm
+        .transform(() => ({ user_id: userId }))
+        .post(route('friends.store'), {
+            preserveScroll: true,
+            onFinish: () => {
+                invitingUserId.value = null;
+            },
+        });
 }
 
 function acceptRequest(id: number) {
@@ -100,24 +169,70 @@ function removeFriend(id: number) {
                 </div>
             </div>
 
-            <form class="fr-invite" @submit.prevent="submitInvite">
-                <div class="fr-invite-field">
-                    <label class="fr-label" for="friend-email">{{ t('settings.friends.email') }}</label>
+            <div class="fr-search">
+                <label class="fr-label" for="friend-search">{{ t('settings.friends.searchLabel') }}</label>
+                <div class="fr-search-row">
+                    <span class="fr-search-ico" aria-hidden="true">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <circle cx="11" cy="11" r="7" />
+                            <path d="M20 20l-3-3" />
+                        </svg>
+                    </span>
                     <input
-                        id="friend-email"
-                        v-model="inviteForm.email"
-                        type="email"
-                        class="fr-input"
-                        required
-                        autocomplete="email"
-                        :placeholder="t('settings.friends.emailPlaceholder')"
+                        id="friend-search"
+                        v-model="searchInput"
+                        type="search"
+                        class="fr-input fr-input--search"
+                        autocomplete="off"
+                        :placeholder="t('settings.friends.searchPlaceholder')"
                     />
-                    <p v-if="inviteError" class="fr-error">{{ inviteError }}</p>
+                    <span v-if="searching" class="fr-search-spinner" aria-hidden="true" />
                 </div>
-                <button type="submit" class="fr-btn fr-btn--green" :disabled="inviteForm.processing">
-                    {{ t('settings.friends.sendInvite') }}
-                </button>
-            </form>
+                <p v-if="showSearchHint" class="fr-search-hint">{{ t('settings.friends.searchHint') }}</p>
+            </div>
+
+            <ul v-if="searchResults.length" class="fr-list fr-list--search">
+                <li v-for="result in searchResults" :key="result.id" class="fr-card fr-card--search">
+                    <div class="fr-card-user">
+                        <span class="fr-avatar" aria-hidden="true">{{ getInitials(result.name) }}</span>
+                        <div>
+                            <p class="fr-name">{{ result.name }}</p>
+                            <p class="fr-email">{{ result.email }}</p>
+                        </div>
+                    </div>
+                    <div class="fr-card-actions">
+                        <button
+                            v-if="result.friendship_status === 'none'"
+                            type="button"
+                            class="fr-btn fr-btn--green fr-btn--sm"
+                            :disabled="inviteForm.processing && invitingUserId === result.id"
+                            @click="inviteUser(result.id)"
+                        >
+                            {{ t('settings.friends.sendInvite') }}
+                        </button>
+                        <template v-else-if="result.friendship_status === 'pending_incoming' && result.friendship_id">
+                            <button type="button" class="fr-btn fr-btn--green fr-btn--sm" @click="acceptRequest(result.friendship_id)">
+                                {{ t('settings.friends.accept') }}
+                            </button>
+                            <button type="button" class="fr-btn fr-btn--ghost fr-btn--sm" @click="declineRequest(result.friendship_id)">
+                                {{ t('settings.friends.decline') }}
+                            </button>
+                        </template>
+                        <template v-else-if="result.friendship_status === 'pending_outgoing' && result.friendship_id">
+                            <span class="fr-pill">{{ t('settings.friends.pending') }}</span>
+                            <button type="button" class="fr-btn fr-btn--ghost fr-btn--sm" @click="cancelRequest(result.friendship_id)">
+                                {{ t('settings.friends.cancel') }}
+                            </button>
+                        </template>
+                        <span v-else class="fr-pill fr-pill--green">{{ t('settings.friends.alreadyFriends') }}</span>
+                    </div>
+                </li>
+            </ul>
+
+            <div v-else-if="showSearchEmpty" class="fr-search-empty">
+                <p class="fr-search-empty-title">{{ t('settings.friends.searchEmptyTitle') }}</p>
+                <p class="fr-search-empty-desc">{{ t('settings.friends.searchEmptyDesc') }}</p>
+            </div>
         </section>
 
         <section v-if="incoming.length" class="fr-section fr-section--highlight">
@@ -313,6 +428,88 @@ function removeFriend(id: number) {
     flex-wrap: wrap;
     gap: 12px;
     align-items: flex-end;
+}
+
+.fr-search {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.fr-search-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.fr-search-ico {
+    position: absolute;
+    left: 14px;
+    display: inline-flex;
+    color: #64748b;
+    pointer-events: none;
+}
+
+.fr-input--search {
+    padding-left: 42px;
+    padding-right: 42px;
+}
+
+.fr-search-spinner {
+    position: absolute;
+    right: 14px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid rgba(57, 255, 20, 0.2);
+    border-top-color: #39ff14;
+    animation: fr-spin 0.7s linear infinite;
+}
+
+.fr-search-hint,
+.fr-search-empty-desc {
+    margin: 0;
+    font-size: 13px;
+    color: #64748b;
+}
+
+.fr-search-empty {
+    margin-top: 14px;
+    padding: 18px 16px;
+    border-radius: 12px;
+    border: 1px dashed #334155;
+    background: rgba(19, 26, 38, 0.35);
+    text-align: center;
+}
+
+.fr-search-empty-title {
+    margin: 0 0 4px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-size: 14px;
+    color: #94a3b8;
+}
+
+.fr-list--search {
+    margin-top: 16px;
+}
+
+.fr-card--search {
+    border-color: rgba(57, 255, 20, 0.12);
+}
+
+.fr-pill--green {
+    color: #39ff14;
+    background: rgba(57, 255, 20, 0.1);
+    border-color: rgba(57, 255, 20, 0.25);
+}
+
+@keyframes fr-spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .fr-invite-field {
@@ -578,6 +775,11 @@ function removeFriend(id: number) {
     .fr-card:hover,
     .fr-btn--green:hover:not(:disabled) {
         transform: none;
+    }
+
+    .fr-search-spinner {
+        animation: none;
+        border-top-color: rgba(57, 255, 20, 0.5);
     }
 }
 </style>

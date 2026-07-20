@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Settings;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class FriendInviteRequest extends FormRequest
 {
@@ -17,7 +18,13 @@ class FriendInviteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email', 'max:255'],
+            'email' => ['nullable', 'string', 'email', 'max:255', 'required_without:user_id'],
+            'user_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('users', 'id'),
+                'required_without:email',
+            ],
         ];
     }
 }

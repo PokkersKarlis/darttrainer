@@ -21,6 +21,92 @@ class FriendsTest extends TestCase
             ->assertOk();
     }
 
+    public function test_user_can_send_friend_invite_by_user_id(): void
+    {
+        $requester = User::factory()->create();
+        $addressee = User::factory()->create(['email' => 'friend@example.com']);
+
+        $this->actingAs($requester)
+            ->post('/settings/friends', ['user_id' => $addressee->id])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/settings/friends')
+            ->assertSessionHas('status', 'friendship-invite-sent');
+
+        $this->assertDatabaseHas('friendships', [
+            'requester_id' => $requester->id,
+            'addressee_id' => $addressee->id,
+            'status' => FriendshipStatus::Pending->value,
+        ]);
+    }
+
+    public function test_user_can_search_players_by_name(): void
+    {
+        $viewer = User::factory()->create();
+        $match = User::factory()->create(['name' => 'Karlis Ozols', 'email' => 'karlis@example.com']);
+        User::factory()->create(['name' => 'Other Player', 'email' => 'other@example.com']);
+
+        $this->actingAs($viewer)
+            ->get('/settings/friends?q=karlis')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('searchQuery', 'karlis')
+                ->has('searchResults', 1)
+                ->where('searchResults.0.id', $match->id)
+                ->where('searchResults.0.friendship_status', 'none'));
+    }
+
+    public function test_user_can_search_players_by_email(): void
+    {
+        $viewer = User::factory()->create();
+        $match = User::factory()->create(['name' => 'Anna', 'email' => 'anna.b@example.com']);
+
+        $this->actingAs($viewer)
+            ->get('/settings/friends?q=anna.b@')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('searchResults', 1)
+                ->where('searchResults.0.id', $match->id));
+    }
+
+    public function test_search_excludes_current_user(): void
+    {
+        $viewer = User::factory()->create(['name' => 'Self Search', 'email' => 'self@example.com']);
+
+        $this->actingAs($viewer)
+            ->get('/settings/friends?q=self')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->where('searchResults', []));
+    }
+
+    public function test_search_requires_at_least_two_characters(): void
+    {
+        $viewer = User::factory()->create();
+        User::factory()->create(['name' => 'Long Name']);
+
+        $this->actingAs($viewer)
+            ->get('/settings/friends?q=a')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->where('searchResults', []));
+    }
+
+    public function test_search_shows_existing_friendship_status(): void
+    {
+        $viewer = User::factory()->create();
+        $friend = User::factory()->create(['name' => 'Existing Friend']);
+
+        Friendship::query()->create([
+            'requester_id' => $viewer->id,
+            'addressee_id' => $friend->id,
+            'status' => FriendshipStatus::Accepted,
+        ]);
+
+        $this->actingAs($viewer)
+            ->get('/settings/friends?q=existing')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('searchResults.0.friendship_status', 'friends'));
+    }
+
     public function test_user_can_send_friend_invite(): void
     {
         $requester = User::factory()->create();
