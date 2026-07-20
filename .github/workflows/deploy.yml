@@ -1,5 +1,8 @@
 name: Build & Deploy to cPanel
 
+permissions:
+  contents: read
+
 on:
   push:
     branches:
