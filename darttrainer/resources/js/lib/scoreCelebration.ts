@@ -1,10 +1,4 @@
-export type ScoreCelebrationTier =
-    | 'solid'
-    | 'good'
-    | 'great'
-    | 'maximum'
-    | 'special171'
-    | 'bigFish';
+export type ScoreCelebrationTier = 'solid' | 'good' | 'great' | 'maximum' | 'special171' | 'bigFish';
 
 export interface ScoreCelebration {
     tier: ScoreCelebrationTier;
@@ -14,15 +8,10 @@ export interface ScoreCelebration {
 type DartThrow = { sector: number; multiplier: number };
 
 export function isTriple19Visit(throws: DartThrow[]): boolean {
-    return throws.length === 3
-        && throws.every((dart) => dart.sector === 19 && dart.multiplier === 3);
+    return throws.length === 3 && throws.every((dart) => dart.sector === 19 && dart.multiplier === 3);
 }
 
-export function resolveScoreCelebration(
-    points: number,
-    throws: DartThrow[],
-    isCheckout: boolean,
-): ScoreCelebration | null {
+export function resolveScoreCelebration(points: number, throws: DartThrow[], isCheckout: boolean): ScoreCelebration | null {
     if (points < 95) {
         return null;
     }

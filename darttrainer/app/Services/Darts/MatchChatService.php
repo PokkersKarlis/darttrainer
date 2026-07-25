@@ -6,7 +6,6 @@ use App\Events\MatchChatMessageSent;
 use App\Models\DartMatch;
 use App\Models\MatchChatMessage;
 use App\Models\User;
-use Illuminate\Support\Collection;
 
 class MatchChatService
 {

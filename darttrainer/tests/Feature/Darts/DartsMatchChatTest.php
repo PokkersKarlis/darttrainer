@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Darts;
 
+use App\Models\DartMatch;
 use App\Models\MatchChatMessage;
 use App\Models\User;
-use App\Services\Darts\MatchChatService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\CreatesDartsLobby;
 use Tests\TestCase;
@@ -62,7 +62,7 @@ class DartsMatchChatTest extends TestCase
     }
 
     /**
-     * @return \App\Models\DartMatch
+     * @return DartMatch
      */
     private function createActiveMatch(User $host, User $guest, bool $publicMatch = false)
     {

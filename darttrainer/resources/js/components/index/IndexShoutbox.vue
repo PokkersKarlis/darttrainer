@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { useLocale } from '@/composables/useLocale';
 import api from '@/lib/axios';
 import { getEcho } from '@/lib/echo';
-import { useLocale } from '@/composables/useLocale';
 import { onMounted, onUnmounted, ref } from 'vue';
 
 export interface ShoutboxMessage {

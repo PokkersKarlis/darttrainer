@@ -12,11 +12,11 @@ import LobbyRoster from '@/components/darts/lobby/LobbyRoster.vue';
 import LobbySetupStep from '@/components/darts/lobby/LobbySetupStep.vue';
 import LobbyStepIndicator from '@/components/darts/lobby/LobbyStepIndicator.vue';
 import LocalLobbyPanel from '@/components/darts/LocalLobbyPanel.vue';
-import GameLayout from '@/layouts/GameLayout.vue';
 import { useActiveLobby } from '@/composables/useActiveLobby';
 import { useGameResponsive } from '@/composables/useGameResponsive';
 import { GameViewportRemeasureKey } from '@/composables/useGameViewportFit';
 import { useLocale } from '@/composables/useLocale';
+import GameLayout from '@/layouts/GameLayout.vue';
 import { sanitizeLobbyCodeInput } from '@/lib/lobbyCode';
 import { useDartsLobbyStore, type FriendEntry, type LobbyPlayer, type LobbySnapshot } from '@/stores/dartsLobby';
 import { Head, router, usePage } from '@inertiajs/vue3';
@@ -54,10 +54,16 @@ const props = defineProps<Props>();
 
 const { t } = useLocale();
 const { frame } = useGameResponsive();
-const remeasureViewport = inject<( () => void ) | undefined>(GameViewportRemeasureKey, undefined);
+const remeasureViewport = inject<(() => void) | undefined>(GameViewportRemeasureKey, undefined);
 const store = useDartsLobbyStore();
-const { players: storePlayers, lobbyUuid: storeLobbyUuid, lobbyCode: storeLobbyCode, canProceed: storeCanProceed, mode: storeMode, pendingInviteeIds: storePendingInviteeIds } =
-    storeToRefs(store);
+const {
+    players: storePlayers,
+    lobbyUuid: storeLobbyUuid,
+    lobbyCode: storeLobbyCode,
+    canProceed: storeCanProceed,
+    mode: storeMode,
+    pendingInviteeIds: storePendingInviteeIds,
+} = storeToRefs(store);
 const { activeLobby, goToActiveLobby } = useActiveLobby();
 
 const showExitConfirm = ref(false);
@@ -74,18 +80,10 @@ let lobbyReloadPending = false;
 const isLiveLobby = computed(() => !!props.lobby?.uuid && storeLobbyUuid.value === props.lobby.uuid);
 
 const lobbyUuid = computed(() => props.lobby?.uuid ?? storeLobbyUuid.value);
-const lobbyCode = computed(() =>
-    isLiveLobby.value ? storeLobbyCode.value : (props.lobby?.lobby_code ?? storeLobbyCode.value),
-);
-const players = computed(() =>
-    isLiveLobby.value ? storePlayers.value : (props.lobby?.players ?? storePlayers.value),
-);
-const canProceed = computed(() =>
-    isLiveLobby.value ? storeCanProceed.value : (props.lobby?.can_proceed ?? storeCanProceed.value),
-);
-const activeMode = computed(() =>
-    isLiveLobby.value ? storeMode.value : (props.lobby?.config.mode ?? storeMode.value),
-);
+const lobbyCode = computed(() => (isLiveLobby.value ? storeLobbyCode.value : (props.lobby?.lobby_code ?? storeLobbyCode.value)));
+const players = computed(() => (isLiveLobby.value ? storePlayers.value : (props.lobby?.players ?? storePlayers.value)));
+const canProceed = computed(() => (isLiveLobby.value ? storeCanProceed.value : (props.lobby?.can_proceed ?? storeCanProceed.value)));
+const activeMode = computed(() => (isLiveLobby.value ? storeMode.value : (props.lobby?.config.mode ?? storeMode.value)));
 const hasRemoteActiveLobby = computed(() => !lobbyUuid.value && !!activeLobby.value);
 const isRemoteActiveMatch = computed(() => hasRemoteActiveLobby.value && activeLobby.value?.status === 'active');
 const canCreateNewLobby = computed(() => !lobbyUuid.value && !activeLobby.value);
@@ -162,9 +160,7 @@ const step1Lead = computed(() => {
     if (hasRemoteActiveLobby.value) {
         const mode = activeLobby.value?.mode === 'online' ? t('games.lobby.online') : t('games.lobby.local');
 
-        return isRemoteActiveMatch.value
-            ? t('games.lobby.activeMatchDesc', { mode })
-            : t('games.lobby.activeLobbyDesc', { mode });
+        return isRemoteActiveMatch.value ? t('games.lobby.activeMatchDesc', { mode }) : t('games.lobby.activeLobbyDesc', { mode });
     }
 
     if (lobbyUuid.value && !isLobbyHost.value) {
@@ -251,9 +247,7 @@ async function saveSetupAndStart() {
                 await store.setFirstThrower(lobbyUuid.value, firstThrowerId.value);
             }
         } else if (setupOrder.value.length > 2) {
-            const currentOrder = [...players.value]
-                .sort((left, right) => left.slot - right.slot)
-                .map((player) => player.id);
+            const currentOrder = [...players.value].sort((left, right) => left.slot - right.slot).map((player) => player.id);
 
             if (JSON.stringify(currentOrder) !== JSON.stringify(setupOrder.value)) {
                 await store.updateThrowOrder(lobbyUuid.value, setupOrder.value);
@@ -339,7 +333,6 @@ function scheduleLobbyPropsReload() {
 
     router.reload({
         only: ['lobby', 'friends'],
-        preserveScroll: true,
         onFinish: () => {
             lobbyReloadPending = false;
             remeasureViewport?.();
@@ -710,12 +703,7 @@ async function confirmExit() {
             />
         </div>
 
-        <LobbyExitConfirmModal
-            :show="showExitConfirm"
-            :loading="store.loading"
-            @cancel="showExitConfirm = false"
-            @confirm="confirmExit"
-        />
+        <LobbyExitConfirmModal :show="showExitConfirm" :loading="store.loading" @cancel="showExitConfirm = false" @confirm="confirmExit" />
     </GameLayout>
 </template>
 

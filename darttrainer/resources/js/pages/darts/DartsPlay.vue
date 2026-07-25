@@ -2,24 +2,24 @@
 import BigScoreOverlay from '@/components/darts/BigScoreOverlay.vue';
 import CalcQuickScores from '@/components/darts/CalcQuickScores.vue';
 import CalculatorModeModal from '@/components/darts/CalculatorModeModal.vue';
+import type { CalculatorVisitPayload } from '@/components/darts/DartCalculatorPad.vue';
 import DartCalculatorPad from '@/components/darts/DartCalculatorPad.vue';
 import DartInputPad from '@/components/darts/DartInputPad.vue';
+import InputModeInfoTip from '@/components/darts/InputModeInfoTip.vue';
 import MatchChatPanel from '@/components/darts/MatchChatPanel.vue';
 import Scoreboard from '@/components/darts/Scoreboard.vue';
 import TurnEditModal from '@/components/darts/TurnEditModal.vue';
 import TurnHistory from '@/components/darts/TurnHistory.vue';
 import TurnTimeoutModal from '@/components/darts/TurnTimeoutModal.vue';
-import { useMatchChat } from '@/composables/useMatchChat';
-import InputModeInfoTip from '@/components/darts/InputModeInfoTip.vue';
-import GameLayout from '@/layouts/GameLayout.vue';
-import { GameViewportRemeasureKey } from '@/composables/useGameViewportFit';
 import { useGameResponsive } from '@/composables/useGameResponsive';
+import { GameViewportRemeasureKey } from '@/composables/useGameViewportFit';
 import { useLocale } from '@/composables/useLocale';
-import type { RecentTurn } from '@/stores/dartsPlay';
-import type { CalculatorVisitPayload } from '@/components/darts/DartCalculatorPad.vue';
-import { useDartsPlayStore } from '@/stores/dartsPlay';
+import { useMatchChat } from '@/composables/useMatchChat';
+import GameLayout from '@/layouts/GameLayout.vue';
 import type { ScoreCelebrationTier } from '@/lib/scoreCelebration';
 import { resolveScoreCelebration } from '@/lib/scoreCelebration';
+import type { RecentTurn } from '@/stores/dartsPlay';
+import { useDartsPlayStore } from '@/stores/dartsPlay';
 import { Head, router } from '@inertiajs/vue3';
 import { computed, inject, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 
@@ -35,7 +35,7 @@ const props = defineProps<{
 const { t } = useLocale();
 const { frame } = useGameResponsive();
 const store = useDartsPlayStore();
-const remeasureViewport = inject<( () => void ) | undefined>(GameViewportRemeasureKey, undefined);
+const remeasureViewport = inject<(() => void) | undefined>(GameViewportRemeasureKey, undefined);
 
 const inputMode = ref<'sector' | 'calculator'>('sector');
 type CalcFlowStep = 'score' | 'dartCount' | 'checkoutDart' | 'doubleDarts';
@@ -61,12 +61,7 @@ const recentTurns = computed(() => matchState.value?.current_state.recent_turns 
 
 const canPostChat = computed(() => !isSpectator.value && matchState.value?.status === 'active');
 
-const {
-    messages: chatMessages,
-    loading: chatLoading,
-    sending: chatSending,
-    sendMessage,
-} = useMatchChat(props.matchUuid, () => canPostChat.value);
+const { messages: chatMessages, loading: chatLoading, sending: chatSending, sendMessage } = useMatchChat(props.matchUuid, () => canPostChat.value);
 
 const isActiveSide = computed(() => {
     const timer = turnTimer.value;
@@ -151,11 +146,7 @@ const showChatToggle = computed(() => !showInlineChat.value);
 const fillViewport = computed(() => frame.value === 'portrait');
 const calcSidebarLayout = computed(() => showInlineChat.value);
 const calcSidebarActive = computed(
-    () =>
-        calcSidebarLayout.value
-        && ownScoringMode.value === 'calculator'
-        && !isSpectator.value
-        && matchState.value?.status === 'active',
+    () => calcSidebarLayout.value && ownScoringMode.value === 'calculator' && !isSpectator.value && matchState.value?.status === 'active',
 );
 const showSidebarQuickScores = computed(() => calcSidebarActive.value && calcFlowStep.value === 'score');
 watch(inputMode, (mode) => {
@@ -236,22 +227,13 @@ function inspectScoreCelebration(state: typeof store.state) {
     }
 
     const latest = state.current_state.recent_turns.at(-1);
-    if (
-        !latest
-        || !latest.is_complete
-        || latest.is_bust
-        || latest.turn_id === lastCelebratedTurnId
-    ) {
+    if (!latest || !latest.is_complete || latest.is_bust || latest.turn_id === lastCelebratedTurnId) {
         return;
     }
 
     lastCelebratedTurnId = latest.turn_id;
 
-    const celebration = resolveScoreCelebration(
-        latest.points_scored,
-        latest.throws,
-        latest.is_checkout ?? false,
-    );
+    const celebration = resolveScoreCelebration(latest.points_scored, latest.throws, latest.is_checkout ?? false);
 
     if (celebration) {
         triggerBigScore(latest.player_name, celebration.points, celebration.tier);
@@ -423,9 +405,7 @@ onMounted(async () => {
     }
 
     if (store.state) {
-        const latestComplete = [...store.state.current_state.recent_turns]
-            .reverse()
-            .find((turn) => turn.is_complete && !turn.is_bust);
+        const latestComplete = [...store.state.current_state.recent_turns].reverse().find((turn) => turn.is_complete && !turn.is_bust);
 
         if (latestComplete) {
             lastCelebratedTurnId = latestComplete.turn_id;
@@ -434,8 +414,8 @@ onMounted(async () => {
         if (store.state.scoreboard.find((row) => row.player_id === props.playerId)?.scoring_mode === 'calculator') {
             inputMode.value = 'calculator';
         } else if (
-            props.user.default_scoring_mode === 'calculator'
-            && store.state.scoreboard.find((row) => row.player_id === props.playerId)?.stats_tier !== 'basic'
+            props.user.default_scoring_mode === 'calculator' &&
+            store.state.scoreboard.find((row) => row.player_id === props.playerId)?.stats_tier !== 'basic'
         ) {
             inputMode.value = 'calculator';
         } else {
@@ -473,12 +453,7 @@ watch(
 <template>
     <Head :title="t('games.play.title')" />
 
-    <GameLayout
-        :player-name="user.name"
-        :is-premium="user.is_premium"
-        :fill-viewport="fillViewport"
-        @exit="handleExit"
-    >
+    <GameLayout :player-name="user.name" :is-premium="user.is_premium" :fill-viewport="fillViewport" @exit="handleExit">
         <template #header-actions>
             <div class="play-header-tools">
                 <div v-if="!isSpectator && matchState?.status === 'active'" class="play-input-mode">
@@ -503,25 +478,13 @@ watch(
                     </button>
                     <InputModeInfoTip />
                 </div>
-                <button
-                    v-if="showChatToggle"
-                    type="button"
-                    class="play-chat-toggle"
-                    :aria-expanded="showChatDrawer"
-                    @click="toggleChatDrawer"
-                >
+                <button v-if="showChatToggle" type="button" class="play-chat-toggle" :aria-expanded="showChatDrawer" @click="toggleChatDrawer">
                     {{ t('games.play.chat.toggle') }}
                 </button>
             </div>
         </template>
 
-        <div
-            class="play-page game-page"
-            :class="[
-                `play-page--${frame}`,
-                { 'play-page--chat-open': showChatDrawer },
-            ]"
-        >
+        <div class="play-page game-page" :class="[`play-page--${frame}`, { 'play-page--chat-open': showChatDrawer }]">
             <div v-if="store.loading && !matchState" class="play-page__body game-page__body">
                 <p class="play-loading">{{ t('games.play.loading') }}</p>
             </div>
@@ -592,11 +555,7 @@ watch(
                         </div>
                     </div>
 
-                    <aside
-                        v-if="showInlineChat"
-                        class="play-chat-column"
-                        :class="{ 'play-chat-column--calc': calcSidebarActive }"
-                    >
+                    <aside v-if="showInlineChat" class="play-chat-column" :class="{ 'play-chat-column--calc': calcSidebarActive }">
                         <MatchChatPanel
                             class="play-chat-panel"
                             :messages="chatMessages"
@@ -662,15 +621,15 @@ watch(
         :loading="store.timerLoading"
         @extend="handleExtendTimer"
         @end="handleEndMatch"
-        @dismiss="() => { showTimeoutModal = false; timeoutDismissed = true; }"
+        @dismiss="
+            () => {
+                showTimeoutModal = false;
+                timeoutDismissed = true;
+            }
+        "
     />
 
-    <TurnEditModal
-        :turn="editingTurn"
-        :loading="store.editing"
-        @close="editingTurn = null"
-        @save="saveTurnEdit"
-    />
+    <TurnEditModal :turn="editingTurn" :loading="store.editing" @close="editingTurn = null" @save="saveTurnEdit" />
 </template>
 
 <style scoped>

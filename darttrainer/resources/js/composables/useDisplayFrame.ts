@@ -6,8 +6,7 @@ const COMPACT_MAX = 639;
 const MEDIUM_MAX = 1023;
 const SQUARE_RATIO_TOLERANCE = 0.1;
 
-export const DisplayFrameKey: InjectionKey<ReturnType<typeof createDisplayFrame>> =
-    Symbol('displayFrame');
+export const DisplayFrameKey: InjectionKey<ReturnType<typeof createDisplayFrame>> = Symbol('displayFrame');
 
 export function resolveBreakpoint(width: number): Breakpoint {
     if (width <= COMPACT_MAX) {

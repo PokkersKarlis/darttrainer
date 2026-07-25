@@ -2,9 +2,11 @@
 
 namespace Tests\Feature\Darts;
 
+use App\Enums\FriendshipStatus;
 use App\Models\DartMatch;
+use App\Models\Friendship;
 use App\Models\User;
-use App\Models\UserLocalGuest;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Tests\Support\CreatesDartsLobby;
@@ -149,7 +151,7 @@ class DartsLobbyTest extends TestCase
         $host = User::factory()->create();
         $match = $this->createDartsLobby($host, mode: 'online');
 
-        $this->expectException(\Illuminate\Database\UniqueConstraintViolationException::class);
+        $this->expectException(UniqueConstraintViolationException::class);
 
         DartMatch::query()->create([
             'lobby_code' => $match->lobby_code,
@@ -585,10 +587,10 @@ class DartsLobbyTest extends TestCase
         $host = User::factory()->create();
         $friend = User::factory()->create();
 
-        \App\Models\Friendship::query()->create([
+        Friendship::query()->create([
             'requester_id' => $host->id,
             'addressee_id' => $friend->id,
-            'status' => \App\Enums\FriendshipStatus::Accepted,
+            'status' => FriendshipStatus::Accepted,
         ]);
 
         $this->createDartsLobby($friend);

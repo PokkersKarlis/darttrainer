@@ -96,11 +96,16 @@ useEventListener(window, 'resize', () => {
     }
 });
 
-useEventListener(window, 'scroll', () => {
-    if (isOpen.value) {
-        void updateTipPosition();
-    }
-}, true);
+useEventListener(
+    window,
+    'scroll',
+    () => {
+        if (isOpen.value) {
+            void updateTipPosition();
+        }
+    },
+    true,
+);
 </script>
 
 <template>

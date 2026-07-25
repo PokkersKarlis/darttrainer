@@ -23,21 +23,11 @@ const { visibleInvites, acceptInvite, declineInvite, loadingInviteId } = useLobb
             </p>
 
             <div class="lib-actions">
-                <button
-                    type="button"
-                    class="lib-action lib-action--join"
-                    :disabled="loadingInviteId === invite.id"
-                    @click="acceptInvite(invite)"
-                >
+                <button type="button" class="lib-action lib-action--join" :disabled="loadingInviteId === invite.id" @click="acceptInvite(invite)">
                     <UserPlus :size="15" :stroke-width="2.2" />
                     {{ t('games.lobby.inviteJoin') }}
                 </button>
-                <button
-                    type="button"
-                    class="lib-action lib-action--decline"
-                    :disabled="loadingInviteId === invite.id"
-                    @click="declineInvite(invite)"
-                >
+                <button type="button" class="lib-action lib-action--decline" :disabled="loadingInviteId === invite.id" @click="declineInvite(invite)">
                     <X :size="15" :stroke-width="2.2" />
                     {{ t('games.lobby.inviteDecline') }}
                 </button>
@@ -117,7 +107,10 @@ const { visibleInvites, acceptInvite, declineInvite, loadingInviteId } = useLobb
     letter-spacing: 0.04em;
     text-transform: uppercase;
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
     white-space: nowrap;
 }
 

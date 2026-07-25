@@ -2,10 +2,8 @@
 
 namespace Tests\Feature\Darts;
 
-use App\Enums\MatchStatus;
 use App\Jobs\CompleteDartsMatchJob;
 use App\Models\DartMatch;
-use App\Models\MatchChatMessage;
 use App\Models\User;
 use App\Services\Darts\MatchTurnTimerService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -165,9 +163,6 @@ class DartsMatchTurnTimerTest extends TestCase
         $this->assertTrue($match->turn_timer_expires_at->isFuture());
     }
 
-    /**
-     * @return DartMatch
-     */
     private function createActiveMatch(User $host, User $guest): DartMatch
     {
         $match = $this->createDartsLobby($host, mode: 'online');

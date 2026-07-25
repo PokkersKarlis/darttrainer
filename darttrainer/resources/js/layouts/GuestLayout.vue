@@ -106,8 +106,7 @@ const { openSettings } = useCookieConsent();
     inset: 0;
     opacity: 0.35;
     background-image:
-        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
     background-size: 48px 48px;
     mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.55), transparent 72%);
 }

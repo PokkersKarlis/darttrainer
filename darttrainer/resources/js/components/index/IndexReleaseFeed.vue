@@ -2,7 +2,7 @@
 import DiscordIcon from '@/components/icons/DiscordIcon.vue';
 import { useAppVersion } from '@/composables/useAppVersion';
 import { useLocale } from '@/composables/useLocale';
-import { Rocket, ShieldCheck, Target, Mail } from 'lucide-vue-next';
+import { Mail, Rocket, ShieldCheck, Target } from 'lucide-vue-next';
 
 const BUGS_EMAIL = 'bugs@traindart.com';
 const DISCORD_URL = 'https://discord.gg/9rKCHVu4V';
@@ -72,12 +72,7 @@ const { version } = useAppVersion();
                     </span>
                 </a>
 
-                <a
-                    class="ix-support-link"
-                    :href="DISCORD_URL"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
+                <a class="ix-support-link" :href="DISCORD_URL" target="_blank" rel="noopener noreferrer">
                     <span class="ix-support-link-icon ix-support-link-icon--discord" aria-hidden="true">
                         <DiscordIcon :size="18" />
                     </span>
@@ -284,8 +279,7 @@ const { version } = useAppVersion();
     border-radius: calc(16px * var(--ix-scale, 1));
     border: 1px solid color-mix(in srgb, var(--ix-cyan, #22d3ee) 18%, var(--ix-line, #1f2937));
     background:
-        radial-gradient(circle at top left, rgba(34, 211, 238, 0.08), transparent 55%),
-        color-mix(in srgb, var(--ix-panel, #0d1220) 92%, transparent);
+        radial-gradient(circle at top left, rgba(34, 211, 238, 0.08), transparent 55%), color-mix(in srgb, var(--ix-panel, #0d1220) 92%, transparent);
     box-shadow: 0 calc(14px * var(--ix-scale, 1)) calc(28px * var(--ix-scale, 1)) rgba(0, 0, 0, 0.2);
 }
 

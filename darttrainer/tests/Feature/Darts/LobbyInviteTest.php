@@ -5,6 +5,7 @@ namespace Tests\Feature\Darts;
 use App\Enums\FriendshipStatus;
 use App\Enums\LobbyInviteStatus;
 use App\Events\LobbyInviteReceived;
+use App\Events\LobbyUpdated;
 use App\Models\Friendship;
 use App\Models\LobbyInvite;
 use App\Models\User;
@@ -146,7 +147,7 @@ class LobbyInviteTest extends TestCase
 
     public function test_can_invite_friend_who_is_in_another_lobby(): void
     {
-        Event::fake([LobbyInviteReceived::class, \App\Events\LobbyUpdated::class]);
+        Event::fake([LobbyInviteReceived::class, LobbyUpdated::class]);
 
         $host = User::factory()->create(['last_seen_at' => now()]);
         $friendInLobby = User::factory()->create(['last_seen_at' => now()]);

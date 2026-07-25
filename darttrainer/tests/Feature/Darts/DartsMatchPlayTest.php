@@ -5,7 +5,6 @@ namespace Tests\Feature\Darts;
 use App\Enums\MatchStatus;
 use App\Jobs\CompleteDartsMatchJob;
 use App\Models\DartMatch;
-use App\Models\DartX01SoloActiveThrow;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
@@ -303,9 +302,6 @@ class DartsMatchPlayTest extends TestCase
         $this->assertEquals(60.0, $hostRow['average_3pad']);
     }
 
-    /**
-     * @return DartMatch
-     */
     private function createActiveMatch(User $host, User $guest, bool $publicMatch = false): DartMatch
     {
         $match = $this->createDartsLobby($host, mode: 'online');

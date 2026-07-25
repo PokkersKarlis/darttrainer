@@ -59,7 +59,10 @@ defineEmits<{
     border-radius: 6px;
     border: 1px solid #334155;
     background: rgba(255, 255, 255, 0.04);
-    transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    transition:
+        border-color 0.15s ease,
+        background 0.15s ease,
+        box-shadow 0.15s ease;
 }
 
 .gc-row:hover .gc-box {

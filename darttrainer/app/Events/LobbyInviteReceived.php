@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use App\Models\LobbyInvite;
+use App\Services\Darts\LobbyInviteService;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
@@ -37,7 +38,7 @@ class LobbyInviteReceived implements ShouldBroadcastNow
      */
     public function broadcastWith(): array
     {
-        return app(\App\Services\Darts\LobbyInviteService::class)->serializeInvite(
+        return app(LobbyInviteService::class)->serializeInvite(
             $this->invite->loadMissing(['match.config', 'inviter']),
         );
     }

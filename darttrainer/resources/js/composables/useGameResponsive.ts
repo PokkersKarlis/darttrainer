@@ -1,5 +1,5 @@
-import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { LANDSCAPE_MIN_HEIGHT, resolveGameFrame } from '@/lib/gameFrame';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 export type GameFrame = 'landscape' | 'portrait' | 'square';
 

@@ -10,6 +10,7 @@ use Tests\TestCase;
 class LobbyCodeTest extends TestCase
 {
     use RefreshDatabase;
+
     public function test_generated_code_matches_expected_format(): void
     {
         for ($i = 0; $i < 50; $i++) {

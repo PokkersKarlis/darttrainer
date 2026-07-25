@@ -48,7 +48,9 @@ const { t } = useLocale();
     font-size: 13px;
     text-decoration: none;
     white-space: nowrap;
-    transition: transform 0.2s ease, filter 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        filter 0.2s ease;
 }
 
 .hdr-guest-cta:hover {

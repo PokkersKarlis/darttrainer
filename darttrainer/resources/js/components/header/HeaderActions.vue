@@ -2,8 +2,8 @@
 import HeaderAccountMenu from '@/components/header/HeaderAccountMenu.vue';
 import HeaderGuestActions from '@/components/header/HeaderGuestActions.vue';
 import HeaderLanguage from '@/components/header/HeaderLanguage.vue';
-import type { HeaderMenuItem } from '@/types/header';
 import type { SharedData } from '@/types';
+import type { HeaderMenuItem } from '@/types/header';
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 

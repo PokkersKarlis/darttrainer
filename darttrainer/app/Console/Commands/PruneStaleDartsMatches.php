@@ -7,6 +7,7 @@ use App\Models\DartMatch;
 use App\Models\DartX01SoloActiveThrow;
 use App\Services\Darts\MatchAbandonService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Carbon;
 
 class PruneStaleDartsMatches extends Command
 {
@@ -45,7 +46,7 @@ class PruneStaleDartsMatches extends Command
         return self::SUCCESS;
     }
 
-    private function shouldDelete(DartMatch $match, \Illuminate\Support\Carbon $threshold): bool
+    private function shouldDelete(DartMatch $match, Carbon $threshold): bool
     {
         if ($match->players()->count() === 0) {
             return true;
@@ -63,7 +64,7 @@ class PruneStaleDartsMatches extends Command
             return $match->updated_at < $threshold;
         }
 
-        return \Illuminate\Support\Carbon::parse($lastThrowAt) < $threshold
+        return Carbon::parse($lastThrowAt) < $threshold
             && $match->updated_at < $threshold;
     }
 }

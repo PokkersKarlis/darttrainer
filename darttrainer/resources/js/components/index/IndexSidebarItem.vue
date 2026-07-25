@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { LucideIcon } from 'lucide-vue-next';
 import { Link } from '@inertiajs/vue3';
+import type { LucideIcon } from 'lucide-vue-next';
 import { Lock } from 'lucide-vue-next';
 
 defineProps<{

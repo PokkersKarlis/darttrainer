@@ -17,7 +17,10 @@ export function sanitizeLobbyCodeInput(value: string): string {
     }
 
     const left = cleaned.slice(0, dashIndex).replace(/-/g, '').slice(0, 4);
-    const right = cleaned.slice(dashIndex + 1).replace(/-/g, '').slice(0, 4);
+    const right = cleaned
+        .slice(dashIndex + 1)
+        .replace(/-/g, '')
+        .slice(0, 4);
 
     return `${left}-${right}`;
 }

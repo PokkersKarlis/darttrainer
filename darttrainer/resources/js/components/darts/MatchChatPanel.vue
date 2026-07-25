@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { MatchChatMessage } from '@/composables/useMatchChat';
 import { useLocale } from '@/composables/useLocale';
+import type { MatchChatMessage } from '@/composables/useMatchChat';
 import { computed, nextTick, ref, watch } from 'vue';
 
 const props = defineProps<{

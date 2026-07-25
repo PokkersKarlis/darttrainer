@@ -143,19 +143,12 @@ export interface VisitBuildConstraints {
 }
 
 /** Double attempts achievable for this visit total and dart-count options. */
-export function achievableDoubleDartCounts(
-    points: number,
-    dartCounts?: number[],
-    constraints?: VisitBuildConstraints,
-): number[] {
+export function achievableDoubleDartCounts(points: number, dartCounts?: number[], constraints?: VisitBuildConstraints): number[] {
     const counts = dartCounts ?? achievableDartCounts(points);
     const doubles = new Set<number>();
 
     for (const dartCount of counts) {
-        if (
-            constraints?.checkoutDart !== undefined
-            && constraints.checkoutDart > dartCount
-        ) {
+        if (constraints?.checkoutDart !== undefined && constraints.checkoutDart > dartCount) {
             continue;
         }
 
@@ -166,17 +159,9 @@ export function achievableDoubleDartCounts(
                     continue;
                 }
 
-                if (
-                    constraints?.checkoutDart !== undefined
-                    && constraints.remainingBefore !== undefined
-                ) {
+                if (constraints?.checkoutDart !== undefined && constraints.remainingBefore !== undefined) {
                     if (
-                        !sequenceMatchesCheckout(
-                            darts,
-                            constraints.remainingBefore,
-                            constraints.checkoutDart,
-                            constraints.requireDoubleOut ?? true,
-                        )
+                        !sequenceMatchesCheckout(darts, constraints.remainingBefore, constraints.checkoutDart, constraints.requireDoubleOut ?? true)
                     ) {
                         continue;
                     }
@@ -191,12 +176,7 @@ export function achievableDoubleDartCounts(
 }
 
 /** Which dart (1-based) can legally finish when scoring exactly the remaining. */
-export function achievableCheckoutDarts(
-    points: number,
-    remainingBefore: number,
-    dartCount: number | null,
-    requireDoubleOut: boolean,
-): number[] {
+export function achievableCheckoutDarts(points: number, remainingBefore: number, dartCount: number | null, requireDoubleOut: boolean): number[] {
     const counts = dartCount !== null ? [dartCount] : achievableDartCounts(points);
     const checkoutDarts = new Set<number>();
 

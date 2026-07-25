@@ -6,8 +6,8 @@ use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Broadcast;
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Vite;
+use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 
@@ -77,7 +77,7 @@ class AppServiceProvider extends ServiceProvider
                 'email' => $notifiable->getEmailForPasswordReset(),
             ]);
 
-            $expire = config('auth.passwords.' . config('auth.defaults.passwords') . '.expire', 60);
+            $expire = config('auth.passwords.'.config('auth.defaults.passwords').'.expire', 60);
 
             return (new MailMessage)
                 ->subject(__('emails.reset.subject'))

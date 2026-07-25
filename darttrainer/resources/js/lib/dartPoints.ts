@@ -99,10 +99,7 @@ export function achievableDartCounts(points: number): number[] {
 }
 
 /** Decompose a visit total into 1–3 valid dart scores (prefers fewer darts). */
-export function visitPointsToDarts(
-    points: number,
-    dartCount?: number,
-): Array<{ sector: number; multiplier: number }> | null {
+export function visitPointsToDarts(points: number, dartCount?: number): Array<{ sector: number; multiplier: number }> | null {
     if (points < 0 || points > 180) {
         return null;
     }

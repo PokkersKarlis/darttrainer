@@ -36,12 +36,7 @@ const closeSidebar = () => {
         <template v-else>
             <Transition name="ix-drawer">
                 <div v-if="sidebarOpen" key="ix-drawer-layer" class="ix-drawer-layer">
-                    <button
-                        type="button"
-                        class="ix-drawer-backdrop"
-                        :aria-label="t('index.sidebar.close')"
-                        @click="closeSidebar"
-                    />
+                    <button type="button" class="ix-drawer-backdrop" :aria-label="t('index.sidebar.close')" @click="closeSidebar" />
                     <IndexSidebar key="ix-sidebar-drawer" mode="drawer" @close="closeSidebar" />
                 </div>
             </Transition>

@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Support\AppLocale;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class LocaleTest extends TestCase
@@ -72,15 +74,15 @@ class LocaleTest extends TestCase
 
     public function test_password_reset_flash_uses_opaque_status_key(): void
     {
-        \Illuminate\Support\Facades\Notification::fake();
+        Notification::fake();
 
         $user = User::factory()->create();
 
         $this->post('/forgot-password', ['email' => $user->email, 'locale' => 'en']);
 
-        \Illuminate\Support\Facades\Notification::assertSentTo(
+        Notification::assertSentTo(
             $user,
-            \Illuminate\Auth\Notifications\ResetPassword::class,
+            ResetPassword::class,
             function ($notification) use ($user) {
                 $this->post('/reset-password', [
                     'token' => $notification->token,

@@ -1,6 +1,6 @@
 import { useLocale } from '@/composables/useLocale';
-import type { HeaderMenuItem } from '@/types/header';
 import type { SharedData } from '@/types';
+import type { HeaderMenuItem } from '@/types/header';
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 

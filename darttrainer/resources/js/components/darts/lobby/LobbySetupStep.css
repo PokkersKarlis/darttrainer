@@ -43,7 +43,10 @@
     color: #e2e8f0;
     font-weight: 700;
     cursor: pointer;
-    transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    transition:
+        border-color 0.15s ease,
+        background 0.15s ease,
+        box-shadow 0.15s ease;
 }
 
 .lst-first-btn--on {

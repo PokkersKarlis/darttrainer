@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { RecentTurn } from '@/stores/dartsPlay';
-import { isMissDart, shortBoardDartLabel } from '@/lib/turnDisplay';
 import { useLocale } from '@/composables/useLocale';
+import { isMissDart, shortBoardDartLabel } from '@/lib/turnDisplay';
+import type { RecentTurn } from '@/stores/dartsPlay';
 import { computed, nextTick, ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -94,10 +94,7 @@ function isCalculatorTurn(turn: RecentTurn): boolean {
                         <span class="turn-hist__visit">{{ t('games.play.turnHistory.visitShort', { n: turn.turn_number }) }}</span>
                         <span class="turn-hist__name">{{ turn.player_name }}</span>
                     </span>
-                    <span
-                        class="turn-hist__score"
-                        :class="{ 'turn-hist__score--hot': !turn.is_bust && turn.points_scored > 95 }"
-                    >
+                    <span class="turn-hist__score" :class="{ 'turn-hist__score--hot': !turn.is_bust && turn.points_scored > 95 }">
                         {{ turn.is_bust ? '0' : turn.points_scored }}
                     </span>
                 </div>
