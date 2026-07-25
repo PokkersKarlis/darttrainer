@@ -4,8 +4,8 @@ namespace App\Services\Darts;
 
 use App\Events\MatchStateUpdated;
 use App\Models\DartMatch;
+use App\Models\DartX01ActiveLeg;
 use App\Models\DartX01SoloActiveTurn;
-use App\Models\MatchPlayer;
 
 class MatchStateService
 {
@@ -266,7 +266,7 @@ class MatchStateService
     }
 
     /**
-     * @param  iterable<int, \App\Models\DartX01ActiveLeg>  $legs
+     * @param  iterable<int, DartX01ActiveLeg>  $legs
      * @return array{points_scored: int, darts_thrown: int}
      */
     private function aggregatePlayerDartStats(iterable $legs, int $playerId): array

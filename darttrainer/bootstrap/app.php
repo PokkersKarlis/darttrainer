@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureEmailVerificationStatus;
+use App\Http\Middleware\EnsureVerifiedForDarts;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\TrackUserPresence;
@@ -19,7 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'email.verification.status' => EnsureEmailVerificationStatus::class,
-            'verified.darts' => \App\Http\Middleware\EnsureVerifiedForDarts::class,
+            'verified.darts' => EnsureVerifiedForDarts::class,
         ]);
 
         $middleware->web(append: [

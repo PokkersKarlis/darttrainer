@@ -4,6 +4,7 @@ namespace Tests\Feature\Darts;
 
 use App\Enums\MatchStatus;
 use App\Jobs\CompleteDartsMatchJob;
+use App\Models\DartMatch;
 use App\Models\DartX01ArchivedTurnEdit;
 use App\Models\DartX01SoloActiveTurn;
 use App\Models\DartX01TurnEdit;
@@ -237,7 +238,7 @@ class DartsMatchTurnEditTest extends TestCase
         $this->assertTrue($turn->throws->every(fn ($throw) => $throw->input_source === 'calculator'));
     }
 
-    private function createActiveMatch(User $host, User $guest): \App\Models\DartMatch
+    private function createActiveMatch(User $host, User $guest): DartMatch
     {
         $match = $this->createDartsLobby($host, mode: 'online');
         $this->joinDartsLobby($guest, $match);

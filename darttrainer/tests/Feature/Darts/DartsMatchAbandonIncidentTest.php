@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Darts;
 
-use App\Models\DartMatch;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;

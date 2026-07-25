@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Darts;
 use App\Enums\LobbyMode;
 use App\Enums\MatchStatus;
 use App\Enums\MatchType;
-use App\Models\LobbyInvite;
 use App\Http\Controllers\Controller;
 use App\Models\DartMatch;
+use App\Models\LobbyInvite;
 use App\Models\MatchPlayer;
+use App\Models\User;
 use App\Rules\LobbyCode;
+use App\Services\Darts\LobbyInviteService;
+use App\Services\Darts\LobbySetupService;
 use App\Services\Darts\MatchAccessService;
 use App\Services\Darts\MatchLobbyService;
 use App\Services\Darts\PlayerMatchAvailabilityService;
@@ -28,8 +31,8 @@ class DartsLobbyController extends Controller
         private readonly MatchLobbyService $lobbyService,
         private readonly MatchAccessService $access,
         private readonly PlayerMatchAvailabilityService $availability,
-        private readonly \App\Services\Darts\LobbySetupService $setupService,
-        private readonly \App\Services\Darts\LobbyInviteService $inviteService,
+        private readonly LobbySetupService $setupService,
+        private readonly LobbyInviteService $inviteService,
     ) {}
 
     public function index(Request $request): Response|RedirectResponse
@@ -147,7 +150,7 @@ class DartsLobbyController extends Controller
 
             $this->lobbyService->addRegisteredUser(
                 $match,
-                \App\Models\User::query()->findOrFail($validated['user_id']),
+                User::query()->findOrFail($validated['user_id']),
             );
         } elseif (! empty($validated['guest_name'])) {
             $saveGuest = (bool) ($validated['save_guest'] ?? false);
@@ -221,7 +224,7 @@ class DartsLobbyController extends Controller
         return $this->respondLobby($request, $match);
     }
 
-    public function updateThrowOrder(Request $request, DartMatch $match): RedirectResponse|\Illuminate\Http\JsonResponse
+    public function updateThrowOrder(Request $request, DartMatch $match): RedirectResponse|JsonResponse
     {
         $this->authorizeHost($request, $match);
 
@@ -235,7 +238,7 @@ class DartsLobbyController extends Controller
         return $this->respondLobby($request, $match);
     }
 
-    public function setFirstThrower(Request $request, DartMatch $match): RedirectResponse|\Illuminate\Http\JsonResponse
+    public function setFirstThrower(Request $request, DartMatch $match): RedirectResponse|JsonResponse
     {
         $this->authorizeHost($request, $match);
 
@@ -248,7 +251,7 @@ class DartsLobbyController extends Controller
         return $this->respondLobby($request, $match);
     }
 
-    public function updatePlayerStartingPoints(Request $request, DartMatch $match, MatchPlayer $player): RedirectResponse|\Illuminate\Http\JsonResponse
+    public function updatePlayerStartingPoints(Request $request, DartMatch $match, MatchPlayer $player): RedirectResponse|JsonResponse
     {
         $this->authorizeHost($request, $match);
 
@@ -265,7 +268,7 @@ class DartsLobbyController extends Controller
         return $this->respondLobby($request, $match);
     }
 
-    public function sendInvite(Request $request, DartMatch $match): RedirectResponse|\Illuminate\Http\JsonResponse
+    public function sendInvite(Request $request, DartMatch $match): RedirectResponse|JsonResponse
     {
         $this->authorizeHost($request, $match);
 
@@ -276,13 +279,13 @@ class DartsLobbyController extends Controller
         $this->inviteService->sendInvite(
             $match,
             $request->user(),
-            \App\Models\User::query()->findOrFail($validated['user_id']),
+            User::query()->findOrFail($validated['user_id']),
         );
 
         return $this->respondLobby($request, $match);
     }
 
-    public function acceptInvite(Request $request, LobbyInvite $invite): RedirectResponse|\Illuminate\Http\JsonResponse
+    public function acceptInvite(Request $request, LobbyInvite $invite): RedirectResponse|JsonResponse
     {
         $match = $this->inviteService->acceptInvite($invite, $request->user());
 
@@ -295,7 +298,7 @@ class DartsLobbyController extends Controller
         return redirect()->route('darts.x01.lobby.show', $match->uuid);
     }
 
-    public function declineInvite(Request $request, LobbyInvite $invite): RedirectResponse|\Illuminate\Http\JsonResponse
+    public function declineInvite(Request $request, LobbyInvite $invite): RedirectResponse|JsonResponse
     {
         $match = $invite->match;
         $this->inviteService->declineInvite($invite, $request->user());
@@ -312,7 +315,7 @@ class DartsLobbyController extends Controller
         return redirect()->route('darts.x01.play', $match->uuid);
     }
 
-    public function destroy(Request $request, DartMatch $match): RedirectResponse|\Illuminate\Http\JsonResponse
+    public function destroy(Request $request, DartMatch $match): RedirectResponse|JsonResponse
     {
         $this->access->assertLobbyAccess($match, $request->user());
 
@@ -332,7 +335,7 @@ class DartsLobbyController extends Controller
         }
     }
 
-    private function respondLobby(Request $request, DartMatch $match): RedirectResponse|\Illuminate\Http\JsonResponse
+    private function respondLobby(Request $request, DartMatch $match): RedirectResponse|JsonResponse
     {
         $match->refresh(['players', 'config']);
 

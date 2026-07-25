@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use App\Models\DartMatch;
+use App\Services\Darts\MatchLobbyService;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
@@ -37,6 +38,6 @@ class LobbyUpdated implements ShouldBroadcastNow
      */
     public function broadcastWith(): array
     {
-        return app(\App\Services\Darts\MatchLobbyService::class)->serializeLobby($this->match);
+        return app(MatchLobbyService::class)->serializeLobby($this->match);
     }
 }

@@ -6,8 +6,6 @@ use App\Enums\MatchStatus;
 use App\Events\LobbyUpdated;
 use App\Models\DartMatch;
 use App\Models\MatchPlayer;
-use App\Models\User;
-use App\Models\UserLocalGuest;
 use Illuminate\Support\Facades\DB;
 
 class LobbySetupService

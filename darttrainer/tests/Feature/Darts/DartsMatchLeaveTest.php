@@ -3,6 +3,7 @@
 namespace Tests\Feature\Darts;
 
 use App\Models\DartMatch;
+use App\Models\DartX01SoloActiveTurn;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\CreatesDartsLobby;
@@ -28,7 +29,6 @@ class DartsMatchLeaveTest extends TestCase
     }
 
     /** @see DartsMatchAbandonIncidentTest for redirect / no-404 regression coverage */
-
     public function test_points_throw_is_accepted(): void
     {
         $host = User::factory()->create();
@@ -166,7 +166,7 @@ class DartsMatchLeaveTest extends TestCase
         $this->assertSame($guestPlayer->id, $state['current_state']['active_player_id']);
         $this->assertSame(0, $state['current_state']['darts_thrown_this_turn']);
 
-        $turn = \App\Models\DartX01SoloActiveTurn::query()
+        $turn = DartX01SoloActiveTurn::query()
             ->where('player_id', $hostPlayer->id)
             ->where('turn_number', 1)
             ->firstOrFail();
@@ -176,9 +176,6 @@ class DartsMatchLeaveTest extends TestCase
         $this->assertLessThanOrEqual(3, $turn->throws()->count());
     }
 
-    /**
-     * @return DartMatch
-     */
     private function createActiveMatch(User $host, User $guest): DartMatch
     {
         $match = $this->createDartsLobby($host, mode: 'online');

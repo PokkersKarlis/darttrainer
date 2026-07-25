@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\V1\Darts;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Darts\MatchStateResource;
 use App\Models\DartMatch;
 use App\Services\Darts\MatchAccessService;
 use App\Services\Darts\MatchTurnTimerService;

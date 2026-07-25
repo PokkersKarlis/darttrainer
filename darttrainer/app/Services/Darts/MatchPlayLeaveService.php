@@ -5,7 +5,6 @@ namespace App\Services\Darts;
 use App\Enums\MatchStatus;
 use App\Events\MatchStateUpdated;
 use App\Models\DartMatch;
-use App\Models\MatchPlayer;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 

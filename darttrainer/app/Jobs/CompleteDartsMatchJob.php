@@ -6,7 +6,6 @@ use App\Enums\MatchStatus;
 use App\Models\DartMatch;
 use App\Models\DartX01PlayerStat;
 use App\Models\DartX01SoloArchivedThrow;
-use App\Models\DartX01SoloActiveThrow;
 use App\Models\User;
 use App\Services\Darts\X01TurnEditAuditService;
 use Illuminate\Contracts\Queue\ShouldQueue;

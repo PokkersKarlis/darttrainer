@@ -2,7 +2,6 @@
 
 namespace App\Services\Darts;
 
-use App\Enums\FriendshipStatus;
 use App\Enums\LobbyInviteStatus;
 use App\Enums\LobbyMode;
 use App\Enums\MatchStatus;

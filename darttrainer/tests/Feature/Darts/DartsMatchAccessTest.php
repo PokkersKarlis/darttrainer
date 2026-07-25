@@ -2,10 +2,7 @@
 
 namespace Tests\Feature\Darts;
 
-use App\Enums\MatchStatus;
-use App\Models\DartMatch;
 use App\Models\User;
-use App\Models\UserLocalGuest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\CreatesDartsLobby;
 use Tests\TestCase;
