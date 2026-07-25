@@ -35,22 +35,14 @@ class DartsLobbyTest extends TestCase
             ->assertInertia(fn ($page) => $page->where('activeLobby', null));
     }
 
-    public function test_lobby_index_shows_active_lobby_when_user_already_in_one(): void
+    public function test_lobby_index_redirects_to_lobby_when_user_already_in_one(): void
     {
         $host = User::factory()->create();
         $match = $this->createDartsLobby($host, mode: 'online');
 
         $this->actingAs($host)
             ->get('/darts/x01/multiplayer')
-            ->assertOk()
-            ->assertInertia(fn ($page) => $page
-                ->where('activeLobby.uuid', $match->uuid)
-                ->where('activeLobby.mode', 'online')
-                ->where('activeLobby.is_host', true)
-                ->where('activeLobby.status', 'lobby')
-                ->where('activeLobby.lobby_code', $match->lobby_code)
-                ->where('activeLobby.player_count', 1)
-            );
+            ->assertRedirect(route('darts.x01.lobby.show', $match->uuid));
     }
 
     public function test_lobby_index_redirects_to_play_when_user_is_in_active_match(): void
@@ -599,7 +591,6 @@ class DartsLobbyTest extends TestCase
             'status' => \App\Enums\FriendshipStatus::Accepted,
         ]);
 
-        $this->createDartsLobby($host);
         $this->createDartsLobby($friend);
 
         $this->actingAs($host)

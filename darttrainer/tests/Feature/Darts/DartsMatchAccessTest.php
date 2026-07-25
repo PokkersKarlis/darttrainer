@@ -29,7 +29,6 @@ class DartsMatchAccessTest extends TestCase
     public function test_stranger_cannot_view_private_active_play_board(): void
     {
         $host = User::factory()->create();
-        $opponent = User::factory()->create();
         $match = $this->createDartsLobby($host);
         $this->addGuestToLobby($host, $match, 'Guest Two');
         $match = $this->startDartsMatch($host, $match);
@@ -37,7 +36,7 @@ class DartsMatchAccessTest extends TestCase
 
         $this->actingAs($stranger)
             ->get("/darts/x01/play/{$match->uuid}")
-            ->assertForbidden();
+            ->assertRedirect(route('darts.x01.match-gone', ['reason' => 'all_left']));
     }
 
     public function test_stranger_can_view_public_active_match_as_spectator(): void
