@@ -174,7 +174,6 @@ const activeRow = computed(() => {
 });
 
 const activeRemainingPoints = computed(() => activeRow.value?.remaining_points ?? matchState.value?.config.starting_points ?? 501);
-const activeTurnScore = computed(() => matchState.value?.current_state.current_turn_score ?? 0);
 const outRule = computed(() => matchState.value?.config.out_rule ?? 'double');
 const trackCheckoutRate = computed(() => matchState.value?.config.track_checkout_rate ?? false);
 
