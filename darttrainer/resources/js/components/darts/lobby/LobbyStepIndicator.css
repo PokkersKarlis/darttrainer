@@ -1,0 +1,47 @@
+.lsi-steps {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--game-gap);
+}
+
+.lsi-step {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.lsi-step--on {
+    color: #39ff14;
+}
+
+.lsi-step-num {
+    width: 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid #334155;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+}
+
+.lsi-step--on .lsi-step-num {
+    color: #0b0f19;
+    background: #39ff14;
+    border-color: #39ff14;
+    box-shadow: 0 0 14px rgba(57, 255, 20, 0.4);
+}
+
+.lsi-step-line {
+    width: 48px;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(57, 255, 20, 0.45), rgba(34, 211, 238, 0.3));
+}

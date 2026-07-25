@@ -3,6 +3,7 @@
 namespace App\Services\Darts;
 
 use App\Enums\MatchStatus;
+use App\Events\LobbyUpdated;
 use App\Models\DartMatch;
 use App\Models\MatchPlayer;
 use App\Models\User;
@@ -37,6 +38,8 @@ class LobbySetupService
                 $player->update(['slot' => $index + 1]);
             }
         });
+
+        broadcast(new LobbyUpdated($match->fresh(['players', 'config'])))->toOthers();
     }
 
     public function setFirstThrower(DartMatch $match, int $playerId): void
@@ -71,6 +74,8 @@ class LobbySetupService
             $selected->update(['slot' => 1]);
             $other->update(['slot' => 2]);
         });
+
+        broadcast(new LobbyUpdated($match->fresh(['players', 'config'])))->toOthers();
     }
 
     public function updatePlayerStartingPoints(DartMatch $match, MatchPlayer $player, ?int $startingPoints): MatchPlayer
@@ -86,6 +91,8 @@ class LobbySetupService
         }
 
         $player->update(['starting_points' => $startingPoints]);
+
+        broadcast(new LobbyUpdated($match->fresh(['players', 'config'])))->toOthers();
 
         return $player->fresh();
     }

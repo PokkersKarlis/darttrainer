@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Darts;
 
 use App\Enums\LobbyMode;
+use App\Enums\MatchStatus;
 use App\Enums\MatchType;
 use App\Models\LobbyInvite;
 use App\Http\Controllers\Controller;
@@ -33,10 +34,21 @@ class DartsLobbyController extends Controller
 
     public function index(Request $request): Response|RedirectResponse
     {
-        $activeLobby = $this->availability->activeLobbyFor($request->user());
+        // currentMatchFor() (nevis activeLobbyFor()) apzināti — pārvirzīšanas
+        // lēmumam vajag tikai uuid+status, un activeLobbyFor() papildus
+        // dara loadMissing(['config', 'players']) (2 liekas queries), kas šeit
+        // netiek izmantotas nemaz. Augsta trafika dēļ katra liekā query
+        // biežākajā ceļā (lietotājam jau ir matčs) ir dārga.
+        $match = $this->availability->currentMatchFor($request->user());
 
-        if ($activeLobby !== null && $activeLobby['status'] === 'active') {
-            return redirect()->route('darts.x01.play', $activeLobby['uuid']);
+        $redirectRoute = match ($match?->status) {
+            MatchStatus::Active => 'darts.x01.play',
+            MatchStatus::Lobby => 'darts.x01.lobby.show',
+            default => null,
+        };
+
+        if ($redirectRoute !== null) {
+            return redirect()->route($redirectRoute, $match->uuid);
         }
 
         return Inertia::render('darts/DartsLobby', [
