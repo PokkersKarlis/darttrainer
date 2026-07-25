@@ -24,7 +24,7 @@ declare module 'vite/client' {
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
-router.on('error', () => {
+router.on('httpException', () => {
     window.location.href = '/';
 });
 
