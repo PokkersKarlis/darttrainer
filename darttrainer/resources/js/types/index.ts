@@ -25,6 +25,8 @@ export interface SharedData {
     emailVerified: boolean;
     emailVerificationSentAt: string | null;
     pendingFriendRequestsCount: number;
+    pendingLobbyInvites?: LobbyInvite[];
+    activeLobby?: ActiveLobby | null;
     ziggy: {
         location: string;
         url: string;
@@ -43,6 +45,24 @@ export interface User {
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
+}
+
+export interface ActiveLobby {
+    uuid: string;
+    mode: 'online' | 'local';
+    is_host: boolean;
+    status: 'lobby' | 'active';
+    lobby_code: string | null;
+    player_count: number;
+}
+
+export interface LobbyInvite {
+    id: number;
+    match_uuid: string;
+    host_name: string;
+    lobby_code: string | null;
+    player_count: number;
+    created_at?: string | null;
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;

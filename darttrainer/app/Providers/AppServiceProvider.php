@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Validation\Rules\Password;
@@ -35,6 +36,8 @@ class AppServiceProvider extends ServiceProvider
         // šifrēšanas atslēga tiek dzēsta un jebkura bfcache atjaunota (kešota)
         // lapa vairs neatšifrējas — pārlūkam jāveic jauns pieprasījums uz serveri.
         Inertia::encryptHistory();
+
+        Broadcast::routes(['middleware' => ['web', 'auth']]);
 
         // ── Paroles stipruma prasības (reģistrācija, paroles maiņa/atjaunošana) ──
         // Saskaņots ar frontend PasswordField stipruma indikatoru: min. 8 rakstzīmes,

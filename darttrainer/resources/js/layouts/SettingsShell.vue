@@ -3,6 +3,7 @@
  * TrainDart settings shell — athletic surface aligned with Welcome/Auth.
  */
 import AppTopBar from '@/components/AppTopBar.vue';
+import ActiveLobbyBanner from '@/components/darts/ActiveLobbyBanner.vue';
 import { useLocale } from '@/composables/useLocale';
 import type { SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
@@ -44,6 +45,8 @@ const currentPath = computed(() => (typeof window !== 'undefined' ? window.locat
         </div>
 
         <AppTopBar />
+
+        <ActiveLobbyBanner />
 
         <main class="ts-main ts-rise">
             <p class="ts-kicker">

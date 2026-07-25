@@ -57,15 +57,17 @@ services:
     # node:22 (glibc), NEVIS alpine (musl) — Vite 8 / rolldown native binārie
     # ir linux-x64-gnu (glibc); alpine musl vidē tie krīt ("Cannot find binding musl").
     # Uzlabots no node:20 uz node:22, jo vue-i18n ^11 pieprasa Node >= 22 (engines).
+    # node_modules ir atsevišķs tilpums — Windows host instalācija nedrīkst pārrakstīt Linux bindingus.
     image: node:22
     working_dir: /var/www
     volumes:
       - .:/var/www
+      - node_modules:/var/www/node_modules
     ports:
       - "5173:5173"
     environment:
       - CHOKIDAR_USEPOLLING=true
-    command: npm run dev -- --host
+    command: sh -c "npm install && npm run dev -- --host"
     networks:
       - traindart-network
 
@@ -85,6 +87,8 @@ networks:
 
 volumes:
   mysql_data:
+    driver: local
+  node_modules:
     driver: local
   # postgres_data:
   #   driver: local

@@ -118,6 +118,10 @@ watch(
     },
 );
 
+function clearSearch() {
+    searchInput.value = '';
+}
+
 function inviteUser(userId: number) {
     invitingUserId.value = userId;
 
@@ -172,8 +176,8 @@ function removeFriend(id: number) {
             <div class="fr-search">
                 <label class="fr-label" for="friend-search">{{ t('settings.friends.searchLabel') }}</label>
                 <div class="fr-search-row">
-                    <span class="fr-search-ico" aria-hidden="true">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <span class="fr-search-ico-well" aria-hidden="true">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
                             <circle cx="11" cy="11" r="7" />
                             <path d="M20 20l-3-3" />
                         </svg>
@@ -181,12 +185,27 @@ function removeFriend(id: number) {
                     <input
                         id="friend-search"
                         v-model="searchInput"
-                        type="search"
+                        type="text"
+                        role="searchbox"
                         class="fr-input fr-input--search"
                         autocomplete="off"
+                        spellcheck="false"
                         :placeholder="t('settings.friends.searchPlaceholder')"
                     />
-                    <span v-if="searching" class="fr-search-spinner" aria-hidden="true" />
+                    <div class="fr-search-trail">
+                        <button
+                            v-if="searchInput && !searching"
+                            type="button"
+                            class="fr-search-clear"
+                            :aria-label="t('settings.friends.searchClear')"
+                            @click="clearSearch"
+                        >
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                                <path d="M18 6L6 18M6 6l12 12" />
+                            </svg>
+                        </button>
+                        <span v-else-if="searching" class="fr-search-spinner" aria-hidden="true" />
+                    </div>
                 </div>
                 <p v-if="showSearchHint" class="fr-search-hint">{{ t('settings.friends.searchHint') }}</p>
             </div>
@@ -423,13 +442,6 @@ function removeFriend(id: number) {
     margin: 0;
 }
 
-.fr-invite {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    align-items: flex-end;
-}
-
 .fr-search {
     display: flex;
     flex-direction: column;
@@ -437,33 +449,111 @@ function removeFriend(id: number) {
 }
 
 .fr-search-row {
-    position: relative;
     display: flex;
     align-items: center;
+    gap: 12px;
+    min-height: 54px;
+    padding: 6px 10px 6px 6px;
+    border-radius: 12px;
+    border: 1px solid #1f2937;
+    background: linear-gradient(165deg, rgba(19, 26, 38, 0.95), rgba(13, 18, 32, 0.98));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
-.fr-search-ico {
-    position: absolute;
-    left: 14px;
+.fr-search-row:focus-within {
+    border-color: rgba(57, 255, 20, 0.42);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        0 0 0 1px rgba(57, 255, 20, 0.1),
+        0 0 22px rgba(57, 255, 20, 0.1);
+}
+
+.fr-search-ico-well {
     display: inline-flex;
-    color: #64748b;
-    pointer-events: none;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    border: 1px solid rgba(57, 255, 20, 0.24);
+    background: rgba(57, 255, 20, 0.08);
+    color: #39ff14;
+    box-shadow: inset 0 0 14px rgba(57, 255, 20, 0.06);
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease;
+}
+
+.fr-search-row:focus-within .fr-search-ico-well {
+    border-color: rgba(57, 255, 20, 0.42);
+    background: rgba(57, 255, 20, 0.12);
 }
 
 .fr-input--search {
-    padding-left: 42px;
-    padding-right: 42px;
+    flex: 1;
+    width: auto;
+    min-width: 0;
+    border: none;
+    background: transparent;
+    padding: 0;
+    font-size: 15px;
+    line-height: 1.4;
+    box-shadow: none;
+}
+
+.fr-input--search::placeholder {
+    color: #64748b;
+}
+
+.fr-input--search:focus {
+    border-color: transparent;
+    outline: none;
+}
+
+.fr-search-trail {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
 }
 
 .fr-search-spinner {
-    position: absolute;
-    right: 14px;
     width: 16px;
     height: 16px;
     border-radius: 50%;
     border: 2px solid rgba(57, 255, 20, 0.2);
     border-top-color: #39ff14;
     animation: fr-spin 0.7s linear infinite;
+}
+
+.fr-search-clear {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    background: rgba(19, 26, 38, 0.7);
+    color: #94a3b8;
+    cursor: pointer;
+    transition:
+        color 0.15s ease,
+        border-color 0.15s ease,
+        background 0.15s ease;
+}
+
+.fr-search-clear:hover {
+    color: #f4f4f5;
+    border-color: rgba(57, 255, 20, 0.35);
+    background: rgba(57, 255, 20, 0.08);
 }
 
 .fr-search-hint,
@@ -512,10 +602,6 @@ function removeFriend(id: number) {
     }
 }
 
-.fr-invite-field {
-    flex: 1 1 240px;
-}
-
 .fr-label {
     display: block;
     font-size: 12px;
@@ -540,12 +626,6 @@ function removeFriend(id: number) {
 
 .fr-input:focus {
     border-color: #39ff14;
-}
-
-.fr-error {
-    margin-top: 6px;
-    font-size: 12px;
-    color: #fb2c5f;
 }
 
 .fr-list {
@@ -758,11 +838,6 @@ function removeFriend(id: number) {
 
     .fr-card-actions {
         justify-content: flex-end;
-    }
-
-    .fr-invite {
-        flex-direction: column;
-        align-items: stretch;
     }
 }
 

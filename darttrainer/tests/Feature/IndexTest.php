@@ -4,10 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Support\CreatesDartsLobby;
 use Tests\TestCase;
 
 class IndexTest extends TestCase
 {
+    use CreatesDartsLobby;
     use RefreshDatabase;
 
     public function test_guests_see_welcome_on_home(): void
@@ -44,5 +46,34 @@ class IndexTest extends TestCase
             ->assertInertia(fn ($page) => $page
                 ->where('emailVerified', false)
                 ->where('emailVerificationSentAt', fn ($value) => $value !== null));
+    }
+
+    public function test_home_shares_active_lobby_when_user_has_open_lobby(): void
+    {
+        $host = User::factory()->create();
+        $match = $this->createDartsLobby($host, mode: 'online');
+
+        $this->actingAs($host)
+            ->get('/')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Index')
+                ->where('activeLobby.uuid', $match->uuid)
+                ->where('activeLobby.mode', 'online')
+            );
+    }
+
+    public function test_settings_shares_active_lobby_when_user_has_open_lobby(): void
+    {
+        $host = User::factory()->create();
+        $match = $this->createDartsLobby($host, mode: 'local');
+
+        $this->actingAs($host)
+            ->get('/settings/profile')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('activeLobby.uuid', $match->uuid)
+                ->where('activeLobby.mode', 'local')
+            );
     }
 }

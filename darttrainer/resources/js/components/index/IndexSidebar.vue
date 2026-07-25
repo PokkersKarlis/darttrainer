@@ -56,11 +56,9 @@ const pendingFriendRequestsCount = computed(() => page.props.pendingFriendReques
         <nav class="ix-sidebar-nav" :aria-label="t('index.sidebar.aria')">
             <IndexSidebarSection :title="t('index.sidebar.games.title')">
                 <IndexSidebarItem
-                    href="#"
+                    :href="route('darts.x01.lobby.index')"
                     :label="t('index.sidebar.games.x01Multiplayer')"
-                    :hint="t('index.sidebar.games.comingSoon')"
                     :icon="Target"
-                    disabled
                 />
             </IndexSidebarSection>
 

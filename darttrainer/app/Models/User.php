@@ -24,11 +24,14 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'locale',
+        'default_scoring_mode',
         'is_admin',
         'is_banned',
+        'is_premium',
         'ban_reason',
         'account_type',
         'club_name',
+        'last_seen_at',
     ];
 
     /**
@@ -51,6 +54,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'email_verification_sent_at' => 'datetime',
+            'last_seen_at' => 'datetime',
             'password' => 'hashed',
         ];
     }

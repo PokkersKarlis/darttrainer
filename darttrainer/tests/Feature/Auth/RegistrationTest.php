@@ -94,6 +94,20 @@ class RegistrationTest extends TestCase
         $response->assertSessionHasErrors('terms_accepted');
     }
 
+    public function test_registration_rejects_names_longer_than_display_limit(): void
+    {
+        $response = $this->post('/register', [
+            'name' => str_repeat('a', 21),
+            'email' => 'test@example.com',
+            'password' => 'Password123',
+            'password_confirmation' => 'Password123',
+            'terms_accepted' => true,
+        ]);
+
+        $this->assertGuest();
+        $response->assertSessionHasErrors('name');
+    }
+
     public function test_registration_rejects_honeypot_submissions(): void
     {
         $response = $this->post('/register', [

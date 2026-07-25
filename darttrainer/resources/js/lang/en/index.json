@@ -54,6 +54,15 @@
             "resending": "Sending…",
             "resendSent": "A new verification link has been sent.",
             "resendFailed": "Could not send the email. Try again later."
+        },
+        "shoutbox": {
+            "title": "Arena shoutbox",
+            "retention": "Messages kept for 7 days",
+            "loading": "Loading messages...",
+            "empty": "Be the first to shout!",
+            "placeholder": "Say something to the arena...",
+            "send": "Send",
+            "you": "You"
         }
     }
 }

@@ -4,6 +4,8 @@
  * Tracks breakpoint (compact / medium / wide) and design type (portrait / landscape / square).
  */
 import AppTopBar from '@/components/AppTopBar.vue';
+import ActiveLobbyBanner from '@/components/darts/ActiveLobbyBanner.vue';
+import LobbyInviteBanner from '@/components/darts/LobbyInviteBanner.vue';
 import CookieConsent from '@/components/CookieConsent.vue';
 import IndexAtmosphere from '@/components/index/IndexAtmosphere.vue';
 import IndexFooter from '@/components/index/IndexFooter.vue';
@@ -22,6 +24,10 @@ const { breakpoint, designType } = provideDisplayFrame();
         <IndexAtmosphere />
 
         <AppTopBar />
+
+        <ActiveLobbyBanner />
+
+        <LobbyInviteBanner />
 
         <main class="ix-main">
             <div class="ix-main-inner">
