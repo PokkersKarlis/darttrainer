@@ -1,0 +1,52 @@
+.lcs-panel {
+    padding: 18px;
+    border-radius: 16px;
+    border: 1px solid rgba(34, 211, 238, 0.25);
+    background: linear-gradient(165deg, rgba(19, 26, 38, 0.88), rgba(13, 18, 32, 0.94));
+    text-align: center;
+    width: 100%;
+}
+
+.lcs-kicker {
+    margin: 0 0 6px;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.lcs-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.lcs-value {
+    margin: 0;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 36px;
+    font-weight: 900;
+    letter-spacing: 0.22em;
+    color: #39ff14;
+    text-shadow: 0 0 24px rgba(57, 255, 20, 0.25);
+}
+
+.lcs-copy {
+    display: inline-flex;
+    width: 36px;
+    height: 36px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    border: 1px solid #334155;
+    background: rgba(255, 255, 255, 0.04);
+    color: #94a3b8;
+    cursor: pointer;
+}
+
+.lcs-hint {
+    margin: 10px 0 0;
+    color: #94a3b8;
+    font-size: 13px;
+}

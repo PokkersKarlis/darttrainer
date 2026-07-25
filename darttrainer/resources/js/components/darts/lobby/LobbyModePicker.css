@@ -1,0 +1,79 @@
+.lmp-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--game-gap);
+    padding-top: 2px;
+    width: 100%;
+}
+
+.lmp-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 20px 18px;
+    border-radius: 16px;
+    border: 1px solid #1f2937;
+    background: linear-gradient(165deg, rgba(19, 26, 38, 0.92), rgba(13, 18, 32, 0.96));
+    color: #f4f4f5;
+    text-align: left;
+    cursor: pointer;
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.lmp-card:hover:not(:disabled) {
+    transform: translateY(-2px);
+    border-color: rgba(57, 255, 20, 0.35);
+    box-shadow:
+        0 12px 32px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.lmp-card--on {
+    border-color: rgba(57, 255, 20, 0.5);
+    box-shadow: 0 0 28px rgba(57, 255, 20, 0.16);
+}
+
+.lmp-card:disabled {
+    opacity: 0.7;
+    cursor: wait;
+}
+
+.lmp-icon-well {
+    display: inline-flex;
+    width: 42px;
+    height: 42px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 11px;
+    border: 1px solid rgba(57, 255, 20, 0.24);
+    background: rgba(57, 255, 20, 0.08);
+    color: #39ff14;
+}
+
+.lmp-icon-well--cyan {
+    border-color: rgba(34, 211, 238, 0.28);
+    background: rgba(34, 211, 238, 0.08);
+    color: #22d3ee;
+}
+
+.lmp-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 22px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.lmp-desc {
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .lmp-card {
+        animation: none;
+        transition: none;
+    }
+}
