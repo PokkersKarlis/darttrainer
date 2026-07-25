@@ -333,7 +333,6 @@ function scheduleLobbyPropsReload() {
 
     router.reload({
         only: ['lobby', 'friends'],
-        preserveScroll: true,
         onFinish: () => {
             lobbyReloadPending = false;
             remeasureViewport?.();

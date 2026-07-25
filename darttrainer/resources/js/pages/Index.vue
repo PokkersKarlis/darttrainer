@@ -5,6 +5,7 @@ import IndexShoutbox from '@/components/index/IndexShoutbox.vue';
 import IndexWorkspace from '@/components/index/IndexWorkspace.vue';
 import { useLocale } from '@/composables/useLocale';
 import IndexLayout from '@/layouts/IndexLayout.vue';
+import type { SharedData } from '@/types';
 import { Head, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
@@ -13,8 +14,8 @@ defineProps<{
 }>();
 
 const { t } = useLocale();
-const page = usePage();
-const userId = computed(() => page.props.auth?.user?.id as number | undefined);
+const page = usePage<SharedData>();
+const userId = computed(() => page.props.auth.user.id);
 </script>
 
 <template>

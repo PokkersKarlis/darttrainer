@@ -1,14 +1,16 @@
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
 
+type AppEcho = Echo<'pusher'>;
+
 declare global {
     interface Window {
         Pusher: typeof Pusher;
-        Echo?: Echo;
+        Echo?: AppEcho;
     }
 }
 
-export function createEcho(): Echo | null {
+export function createEcho(): AppEcho | null {
     const key = import.meta.env.VITE_PUSHER_APP_KEY;
 
     if (!key) {
@@ -17,14 +19,16 @@ export function createEcho(): Echo | null {
 
     window.Pusher = Pusher;
 
+    const cluster = String(import.meta.env.VITE_PUSHER_APP_CLUSTER ?? 'mt1');
+
     return new Echo({
         broadcaster: 'pusher',
-        key,
-        cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER ?? 'mt1',
-        wsHost: import.meta.env.VITE_PUSHER_HOST ?? `ws-${import.meta.env.VITE_PUSHER_APP_CLUSTER}.pusher.com`,
+        key: String(key),
+        cluster,
+        wsHost: String(import.meta.env.VITE_PUSHER_HOST ?? `ws-${cluster}.pusher.com`),
         wsPort: Number(import.meta.env.VITE_PUSHER_PORT ?? 80),
         wssPort: Number(import.meta.env.VITE_PUSHER_PORT ?? 443),
-        forceTLS: (import.meta.env.VITE_PUSHER_SCHEME ?? 'https') === 'https',
+        forceTLS: String(import.meta.env.VITE_PUSHER_SCHEME ?? 'https') === 'https',
         enabledTransports: ['ws', 'wss'],
         authorizer: (channel) => ({
             authorize: (socketId, callback) => {
@@ -41,14 +45,16 @@ export function createEcho(): Echo | null {
                     }),
                 })
                     .then((response) => response.json())
-                    .then((data) => callback(false, data))
-                    .catch((error) => callback(true, error));
+                    .then((data) => callback(null, data))
+                    .catch((error: unknown) => {
+                        callback(error instanceof Error ? error : new Error(String(error)), null);
+                    });
             },
         }),
     });
 }
 
-export function getEcho(): Echo | null {
+export function getEcho(): AppEcho | null {
     if (!window.Echo) {
         window.Echo = createEcho() ?? undefined;
     }

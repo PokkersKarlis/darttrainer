@@ -17,6 +17,7 @@ export interface NavItem {
 }
 
 export interface SharedData {
+    [key: string]: unknown;
     name: string;
     appVersion: string;
     locale: 'lv' | 'en';
