@@ -2,8 +2,8 @@ import api from '@/lib/axios';
 import { getEcho } from '@/lib/echo';
 import { isValidLobbyCode, normalizeLobbyCode } from '@/lib/lobbyCode';
 import { applyStartingPoints as applyStartingPointRules, copyLobbyCode as copyLobbyCodeToClipboard } from '@/stores/dartsLobbyActions';
-import axios from 'axios';
 import { router } from '@inertiajs/vue3';
+import axios from 'axios';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
@@ -96,7 +96,7 @@ export const useDartsLobbyStore = defineStore('dartsLobby', () => {
             return message ?? fallback;
         }
 
-        if (! player) {
+        if (!player) {
             return fallback;
         }
 
@@ -152,11 +152,7 @@ export const useDartsLobbyStore = defineStore('dartsLobby', () => {
         error.value = null;
 
         try {
-            await router.patch(
-                route('darts.x01.lobby.match-type.update', uuid),
-                { match_type: next },
-                { preserveScroll: true, only: ['lobby'] },
-            );
+            await router.patch(route('darts.x01.lobby.match-type.update', uuid), { match_type: next }, { preserveScroll: true, only: ['lobby'] });
         } catch {
             error.value = 'lobby-match-type-failed';
         } finally {
@@ -205,22 +201,26 @@ export const useDartsLobbyStore = defineStore('dartsLobby', () => {
         loading.value = true;
         error.value = null;
 
-        await router.post(route('darts.x01.lobby.join'), { lobby_code: code }, {
-            onError: (errors) => {
-                const lobbyCodeError = errors.lobby_code;
-                const message = Array.isArray(lobbyCodeError) ? lobbyCodeError[0] : lobbyCodeError;
+        await router.post(
+            route('darts.x01.lobby.join'),
+            { lobby_code: code },
+            {
+                onError: (errors) => {
+                    const lobbyCodeError = errors.lobby_code;
+                    const message = Array.isArray(lobbyCodeError) ? lobbyCodeError[0] : lobbyCodeError;
 
-                if (message === 'lobby-invalid-code') {
-                    error.value = 'lobby-invalid-code';
-                    return;
-                }
+                    if (message === 'lobby-invalid-code') {
+                        error.value = 'lobby-invalid-code';
+                        return;
+                    }
 
-                error.value = resolveLobbyError(errors, 'lobby-join-failed');
+                    error.value = resolveLobbyError(errors, 'lobby-join-failed');
+                },
+                onFinish: () => {
+                    loading.value = false;
+                },
             },
-            onFinish: () => {
-                loading.value = false;
-            },
-        });
+        );
     }
 
     async function sendInvite(friendId: number, uuid: string) {
@@ -228,10 +228,7 @@ export const useDartsLobbyStore = defineStore('dartsLobby', () => {
         error.value = null;
 
         try {
-            const { data } = await api.post<{ data: LobbySnapshot }>(
-                route('darts.x01.lobby.invites.store', uuid),
-                { user_id: friendId },
-            );
+            const { data } = await api.post<{ data: LobbySnapshot }>(route('darts.x01.lobby.invites.store', uuid), { user_id: friendId });
 
             if (data.data) {
                 applyLobbySnapshot(data.data);
@@ -239,9 +236,7 @@ export const useDartsLobbyStore = defineStore('dartsLobby', () => {
         } catch (err) {
             if (axios.isAxiosError(err) && err.response?.status === 422) {
                 const payload = err.response.data as { errors?: Record<string, string[]> };
-                const flat = Object.fromEntries(
-                    Object.entries(payload.errors ?? {}).map(([key, messages]) => [key, messages[0] ?? '']),
-                );
+                const flat = Object.fromEntries(Object.entries(payload.errors ?? {}).map(([key, messages]) => [key, messages[0] ?? '']));
                 error.value = resolveLobbyError(flat, 'lobby-invite-failed');
             } else {
                 error.value = 'lobby-invite-failed';
@@ -299,16 +294,7 @@ export const useDartsLobbyStore = defineStore('dartsLobby', () => {
     }
 
     function configPayload(): Omit<LobbyConfig, 'mode'> {
-        const {
-            format,
-            legs_target,
-            sets_target,
-            starting_points,
-            in_rule,
-            out_rule,
-            track_checkout_rate,
-            is_public,
-        } = config.value;
+        const { format, legs_target, sets_target, starting_points, in_rule, out_rule, track_checkout_rate, is_public } = config.value;
 
         return {
             format,
@@ -327,11 +313,7 @@ export const useDartsLobbyStore = defineStore('dartsLobby', () => {
         error.value = null;
 
         try {
-            await router.patch(
-                route('darts.x01.lobby.config.update', uuid),
-                configPayload(),
-                { preserveScroll: true, only: ['lobby'] },
-            );
+            await router.patch(route('darts.x01.lobby.config.update', uuid), configPayload(), { preserveScroll: true, only: ['lobby'] });
         } catch {
             error.value = 'lobby-config-failed';
         } finally {
@@ -343,10 +325,7 @@ export const useDartsLobbyStore = defineStore('dartsLobby', () => {
         error.value = null;
 
         try {
-            const { data } = await api.patch<{ data: LobbySnapshot }>(
-                route('darts.x01.lobby.throw-order.update', uuid),
-                { player_ids: playerIds },
-            );
+            const { data } = await api.patch<{ data: LobbySnapshot }>(route('darts.x01.lobby.throw-order.update', uuid), { player_ids: playerIds });
 
             if (data.data) {
                 applyLobbySnapshot(data.data);
@@ -361,10 +340,7 @@ export const useDartsLobbyStore = defineStore('dartsLobby', () => {
         error.value = null;
 
         try {
-            const { data } = await api.patch<{ data: LobbySnapshot }>(
-                route('darts.x01.lobby.first-thrower.update', uuid),
-                { player_id: playerId },
-            );
+            const { data } = await api.patch<{ data: LobbySnapshot }>(route('darts.x01.lobby.first-thrower.update', uuid), { player_id: playerId });
 
             if (data.data) {
                 applyLobbySnapshot(data.data);
@@ -376,10 +352,9 @@ export const useDartsLobbyStore = defineStore('dartsLobby', () => {
     }
 
     async function updatePlayerStartingPoints(uuid: string, playerId: number, startingPoints: number | null) {
-        const { data } = await api.patch<{ data: LobbySnapshot }>(
-            route('darts.x01.lobby.players.starting-points', [uuid, playerId]),
-            { starting_points: startingPoints },
-        );
+        const { data } = await api.patch<{ data: LobbySnapshot }>(route('darts.x01.lobby.players.starting-points', [uuid, playerId]), {
+            starting_points: startingPoints,
+        });
 
         if (data.data) {
             applyLobbySnapshot(data.data);
@@ -404,11 +379,7 @@ export const useDartsLobbyStore = defineStore('dartsLobby', () => {
         error.value = null;
 
         try {
-            await router.patch(
-                route('darts.x01.lobby.players.ready', [uuid, playerId]),
-                { ready },
-                { preserveScroll: true, only: ['lobby'] },
-            );
+            await router.patch(route('darts.x01.lobby.players.ready', [uuid, playerId]), { ready }, { preserveScroll: true, only: ['lobby'] });
         } catch {
             error.value = 'lobby-ready-failed';
         } finally {

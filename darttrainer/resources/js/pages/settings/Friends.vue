@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import SettingsShell from '@/layouts/SettingsShell.vue';
 import { getInitials } from '@/composables/useInitials';
 import { useLocale } from '@/composables/useLocale';
+import SettingsShell from '@/layouts/SettingsShell.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import { computed, ref, watch } from 'vue';
@@ -66,9 +66,7 @@ const statusMessage = computed(() => {
 
 const showSearchHint = computed(() => searchInput.value.trim().length > 0 && searchInput.value.trim().length < 2);
 
-const showSearchEmpty = computed(
-    () => !searching.value && searchInput.value.trim().length >= 2 && props.searchResults.length === 0,
-);
+const showSearchEmpty = computed(() => !searching.value && searchInput.value.trim().length >= 2 && props.searchResults.length === 0);
 
 const runSearch = useDebounceFn((query: string) => {
     const trimmed = query.trim();
@@ -200,7 +198,16 @@ function removeFriend(id: number) {
                             :aria-label="t('settings.friends.searchClear')"
                             @click="clearSearch"
                         >
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                            <svg
+                                width="13"
+                                height="13"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2.5"
+                                stroke-linecap="round"
+                                aria-hidden="true"
+                            >
                                 <path d="M18 6L6 18M6 6l12 12" />
                             </svg>
                         </button>
@@ -647,7 +654,9 @@ function removeFriend(id: number) {
     border-radius: 12px;
     border: 1px solid #1f2937;
     background: rgba(19, 26, 38, 0.65);
-    transition: border-color 0.2s ease, transform 0.2s ease;
+    transition:
+        border-color 0.2s ease,
+        transform 0.2s ease;
 }
 
 .fr-card:hover {
@@ -742,7 +751,10 @@ function removeFriend(id: number) {
     font-size: 14px;
     cursor: pointer;
     border: none;
-    transition: transform 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        filter 0.2s ease,
+        opacity 0.2s ease;
 }
 
 .fr-btn--sm {

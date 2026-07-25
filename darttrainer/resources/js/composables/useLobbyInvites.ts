@@ -1,6 +1,6 @@
-import type { SharedData } from '@/types';
 import api from '@/lib/axios';
 import { getEcho } from '@/lib/echo';
+import type { SharedData } from '@/types';
 import { router, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
@@ -56,23 +56,25 @@ export function useLobbyInvites() {
     function acceptInvite(invite: LobbyInvitePayload) {
         loadingInviteId.value = invite.id;
 
-        router.post(route('darts.x01.lobby.invites.accept', invite.id), {}, {
-            onFinish: () => {
-                loadingInviteId.value = null;
-                removeInvite(invite.id);
+        router.post(
+            route('darts.x01.lobby.invites.accept', invite.id),
+            {},
+            {
+                onFinish: () => {
+                    loadingInviteId.value = null;
+                    removeInvite(invite.id);
+                },
             },
-        });
+        );
     }
 
     function declineInvite(invite: LobbyInvitePayload) {
         loadingInviteId.value = invite.id;
 
-        void api
-            .post(route('darts.x01.lobby.invites.decline', invite.id))
-            .finally(() => {
-                loadingInviteId.value = null;
-                removeInvite(invite.id);
-            });
+        void api.post(route('darts.x01.lobby.invites.decline', invite.id)).finally(() => {
+            loadingInviteId.value = null;
+            removeInvite(invite.id);
+        });
     }
 
     onMounted(() => {

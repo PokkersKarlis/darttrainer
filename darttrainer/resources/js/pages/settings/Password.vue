@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import PasswordField from '@/components/PasswordField.vue';
-import SettingsShell from '@/layouts/SettingsShell.vue';
 import { useLocale } from '@/composables/useLocale';
+import SettingsShell from '@/layouts/SettingsShell.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 

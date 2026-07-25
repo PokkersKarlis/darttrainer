@@ -23,7 +23,12 @@ const { t } = useLocale();
 const { frame } = useGameResponsive();
 const viewportRef = ref<HTMLElement | null>(null);
 const stageRef = ref<HTMLElement | null>(null);
-const { remeasure } = useGameViewportFit(viewportRef, stageRef, frame, toRef(() => props.fillViewport ?? false));
+const { remeasure } = useGameViewportFit(
+    viewportRef,
+    stageRef,
+    frame,
+    toRef(() => props.fillViewport ?? false),
+);
 
 provide(GameViewportRemeasureKey, remeasure);
 
@@ -55,12 +60,7 @@ const frameClass = computed(() => ({
                 <span v-if="isPremium" class="game-premium">{{ t('games.header.premium') }}</span>
             </div>
 
-            <button
-                v-if="showLobbyCode && lobbyCode"
-                type="button"
-                class="game-code backdrop-blur-md bg-white/10"
-                @click="$emit('copyCode')"
-            >
+            <button v-if="showLobbyCode && lobbyCode" type="button" class="game-code bg-white/10 backdrop-blur-md" @click="$emit('copyCode')">
                 <span class="game-code-label">{{ t('games.header.lobbyCode') }}</span>
                 <span class="game-code-value">{{ lobbyCode }}</span>
             </button>
@@ -132,8 +132,7 @@ const frameClass = computed(() => ({
     inset: 0;
     opacity: 0.24;
     background-image:
-        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
     background-size: 48px 48px;
 }
 

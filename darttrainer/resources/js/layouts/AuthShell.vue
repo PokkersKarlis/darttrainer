@@ -78,25 +78,49 @@ const brandFeatures = [
                     </span>
                     TrainDart
                 </p>
-                <h1 class="td-brand-h">{{ headingLine1 }}<br /><span class="td-brand-h-accent">{{ headingLine2 }}</span></h1>
+                <h1 class="td-brand-h">
+                    {{ headingLine1 }}<br /><span class="td-brand-h-accent">{{ headingLine2 }}</span>
+                </h1>
                 <p class="td-brand-lead">{{ lead }}</p>
 
                 <div class="td-features">
-                    <div
-                        v-for="(f, i) in brandFeatures"
-                        :key="f.key"
-                        class="td-feature td-rise"
-                        :style="{ '--delay': `${0.18 + i * 0.06}s` }"
-                    >
+                    <div v-for="(f, i) in brandFeatures" :key="f.key" class="td-feature td-rise" :style="{ '--delay': `${0.18 + i * 0.06}s` }">
                         <span class="td-feature-ico" :class="`td-feature-ico--${f.tone}`" aria-hidden="true">
-                            <svg v-if="f.kind === 'bars'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <svg
+                                v-if="f.kind === 'bars'"
+                                width="18"
+                                height="18"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                            >
                                 <path d="M4 19V9M10 19V5M16 19v-7M20 19H3" />
                             </svg>
-                            <svg v-else-if="f.kind === 'live'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <svg
+                                v-else-if="f.kind === 'live'"
+                                width="18"
+                                height="18"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                            >
                                 <circle cx="12" cy="12" r="2" fill="currentColor" />
                                 <path d="M8.5 15.5a5 5 0 010-7M15.5 15.5a5 5 0 000-7" />
                             </svg>
-                            <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <svg
+                                v-else
+                                width="18"
+                                height="18"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                            >
                                 <circle cx="9" cy="8" r="3" />
                                 <path d="M3 20a6 6 0 0112 0" />
                                 <circle cx="17" cy="8" r="2.5" />
@@ -178,8 +202,7 @@ const brandFeatures = [
     inset: 0;
     opacity: 0.28;
     background-image:
-        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
     background-size: 48px 48px;
     mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0.55), transparent 55%);
 }
@@ -295,7 +318,9 @@ const brandFeatures = [
     border-radius: 12px;
     border: 1px solid var(--td-line);
     background: linear-gradient(165deg, rgba(19, 26, 38, 0.75), rgba(13, 18, 32, 0.9));
-    transition: border-color 0.2s ease, transform 0.2s ease;
+    transition:
+        border-color 0.2s ease,
+        transform 0.2s ease;
 }
 .td-feature:hover {
     border-color: color-mix(in srgb, var(--td-green) 30%, var(--td-line));

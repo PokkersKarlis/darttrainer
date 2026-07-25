@@ -134,7 +134,10 @@
     font-weight: 800;
     line-height: 1;
     cursor: pointer;
-    transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+    transition:
+        border-color 0.15s ease,
+        background 0.15s ease,
+        transform 0.15s ease;
 }
 
 .lcf-stepper-btn:first-child {

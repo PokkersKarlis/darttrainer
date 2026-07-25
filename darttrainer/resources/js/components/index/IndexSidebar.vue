@@ -42,24 +42,14 @@ const pendingFriendRequestsCount = computed(() => page.props.pendingFriendReques
 
         <div class="ix-sidebar-head">
             <p class="ix-sidebar-kicker">{{ t('index.sidebar.kicker') }}</p>
-            <button
-                v-if="mode === 'drawer'"
-                type="button"
-                class="ix-sidebar-close"
-                :aria-label="t('index.sidebar.close')"
-                @click="$emit('close')"
-            >
+            <button v-if="mode === 'drawer'" type="button" class="ix-sidebar-close" :aria-label="t('index.sidebar.close')" @click="$emit('close')">
                 <X :size="18" :stroke-width="2.4" />
             </button>
         </div>
 
         <nav class="ix-sidebar-nav" :aria-label="t('index.sidebar.aria')">
             <IndexSidebarSection :title="t('index.sidebar.games.title')">
-                <IndexSidebarItem
-                    :href="route('darts.x01.lobby.index')"
-                    :label="t('index.sidebar.games.x01Multiplayer')"
-                    :icon="Target"
-                />
+                <IndexSidebarItem :href="route('darts.x01.lobby.index')" :label="t('index.sidebar.games.x01Multiplayer')" :icon="Target" />
             </IndexSidebarSection>
 
             <IndexSidebarSection :title="t('index.sidebar.social.title')">
@@ -126,8 +116,7 @@ const pendingFriendRequestsCount = computed(() => page.props.pendingFriendReques
     inset: 0;
     opacity: 0.22;
     background-image:
-        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
     background-size: var(--ix-grid-size, 48px) var(--ix-grid-size, 48px);
     mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.65), transparent 88%);
 }
@@ -191,7 +180,9 @@ const pendingFriendRequestsCount = computed(() => page.props.pendingFriendReques
     background: color-mix(in srgb, var(--ix-bg, #0b0f19) 70%, transparent);
     color: var(--ix-text, #f4f4f5);
     cursor: pointer;
-    transition: border-color 0.15s ease, color 0.15s ease;
+    transition:
+        border-color 0.15s ease,
+        color 0.15s ease;
 }
 
 .ix-sidebar-close:hover {

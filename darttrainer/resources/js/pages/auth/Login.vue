@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import AuthShell from '@/layouts/AuthShell.vue';
 import PasswordField from '@/components/PasswordField.vue';
 import { useLocale } from '@/composables/useLocale';
+import AuthShell from '@/layouts/AuthShell.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 defineProps<{
@@ -68,7 +68,17 @@ const submit = () => {
 
             <label class="td-check-row">
                 <span class="td-check" :class="{ 'td-check--on': form.remember }">
-                    <svg v-if="form.remember" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0b0f19" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <svg
+                        v-if="form.remember"
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#0b0f19"
+                        stroke-width="3"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
                         <path d="M20 6L9 17l-5-5" />
                     </svg>
                 </span>

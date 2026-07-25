@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import GuestLayout from '@/layouts/GuestLayout.vue';
 import { useLocale } from '@/composables/useLocale';
+import GuestLayout from '@/layouts/GuestLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
@@ -17,7 +17,16 @@ const sections = computed(() => tm('legal.terms.sections') as LegalSection[]);
     <GuestLayout>
         <article class="legal gl-rise">
             <Link :href="route('home')" class="legal-back">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    aria-hidden="true"
+                >
                     <path d="M19 12H5M12 19l-7-7 7-7" />
                 </svg>
                 {{ t('legal.back') }}

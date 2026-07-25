@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { TurnThrow } from '@/stores/dartsPlay';
 import { useLocale } from '@/composables/useLocale';
+import type { TurnThrow } from '@/stores/dartsPlay';
 import { computed, ref } from 'vue';
 
 const props = defineProps<{
@@ -105,14 +105,7 @@ function submitMiss() {
         <p class="pad-hint">{{ t('games.play.multiplierActive', { label: multiplierLabel }) }}</p>
 
         <div class="pad-grid">
-            <button
-                v-for="sector in sectors"
-                :key="sector"
-                type="button"
-                class="pad-sector"
-                :disabled="inputLocked"
-                @click="submitSector(sector)"
-            >
+            <button v-for="sector in sectors" :key="sector" type="button" class="pad-sector" :disabled="inputLocked" @click="submitSector(sector)">
                 {{ sector }}
             </button>
             <button
@@ -168,7 +161,10 @@ function submitMiss() {
     letter-spacing: 0.06em;
     text-transform: uppercase;
     cursor: pointer;
-    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+    transition:
+        border-color 0.15s ease,
+        background 0.15s ease,
+        color 0.15s ease;
 }
 
 .pad-mult-btn--single.pad-mult-btn--on,
@@ -213,7 +209,9 @@ function submitMiss() {
     font-size: clamp(13px, 2.4vh, 18px);
     font-weight: 800;
     cursor: pointer;
-    transition: border-color 0.15s ease, background 0.15s ease;
+    transition:
+        border-color 0.15s ease,
+        background 0.15s ease;
 }
 
 .pad-sector:hover:not(:disabled) {

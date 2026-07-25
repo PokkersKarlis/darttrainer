@@ -1,17 +1,10 @@
 <script setup lang="ts">
 import CalcQuickScores from '@/components/darts/CalcQuickScores.vue';
-import { canAppendVisitDigit, evaluateVisitExpression, VISIT_POINTS_MIN } from '@/lib/calcExpression';
-import {
-    achievableCheckoutDarts,
-    achievableDoubleDartCounts,
-} from '@/lib/calculatorVisit';
-import {
-    requiresCheckoutDart,
-    requiresCheckoutDartCount,
-    requiresDoubleDartCount,
-} from '@/lib/checkoutZone';
-import { achievableDartCounts, isValidVisitPoints } from '@/lib/dartPoints';
 import { useLocale } from '@/composables/useLocale';
+import { canAppendVisitDigit, evaluateVisitExpression, VISIT_POINTS_MIN } from '@/lib/calcExpression';
+import { achievableCheckoutDarts, achievableDoubleDartCounts } from '@/lib/calculatorVisit';
+import { requiresCheckoutDart, requiresCheckoutDartCount, requiresDoubleDartCount } from '@/lib/checkoutZone';
+import { achievableDartCounts, isValidVisitPoints } from '@/lib/dartPoints';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 export interface CalculatorVisitPayload {
@@ -42,9 +35,13 @@ const { t } = useLocale();
 const display = ref('');
 const flowStep = ref<FlowStep>('score');
 
-watch(flowStep, (step) => {
-    emit('flowStepChange', step);
-}, { immediate: true });
+watch(
+    flowStep,
+    (step) => {
+        emit('flowStepChange', step);
+    },
+    { immediate: true },
+);
 const lockedPoints = ref<number | null>(null);
 const dartCount = ref<number | null>(null);
 const checkoutDart = ref<number | null>(null);
@@ -54,9 +51,7 @@ const inputLocked = computed(() => props.disabled || props.loading);
 
 const pendingValue = computed(() => evaluateVisitExpression(display.value));
 
-const activePoints = computed(() =>
-    flowStep.value === 'score' ? pendingValue.value : lockedPoints.value,
-);
+const activePoints = computed(() => (flowStep.value === 'score' ? pendingValue.value : lockedPoints.value));
 
 const wouldBust = computed(() => {
     const value = activePoints.value;
@@ -158,12 +153,7 @@ const allowedCheckoutDarts = computed(() => {
         return [];
     }
 
-    return achievableCheckoutDarts(
-        points,
-        props.remainingPoints,
-        dartCount.value,
-        props.outRule === 'double',
-    );
+    return achievableCheckoutDarts(points, props.remainingPoints, dartCount.value, props.outRule === 'double');
 });
 
 const allowedDoubleDartCounts = computed(() => {
@@ -208,17 +198,11 @@ const statusHint = computed(() => {
         return t('games.play.calculator.hintBust');
     }
 
-    if (
-        pendingValue.value !== null
-        && requiresCheckoutDart(pendingValue.value, props.remainingPoints, false)
-    ) {
+    if (pendingValue.value !== null && requiresCheckoutDart(pendingValue.value, props.remainingPoints, false)) {
         return t('games.play.calculator.hintCheckout');
     }
 
-    if (
-        pendingValue.value !== null
-        && requiresCheckoutDartCount(props.remainingPoints, props.trackCheckoutRate ?? false)
-    ) {
+    if (pendingValue.value !== null && requiresCheckoutDartCount(props.remainingPoints, props.trackCheckoutRate ?? false)) {
         return t('games.play.calculator.hintCheckoutZone');
     }
 
@@ -354,11 +338,7 @@ function emitPayload(points: number) {
 
     if (doubleDarts.value !== null) {
         payload.doubleDarts = doubleDarts.value;
-        payload.dartCount = Math.max(
-            payload.dartCount ?? doubleDarts.value,
-            doubleDarts.value,
-            checkoutDart.value ?? 0,
-        );
+        payload.dartCount = Math.max(payload.dartCount ?? doubleDarts.value, doubleDarts.value, checkoutDart.value ?? 0);
     }
 
     emit('throwPoints', payload);
@@ -538,9 +518,7 @@ function goBackStep() {
 
     if (flowStep.value === 'checkoutDart') {
         checkoutDart.value = null;
-        flowStep.value = requiresCheckoutDartCount(props.remainingPoints, props.trackCheckoutRate ?? false)
-            ? 'dartCount'
-            : 'score';
+        flowStep.value = requiresCheckoutDartCount(props.remainingPoints, props.trackCheckoutRate ?? false) ? 'dartCount' : 'score';
         if (flowStep.value === 'dartCount') {
             dartCount.value = null;
         }
@@ -617,7 +595,7 @@ defineExpose({
     <section class="calc" :class="{ 'calc--expanded': externalQuickScores }" @click="interact">
         <div class="calc-display">
             <div class="calc-display-main">
-                <span class="calc-value">{{ flowStep === 'score' ? (display || '0') : lockedPoints }}</span>
+                <span class="calc-value">{{ flowStep === 'score' ? display || '0' : lockedPoints }}</span>
                 <span v-if="flowStep !== 'score'" class="calc-step-badge">{{ t('games.play.calculator.stepDetail') }}</span>
             </div>
             <span class="calc-meta">{{ t('games.play.calculator.remaining', { count: remainingPoints }) }}</span>
@@ -628,12 +606,7 @@ defineExpose({
         </p>
 
         <template v-if="flowStep === 'score'">
-            <CalcQuickScores
-                v-if="!externalQuickScores"
-                :disabled="inputLocked"
-                :is-allowed="quickScoreAllowed"
-                @select="quickScore"
-            />
+            <CalcQuickScores v-if="!externalQuickScores" :disabled="inputLocked" :is-allowed="quickScoreAllowed" @select="quickScore" />
 
             <div class="calc-main">
                 <div class="calc-grid">
@@ -647,17 +620,8 @@ defineExpose({
                     >
                         {{ digit }}
                     </button>
-                    <button
-                        type="button"
-                        class="calc-key calc-key--clear"
-                        :disabled="inputLocked || display === ''"
-                        @click="clearDisplay"
-                    >
-                        C
-                    </button>
-                    <button type="button" class="calc-key" :disabled="inputLocked" @click="appendDigit('0')">
-                        0
-                    </button>
+                    <button type="button" class="calc-key calc-key--clear" :disabled="inputLocked || display === ''" @click="clearDisplay">C</button>
+                    <button type="button" class="calc-key" :disabled="inputLocked" @click="appendDigit('0')">0</button>
                     <button
                         type="button"
                         class="calc-key calc-key--delete"
@@ -680,21 +644,10 @@ defineExpose({
                 <button type="button" class="calc-action calc-action--miss" :disabled="inputLocked" @click="submitMiss">
                     {{ t('games.play.miss') }}
                 </button>
-                <button
-                    v-if="inCheckoutZone"
-                    type="button"
-                    class="calc-action calc-action--bust"
-                    :disabled="!canSubmitBust"
-                    @click="submitBust"
-                >
+                <button v-if="inCheckoutZone" type="button" class="calc-action calc-action--bust" :disabled="!canSubmitBust" @click="submitBust">
                     {{ t('games.play.calculator.bust') }}
                 </button>
-                <button
-                    type="button"
-                    class="calc-action calc-action--enter"
-                    :disabled="inputLocked || !canSubmitScore"
-                    @click="submitScore"
-                >
+                <button type="button" class="calc-action calc-action--enter" :disabled="inputLocked || !canSubmitScore" @click="submitScore">
                     {{ t('games.play.calculator.enter') }}
                 </button>
             </div>
@@ -720,25 +673,13 @@ defineExpose({
                 </div>
 
                 <div v-else-if="flowStep === 'checkoutDart'" class="calc-flow-choices">
-                    <button
-                        v-for="n in allowedCheckoutDarts"
-                        :key="`co-${n}`"
-                        type="button"
-                        class="calc-flow-btn"
-                        @click="selectCheckoutDart(n)"
-                    >
+                    <button v-for="n in allowedCheckoutDarts" :key="`co-${n}`" type="button" class="calc-flow-btn" @click="selectCheckoutDart(n)">
                         {{ t('games.play.calculatorVisit.dartNumber', { n }) }}
                     </button>
                 </div>
 
                 <div v-else-if="flowStep === 'doubleDarts'" class="calc-flow-choices calc-flow-choices--wrap">
-                    <button
-                        v-for="n in allowedDoubleDartCounts"
-                        :key="`db-${n}`"
-                        type="button"
-                        class="calc-flow-btn"
-                        @click="selectDoubleDarts(n)"
-                    >
+                    <button v-for="n in allowedDoubleDartCounts" :key="`db-${n}`" type="button" class="calc-flow-btn" @click="selectDoubleDarts(n)">
                         {{ n }}
                     </button>
                 </div>

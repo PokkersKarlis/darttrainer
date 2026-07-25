@@ -63,23 +63,44 @@ const currentPath = computed(() => (typeof window !== 'undefined' ? window.locat
             <p class="ts-sub">{{ t('settings.subtitle') }}</p>
 
             <nav class="ts-tabs">
-                <Link
-                    v-for="tab in tabs"
-                    :key="tab.href"
-                    :href="tab.href"
-                    class="ts-tab"
-                    :class="{ 'ts-tab--on': currentPath === tab.href }"
-                >
+                <Link v-for="tab in tabs" :key="tab.href" :href="tab.href" class="ts-tab" :class="{ 'ts-tab--on': currentPath === tab.href }">
                     <span class="ts-tab-ico" aria-hidden="true">
-                        <svg v-if="tab.kind === 'profile'" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <svg
+                            v-if="tab.kind === 'profile'"
+                            width="15"
+                            height="15"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                        >
                             <circle cx="12" cy="8" r="4" />
                             <path d="M4 20a8 8 0 0116 0" />
                         </svg>
-                        <svg v-else-if="tab.kind === 'password'" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <svg
+                            v-else-if="tab.kind === 'password'"
+                            width="15"
+                            height="15"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                        >
                             <rect x="5" y="11" width="14" height="10" rx="2" />
                             <path d="M8 11V7a4 4 0 018 0v4" />
                         </svg>
-                        <svg v-else width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <svg
+                            v-else
+                            width="15"
+                            height="15"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                        >
                             <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
                             <circle cx="9" cy="7" r="4" />
                             <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
@@ -146,8 +167,7 @@ const currentPath = computed(() => (typeof window !== 'undefined' ? window.locat
     inset: 0;
     opacity: 0.3;
     background-image:
-        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
     background-size: 48px 48px;
     mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.5), transparent 75%);
 }
@@ -248,7 +268,9 @@ const currentPath = computed(() => (typeof window !== 'undefined' ? window.locat
     color: var(--td-soft);
     text-decoration: none;
     border-radius: 10px;
-    transition: color 0.2s ease, background 0.2s ease;
+    transition:
+        color 0.2s ease,
+        background 0.2s ease;
 }
 .ts-tab:hover {
     color: var(--td-text);
@@ -337,7 +359,10 @@ const currentPath = computed(() => (typeof window !== 'undefined' ? window.locat
     transform: translateY(-1px);
 }
 :deep(.tf-btn) {
-    transition: transform 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        filter 0.2s ease,
+        opacity 0.2s ease;
 }
 :deep(.tf-input:focus),
 :deep(.ap-tab--on) {

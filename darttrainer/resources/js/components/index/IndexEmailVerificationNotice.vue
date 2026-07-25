@@ -11,13 +11,9 @@ const props = defineProps<{
 const { t } = useLocale();
 const { isVerified, canResend, resendForm, resend, flashStatus, userEmail } = useEmailVerification(props.status);
 
-const showResendSuccess = computed(
-    () => flashStatus.value === 'verification-link-sent' || props.status === 'verification-link-sent',
-);
+const showResendSuccess = computed(() => flashStatus.value === 'verification-link-sent' || props.status === 'verification-link-sent');
 
-const showResendFailed = computed(
-    () => flashStatus.value === 'verification-link-failed' || props.status === 'verification-link-failed',
-);
+const showResendFailed = computed(() => flashStatus.value === 'verification-link-failed' || props.status === 'verification-link-failed');
 
 const showWaiting = computed(() => !canResend.value && !resendForm.processing);
 </script>
@@ -42,25 +38,11 @@ const showWaiting = computed(() => !canResend.value && !resendForm.processing);
             </p>
 
             <div v-if="canResend" class="ix-email-notice-actions">
-                <button
-                    type="button"
-                    class="ix-email-notice-btn"
-                    :disabled="resendForm.processing"
-                    @click="resend"
-                >
-                    {{
-                        resendForm.processing
-                            ? t('index.emailNotice.resending')
-                            : t('index.emailNotice.resend')
-                    }}
+                <button type="button" class="ix-email-notice-btn" :disabled="resendForm.processing" @click="resend">
+                    {{ resendForm.processing ? t('index.emailNotice.resending') : t('index.emailNotice.resend') }}
                 </button>
             </div>
-            <div
-                v-else-if="showWaiting"
-                class="ix-email-notice-loading"
-                role="status"
-                :aria-label="t('index.emailNotice.waiting')"
-            >
+            <div v-else-if="showWaiting" class="ix-email-notice-loading" role="status" :aria-label="t('index.emailNotice.waiting')">
                 <span class="ix-email-notice-spinner" aria-hidden="true" />
             </div>
         </div>
@@ -76,8 +58,7 @@ const showWaiting = computed(() => !canResend.value && !resendForm.processing);
     border-radius: calc(16px * var(--ix-scale, 1));
     border: 1px solid color-mix(in srgb, #fb2c5f 42%, var(--ix-line, #1f2937));
     background:
-        radial-gradient(circle at top right, rgba(251, 44, 95, 0.12), transparent 55%),
-        color-mix(in srgb, var(--ix-panel, #0d1220) 92%, transparent);
+        radial-gradient(circle at top right, rgba(251, 44, 95, 0.12), transparent 55%), color-mix(in srgb, var(--ix-panel, #0d1220) 92%, transparent);
     box-shadow: 0 0 28px rgba(251, 44, 95, 0.12);
 }
 

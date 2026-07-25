@@ -11,22 +11,10 @@ function pick(next: Locale) {
 
 <template>
     <div class="lang-switch" role="group" :aria-label="t('lang.label')">
-        <button
-            type="button"
-            class="lang-btn"
-            :class="{ 'lang-btn--on': locale === 'lv' }"
-            :aria-pressed="locale === 'lv'"
-            @click="pick('lv')"
-        >
+        <button type="button" class="lang-btn" :class="{ 'lang-btn--on': locale === 'lv' }" :aria-pressed="locale === 'lv'" @click="pick('lv')">
             {{ t('lang.lv') }}
         </button>
-        <button
-            type="button"
-            class="lang-btn"
-            :class="{ 'lang-btn--on': locale === 'en' }"
-            :aria-pressed="locale === 'en'"
-            @click="pick('en')"
-        >
+        <button type="button" class="lang-btn" :class="{ 'lang-btn--on': locale === 'en' }" :aria-pressed="locale === 'en'" @click="pick('en')">
             {{ t('lang.en') }}
         </button>
     </div>
@@ -57,7 +45,9 @@ function pick(next: Locale) {
     touch-action: manipulation;
     user-select: none;
     outline: none;
-    transition: color 0.15s ease, background 0.15s ease;
+    transition:
+        color 0.15s ease,
+        background 0.15s ease;
 }
 .lang-btn--on {
     background: rgba(57, 255, 20, 0.14);
@@ -78,7 +68,9 @@ function pick(next: Locale) {
     }
 }
 .lang-btn:focus-visible:not(.lang-btn--on) {
-    box-shadow: 0 0 0 2px #0b0f19, 0 0 0 4px #39ff14;
+    box-shadow:
+        0 0 0 2px #0b0f19,
+        0 0 0 4px #39ff14;
 }
 .lang-btn:not(.lang-btn--on):active {
     color: #cbd5e1;

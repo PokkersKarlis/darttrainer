@@ -21,18 +21,12 @@ const modeLabel = computed(() => {
         <div class="alb-inner">
             <span class="alb-badge" aria-hidden="true">
                 <Monitor :size="14" :stroke-width="2.4" />
-                {{
-                    isActiveMatch
-                        ? t('games.lobby.activeMatchElsewhere')
-                        : t('games.lobby.activeLobbyElsewhere')
-                }}
+                {{ isActiveMatch ? t('games.lobby.activeMatchElsewhere') : t('games.lobby.activeLobbyElsewhere') }}
             </span>
 
             <p class="alb-text">
                 {{
-                    isActiveMatch
-                        ? t('games.lobby.activeMatchBanner', { mode: modeLabel })
-                        : t('games.lobby.activeLobbyBanner', { mode: modeLabel })
+                    isActiveMatch ? t('games.lobby.activeMatchBanner', { mode: modeLabel }) : t('games.lobby.activeLobbyBanner', { mode: modeLabel })
                 }}
                 <span v-if="!isActiveMatch && activeLobby.lobby_code" class="alb-code">
                     {{ t('games.lobby.activeLobbyCode', { code: activeLobby.lobby_code }) }}
@@ -115,7 +109,10 @@ const modeLabel = computed(() => {
     letter-spacing: 0.04em;
     text-transform: uppercase;
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
     white-space: nowrap;
     flex-shrink: 0;
 }

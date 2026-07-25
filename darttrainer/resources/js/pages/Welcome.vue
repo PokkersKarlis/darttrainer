@@ -3,8 +3,8 @@
  * Guest landing — athletic TrainDart surface with dartboard visual + feature icons.
  * Copy from guest/seo/features/closing catalogs.
  */
-import AppVersionLabel from '@/components/AppVersionLabel.vue';
 import AppTopBar from '@/components/AppTopBar.vue';
+import AppVersionLabel from '@/components/AppVersionLabel.vue';
 import CookieConsent from '@/components/CookieConsent.vue';
 import { useCookieConsent } from '@/composables/useCookieConsent';
 import { useLocale } from '@/composables/useLocale';
@@ -69,7 +69,16 @@ const features: FeatureItem[] = [
                 <div class="tw-hero-actions">
                     <Link :href="route('register')" class="tw-cta tw-cta--lg">
                         {{ t('guest.register') }}
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                        <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            stroke-linecap="round"
+                            aria-hidden="true"
+                        >
                             <path d="M5 12h14M13 6l6 6-6 6" />
                         </svg>
                     </Link>
@@ -107,34 +116,76 @@ const features: FeatureItem[] = [
                 <p class="tw-section-lead">{{ t('features.sectionLead') }}</p>
             </div>
             <div class="tw-grid">
-                <article
-                    v-for="(f, i) in features"
-                    :key="f.key"
-                    class="tw-feature tw-rise"
-                    :style="{ '--delay': `${0.08 + i * 0.06}s` }"
-                >
+                <article v-for="(f, i) in features" :key="f.key" class="tw-feature tw-rise" :style="{ '--delay': `${0.08 + i * 0.06}s` }">
                     <span class="tw-feature-ico" :class="`tw-feature-ico--${f.tone}`" aria-hidden="true">
                         <!-- Stats: bar chart -->
-                        <svg v-if="f.kind === 'bars'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <svg
+                            v-if="f.kind === 'bars'"
+                            width="22"
+                            height="22"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                        >
                             <path d="M4 19V9M10 19V5M16 19v-7M20 19H3" />
                         </svg>
                         <!-- Training: pulse / drill -->
-                        <svg v-else-if="f.kind === 'pulse'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg
+                            v-else-if="f.kind === 'pulse'"
+                            width="22"
+                            height="22"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
                             <path d="M3 12h4l3 8 4-16 3 8h4" />
                         </svg>
                         <!-- Online: dartboard -->
-                        <svg v-else-if="f.kind === 'board'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg
+                            v-else-if="f.kind === 'board'"
+                            width="22"
+                            height="22"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
                             <circle cx="12" cy="12" r="9" />
                             <circle cx="12" cy="12" r="5.5" />
                             <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
                         </svg>
                         <!-- Match analysis: trend chart -->
-                        <svg v-else-if="f.kind === 'chart'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg
+                            v-else-if="f.kind === 'chart'"
+                            width="22"
+                            height="22"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
                             <path d="M4 19V5M4 19h16" />
                             <path d="M8 17V11M12 17V7M16 17v-4" />
                         </svg>
                         <!-- Tournaments + API: bracket tree -->
-                        <svg v-else-if="f.kind === 'brackets'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg
+                            v-else-if="f.kind === 'brackets'"
+                            width="22"
+                            height="22"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
                             <circle cx="5" cy="6" r="2" />
                             <circle cx="5" cy="18" r="2" />
                             <circle cx="19" cy="12" r="2" />
@@ -142,7 +193,17 @@ const features: FeatureItem[] = [
                             <path d="M15 12h4" />
                         </svg>
                         <!-- AI reports: article -->
-                        <svg v-else width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg
+                            v-else
+                            width="22"
+                            height="22"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
                             <path d="M6 4h10l4 4v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2z" />
                             <path d="M14 4v4h4M8 12h8M8 16h6" />
                             <path d="M18 3l2 2-3 3" />
@@ -163,7 +224,16 @@ const features: FeatureItem[] = [
                 </div>
                 <Link :href="route('register')" class="tw-cta tw-cta--lg">
                     {{ t('closing.cta') }}
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                    <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        aria-hidden="true"
+                    >
                         <path d="M5 12h14M13 6l6 6-6 6" />
                     </svg>
                 </Link>
@@ -246,8 +316,7 @@ const features: FeatureItem[] = [
     inset: 0;
     opacity: 0.35;
     background-image:
-        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
     background-size: 48px 48px;
     mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.55), transparent 72%);
 }
@@ -314,7 +383,9 @@ const features: FeatureItem[] = [
     text-transform: uppercase;
     font-size: 14px;
     text-decoration: none;
-    transition: transform 0.2s ease, filter 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        filter 0.2s ease;
 }
 .tw-cta:hover {
     transform: translateY(-1px);
@@ -339,7 +410,9 @@ const features: FeatureItem[] = [
     font-size: 15px;
     text-decoration: none;
     background: transparent;
-    transition: border-color 0.2s ease, color 0.2s ease;
+    transition:
+        border-color 0.2s ease,
+        color 0.2s ease;
 }
 .tw-cta-ghost:hover {
     border-color: var(--td-green);
@@ -625,7 +698,9 @@ const features: FeatureItem[] = [
     flex-direction: column;
     gap: 12px;
     min-width: 0;
-    transition: border-color 0.25s ease, transform 0.25s ease;
+    transition:
+        border-color 0.25s ease,
+        transform 0.25s ease;
 }
 .tw-post:hover {
     transform: translateY(-2px);
@@ -677,8 +752,7 @@ const features: FeatureItem[] = [
     gap: 4px;
     background:
         radial-gradient(circle at 30% 25%, rgba(57, 255, 20, 0.2), transparent 45%),
-        radial-gradient(circle at 70% 70%, rgba(251, 44, 95, 0.18), transparent 40%),
-        #101826;
+        radial-gradient(circle at 70% 70%, rgba(251, 44, 95, 0.18), transparent 40%), #101826;
     border: 1px solid var(--td-line);
 }
 .tw-post-media-score {
@@ -779,7 +853,9 @@ const features: FeatureItem[] = [
     border: 1px solid var(--td-line);
     border-radius: 14px;
     background: linear-gradient(165deg, rgba(19, 26, 38, 0.9), rgba(13, 18, 32, 0.96));
-    transition: border-color 0.25s ease, transform 0.25s ease;
+    transition:
+        border-color 0.25s ease,
+        transform 0.25s ease;
 }
 .tw-feature:hover {
     border-color: color-mix(in srgb, var(--td-green) 35%, var(--td-line));
@@ -849,9 +925,7 @@ const features: FeatureItem[] = [
     padding: 28px;
     border-radius: 16px;
     border: 1px solid color-mix(in srgb, var(--td-green) 28%, var(--td-line));
-    background:
-        linear-gradient(120deg, rgba(57, 255, 20, 0.08), transparent 42%),
-        var(--td-panel);
+    background: linear-gradient(120deg, rgba(57, 255, 20, 0.08), transparent 42%), var(--td-panel);
 }
 .tw-closing-copy {
     min-width: 0;

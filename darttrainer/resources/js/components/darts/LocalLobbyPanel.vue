@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import GameCheckbox from '@/components/darts/GameCheckbox.vue';
-import { friendActivityClass } from '@/lib/friendActivity';
-import { DISPLAY_NAME_MAX_LENGTH } from '@/lib/displayName';
 import { useLocale } from '@/composables/useLocale';
+import { DISPLAY_NAME_MAX_LENGTH } from '@/lib/displayName';
+import { friendActivityClass } from '@/lib/friendActivity';
 import { useDartsLobbyStore, type FriendEntry } from '@/stores/dartsLobby';
 import { UserPlus } from 'lucide-vue-next';
 import { storeToRefs } from 'pinia';
@@ -96,22 +96,12 @@ const panelClass = computed(() => (props.compact ? 'llp llp--compact' : 'llp'));
                     :placeholder="t('games.lobby.guestPlaceholder')"
                     :maxlength="DISPLAY_NAME_MAX_LENGTH"
                 />
-                <button
-                    type="button"
-                    class="llp-btn llp-btn--green llp-btn--sm"
-                    :disabled="loading || !guestName.trim()"
-                    @click="addGuestFromInput"
-                >
+                <button type="button" class="llp-btn llp-btn--green llp-btn--sm" :disabled="loading || !guestName.trim()" @click="addGuestFromInput">
                     <UserPlus :size="14" />
                     {{ t('games.lobby.addGuest') }}
                 </button>
             </div>
-            <input
-                v-model="guestEmail"
-                type="email"
-                class="llp-input llp-input--email"
-                :placeholder="t('games.lobby.guestEmailPlaceholder')"
-            />
+            <input v-model="guestEmail" type="email" class="llp-input llp-input--email" :placeholder="t('games.lobby.guestEmailPlaceholder')" />
             <p class="llp-tip">{{ t('games.lobby.guestEmailHint') }}</p>
             <GameCheckbox v-model="saveGuest">
                 {{ t('games.lobby.saveGuest') }}
@@ -122,7 +112,10 @@ const panelClass = computed(() => (props.compact ? 'llp llp--compact' : 'llp'));
                     :key="guest.id"
                     type="button"
                     class="llp-chip"
-                    @click="guestName = guest.name; guestEmail = guest.email ?? ''"
+                    @click="
+                        guestName = guest.name;
+                        guestEmail = guest.email ?? '';
+                    "
                 >
                     {{ guest.name }}
                 </button>

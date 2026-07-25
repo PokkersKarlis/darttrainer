@@ -42,7 +42,9 @@ defineEmits<{
     text-align: left;
     text-decoration: none;
     cursor: pointer;
-    transition: background 0.15s ease, color 0.15s ease;
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
 }
 
 .hdr-menu-item:hover {

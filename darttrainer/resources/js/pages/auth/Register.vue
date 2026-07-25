@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import AuthShell from '@/layouts/AuthShell.vue';
 import PasswordField from '@/components/PasswordField.vue';
 import { useLocale } from '@/composables/useLocale';
+import AuthShell from '@/layouts/AuthShell.vue';
 import { DISPLAY_NAME_MAX_LENGTH } from '@/lib/displayName';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
@@ -90,31 +90,42 @@ const submit = () => {
 
             <div class="td-hp" aria-hidden="true">
                 <label for="company">{{ t('auth.register.honeypotLabel') }}</label>
-                <input
-                    id="company"
-                    v-model="form.company"
-                    type="text"
-                    name="company"
-                    tabindex="-1"
-                    autocomplete="off"
-                />
+                <input id="company" v-model="form.company" type="text" name="company" tabindex="-1" autocomplete="off" />
             </div>
 
             <label class="td-check-row td-check-row--top">
                 <span class="td-check" :class="{ 'td-check--on': form.terms_accepted }">
-                    <svg v-if="form.terms_accepted" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0b0f19" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <svg
+                        v-if="form.terms_accepted"
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#0b0f19"
+                        stroke-width="3"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
                         <path d="M20 6L9 17l-5-5" />
                     </svg>
                 </span>
                 <input v-model="form.terms_accepted" type="checkbox" class="sr-only" />
                 <span class="td-check-lbl">
-                    {{ t('auth.register.termsPrefix') }}<Link :href="route('terms')" class="td-link" @click.stop>{{ t('auth.register.termsOfService') }}</Link
-                    >{{ t('auth.register.termsAnd') }}<Link :href="route('privacy')" class="td-link" @click.stop>{{ t('auth.register.privacyPolicy') }}</Link>.
+                    {{ t('auth.register.termsPrefix')
+                    }}<Link :href="route('terms')" class="td-link" @click.stop>{{ t('auth.register.termsOfService') }}</Link
+                    >{{ t('auth.register.termsAnd')
+                    }}<Link :href="route('privacy')" class="td-link" @click.stop>{{ t('auth.register.privacyPolicy') }}</Link
+                    >.
                 </span>
             </label>
             <p v-if="form.errors.terms_accepted" class="td-error">{{ form.errors.terms_accepted }}</p>
 
-            <button type="submit" class="td-submit" :class="{ 'td-submit--off': !form.terms_accepted }" :disabled="!form.terms_accepted || form.processing">
+            <button
+                type="submit"
+                class="td-submit"
+                :class="{ 'td-submit--off': !form.terms_accepted }"
+                :disabled="!form.terms_accepted || form.processing"
+            >
                 {{ form.processing ? t('auth.register.submitting') : t('auth.register.submit') }}
             </button>
         </form>

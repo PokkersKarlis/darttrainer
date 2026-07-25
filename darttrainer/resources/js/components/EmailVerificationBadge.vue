@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useLocale } from '@/composables/useLocale';
+import type { SharedData } from '@/types';
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import type { SharedData } from '@/types';
 
 const { t } = useLocale();
 const page = usePage<SharedData>();
@@ -10,11 +10,7 @@ const isApproved = computed(() => page.props.emailVerified);
 </script>
 
 <template>
-    <div
-        class="ev-badge"
-        :class="isApproved ? 'ev-badge--approved' : 'ev-badge--pending'"
-        role="status"
-    >
+    <div class="ev-badge" :class="isApproved ? 'ev-badge--approved' : 'ev-badge--pending'" role="status">
         <span class="ev-badge-glow" aria-hidden="true" />
         <span class="ev-badge-dot" aria-hidden="true" />
         {{ isApproved ? t('index.emailApproved') : t('index.emailNotApproved') }}

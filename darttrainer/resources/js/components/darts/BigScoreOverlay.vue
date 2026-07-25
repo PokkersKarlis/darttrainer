@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { ScoreCelebrationTier } from '@/lib/scoreCelebration';
 import { useLocale } from '@/composables/useLocale';
+import type { ScoreCelebrationTier } from '@/lib/scoreCelebration';
 import { computed, onMounted, ref } from 'vue';
 
 const props = defineProps<{
@@ -59,15 +59,13 @@ const label = computed(() => t('games.play.bigScore.label', { name: props.player
 
 <template>
     <Transition name="big-score">
-        <div
-            v-if="visible"
-            class="big-score"
-            :class="`big-score--${tier}`"
-            role="status"
-            aria-live="polite"
-        >
+        <div v-if="visible" class="big-score" :class="`big-score--${tier}`" role="status" aria-live="polite">
             <div class="big-score__burst big-score__burst--a" aria-hidden="true" />
-            <div v-if="tier === 'maximum' || tier === 'special171' || tier === 'bigFish'" class="big-score__burst big-score__burst--b" aria-hidden="true" />
+            <div
+                v-if="tier === 'maximum' || tier === 'special171' || tier === 'bigFish'"
+                class="big-score__burst big-score__burst--b"
+                aria-hidden="true"
+            />
             <div v-if="tier === 'bigFish'" class="big-score__fish" aria-hidden="true">🐟</div>
             <p class="big-score__kicker">{{ kicker }}</p>
             <p class="big-score__points">{{ points }}</p>
@@ -212,7 +210,9 @@ const label = computed(() => t('games.play.bigScore.label', { name: props.player
 .big-score--maximum .big-score__points,
 .big-score--special171 .big-score__points {
     font-size: clamp(84px, 20vw, 128px);
-    animation: big-score-pop 0.55s cubic-bezier(0.22, 1, 0.36, 1), big-score-shake 0.6s ease 0.55s;
+    animation:
+        big-score-pop 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+        big-score-shake 0.6s ease 0.55s;
 }
 
 .big-score--bigFish .big-score__points {

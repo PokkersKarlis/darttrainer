@@ -194,11 +194,7 @@ export const useDartsPlayStore = defineStore('dartsPlay', () => {
         }
     }
 
-    async function editTurn(
-        uuid: string,
-        turnId: number,
-        payload: { throws?: Array<{ sector: number; multiplier: number }>; points?: number },
-    ) {
+    async function editTurn(uuid: string, turnId: number, payload: { throws?: Array<{ sector: number; multiplier: number }>; points?: number }) {
         editing.value = true;
         error.value = null;
 

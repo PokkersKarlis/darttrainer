@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { RecentTurn } from '@/stores/dartsPlay';
 import { useLocale } from '@/composables/useLocale';
+import type { RecentTurn } from '@/stores/dartsPlay';
 import { computed, ref, watch } from 'vue';
 
 type MultiplierKind = 'miss' | 'single' | 'double' | 'triple';
@@ -164,9 +164,7 @@ function save() {
         return;
     }
 
-    const throws = darts.value
-        .map((dart) => draftToThrow(dart))
-        .filter((dart): dart is { sector: number; multiplier: number } => dart !== null);
+    const throws = darts.value.map((dart) => draftToThrow(dart)).filter((dart): dart is { sector: number; multiplier: number } => dart !== null);
 
     if (throws.length === 0) {
         return;

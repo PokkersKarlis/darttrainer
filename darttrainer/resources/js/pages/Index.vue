@@ -3,8 +3,8 @@ import IndexEmailVerificationNotice from '@/components/index/IndexEmailVerificat
 import IndexHeroCard from '@/components/index/IndexHeroCard.vue';
 import IndexShoutbox from '@/components/index/IndexShoutbox.vue';
 import IndexWorkspace from '@/components/index/IndexWorkspace.vue';
-import IndexLayout from '@/layouts/IndexLayout.vue';
 import { useLocale } from '@/composables/useLocale';
+import IndexLayout from '@/layouts/IndexLayout.vue';
 import { Head, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 

@@ -32,7 +32,8 @@ const glowId = `td-glow-${Math.random().toString(36).slice(2, 9)}`;
         />
         <polygon points="66,9 61,11.5 63.5,15.5" fill="#39ff14" :filter="`url(#${glowId})`" />
         <text x="76" y="27" font-family="'Barlow Condensed', sans-serif" font-weight="800" font-size="21" fill="#f4f4f5" letter-spacing="0.3">
-            TRAIN<tspan fill="#39ff14">DART</tspan>
+            TRAIN
+            <tspan fill="#39ff14">DART</tspan>
         </text>
     </svg>
 </template>

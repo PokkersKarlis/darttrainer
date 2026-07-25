@@ -1,6 +1,6 @@
+import type { SharedData } from '@/types';
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import type { SharedData } from '@/types';
 
 export function useAppVersion() {
     const page = usePage<SharedData>();

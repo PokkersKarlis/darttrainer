@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { TurnTimerState } from '@/stores/dartsPlay';
 import { useLocale } from '@/composables/useLocale';
+import type { TurnTimerState } from '@/stores/dartsPlay';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 const props = defineProps<{

@@ -46,7 +46,9 @@ const initials = computed(() => getInitials(props.name));
     background: #131a26;
     color: var(--hdr-text);
     cursor: pointer;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .hdr-user-btn:hover,

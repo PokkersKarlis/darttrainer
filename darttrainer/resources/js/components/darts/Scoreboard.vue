@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { ScoreboardRow, TurnTimerState } from '@/stores/dartsPlay';
 import TurnTimer from '@/components/darts/TurnTimer.vue';
-import { DISPLAY_NAME_MAX_LENGTH } from '@/lib/displayName';
 import { useLocale } from '@/composables/useLocale';
+import { DISPLAY_NAME_MAX_LENGTH } from '@/lib/displayName';
+import type { ScoreboardRow, TurnTimerState } from '@/stores/dartsPlay';
 import { computed } from 'vue';
 
 const props = defineProps<{
@@ -48,9 +48,7 @@ const formatLabel = computed(() => {
 
 const showSets = computed(() => props.setsTarget > 1);
 
-const shouldShowTimer = computed(
-    () => props.showTimer !== false && props.status === 'active' && props.turnTimer != null,
-);
+const shouldShowTimer = computed(() => props.showTimer !== false && props.status === 'active' && props.turnTimer != null);
 
 function formatAverage(value: number | undefined): string {
     const avg = value ?? 0;
@@ -76,13 +74,7 @@ const headerLabel = computed(() => {
                 <p class="sb-kicker">{{ headerLabel }}</p>
                 <p class="sb-meta">{{ formatLabel }} · {{ startingPoints }}</p>
             </div>
-            <TurnTimer
-                v-if="shouldShowTimer"
-                header
-                class="sb-head__timer"
-                :timer="turnTimer!"
-                :is-active-side="isActiveSide ?? false"
-            />
+            <TurnTimer v-if="shouldShowTimer" header class="sb-head__timer" :timer="turnTimer!" :is-active-side="isActiveSide ?? false" />
             <p v-else-if="status === 'finished' && winnerName" class="sb-winner">
                 {{ t('games.play.winner', { name: winnerName }) }}
             </p>
@@ -111,11 +103,7 @@ const headerLabel = computed(() => {
                                     <span class="sb-stat__num">{{ activeRow.legs_won }}</span>
                                     <span class="sb-stat__lbl">{{ t('games.play.legRecord') }}</span>
                                 </span>
-                                <span
-                                    v-if="showSets"
-                                    class="sb-stat sb-stat--win"
-                                    :class="{ 'sb-stat--won': (activeRow.sets_won ?? 0) > 0 }"
-                                >
+                                <span v-if="showSets" class="sb-stat sb-stat--win" :class="{ 'sb-stat--won': (activeRow.sets_won ?? 0) > 0 }">
                                     <span class="sb-stat__num">{{ activeRow.sets_won ?? 0 }}</span>
                                     <span class="sb-stat__lbl">{{ t('games.play.setRecord') }}</span>
                                 </span>
@@ -173,11 +161,7 @@ const headerLabel = computed(() => {
                             <span class="sb-stat__num">{{ row.legs_won }}</span>
                             <span class="sb-stat__lbl">{{ t('games.play.legRecord') }}</span>
                         </span>
-                        <span
-                            v-if="showSets"
-                            class="sb-stat sb-stat--win"
-                            :class="{ 'sb-stat--won': (row.sets_won ?? 0) > 0 }"
-                        >
+                        <span v-if="showSets" class="sb-stat sb-stat--win" :class="{ 'sb-stat--won': (row.sets_won ?? 0) > 0 }">
                             <span class="sb-stat__num">{{ row.sets_won ?? 0 }}</span>
                             <span class="sb-stat__lbl">{{ t('games.play.setRecord') }}</span>
                         </span>
@@ -430,11 +414,7 @@ const headerLabel = computed(() => {
 
 .sb-row--turn {
     border-color: rgba(57, 255, 20, 0.35);
-    background: linear-gradient(
-        165deg,
-        rgba(34, 48, 68, 0.72),
-        rgba(28, 38, 56, 0.58)
-    );
+    background: linear-gradient(165deg, rgba(34, 48, 68, 0.72), rgba(28, 38, 56, 0.58));
     box-shadow:
         0 0 16px rgba(57, 255, 20, 0.08),
         inset 0 1px 0 rgba(255, 255, 255, 0.06);

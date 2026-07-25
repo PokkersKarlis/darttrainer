@@ -9,16 +9,7 @@ import { Link } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 
 const { t } = useLocale();
-const {
-    preferences,
-    showBanner,
-    showSettings,
-    acceptAll,
-    rejectNonEssential,
-    openSettings,
-    closeSettings,
-    savePreferences,
-} = useCookieConsent();
+const { preferences, showBanner, showSettings, acceptAll, rejectNonEssential, openSettings, closeSettings, savePreferences } = useCookieConsent();
 
 const draftAnalytics = ref(preferences.value.analytics);
 
@@ -41,7 +32,16 @@ const onSave = () => {
                     <div class="cc-settings-head">
                         <h3 class="cc-settings-title">{{ t('cookies.settings.title') }}</h3>
                         <button type="button" class="cc-icon-btn" :aria-label="t('cookies.settings.cancel')" @click="closeSettings">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                            <svg
+                                width="18"
+                                height="18"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2.5"
+                                stroke-linecap="round"
+                                aria-hidden="true"
+                            >
                                 <path d="M18 6L6 18M6 6l12 12" />
                             </svg>
                         </button>
@@ -208,7 +208,10 @@ const onSave = () => {
     text-transform: uppercase;
     cursor: pointer;
     border: 1px solid transparent;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
 }
 .cc-btn:hover {
     transform: translateY(-1px);
@@ -324,7 +327,9 @@ const onSave = () => {
     border: 1px solid #334155;
     background: #131a26;
     cursor: pointer;
-    transition: background 0.2s ease, border-color 0.2s ease;
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease;
 }
 .cc-toggle--on {
     background: color-mix(in srgb, var(--cc-green) 22%, #131a26);
@@ -338,7 +343,9 @@ const onSave = () => {
     height: 20px;
     border-radius: 50%;
     background: #64748b;
-    transition: transform 0.2s ease, background 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease;
 }
 .cc-toggle--on .cc-toggle-knob {
     transform: translateX(18px);

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import SettingsShell from '@/layouts/SettingsShell.vue';
 import { useLocale } from '@/composables/useLocale';
+import SettingsShell from '@/layouts/SettingsShell.vue';
 import { DISPLAY_NAME_MAX_LENGTH } from '@/lib/displayName';
+import type { SharedData, User } from '@/types';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { ref } from 'vue';
-import type { SharedData, User } from '@/types';
 
 interface Props {
     mustVerifyEmail: boolean;
@@ -85,13 +85,7 @@ const deleteAccount = () => {
 
                 <div v-if="mustVerifyEmail && !user.email_verified_at" class="tf-note">
                     {{ t('settings.profile.unverified') }}
-                    <Link
-                        :href="route('verification.send')"
-                        method="post"
-                        as="button"
-                        class="tf-note-link"
-                        :data="{ locale }"
-                    >
+                    <Link :href="route('verification.send')" method="post" as="button" class="tf-note-link" :data="{ locale }">
                         {{ t('settings.profile.resend') }}
                     </Link>
                     <span v-if="status === 'verification-link-sent'" class="tf-note-ok">{{ t('settings.profile.linkSent') }}</span>
@@ -120,8 +114,19 @@ const deleteAccount = () => {
                     <p v-if="deleteForm.errors.password" class="tf-error">{{ deleteForm.errors.password }}</p>
                 </div>
                 <div class="tf-actions">
-                    <button type="submit" class="tf-btn tf-btn--danger" :disabled="deleteForm.processing">{{ t('settings.profile.deleteForever') }}</button>
-                    <button type="button" class="tf-btn tf-btn--ghost" @click="confirmingDelete = false; deleteForm.reset()">{{ t('settings.profile.cancel') }}</button>
+                    <button type="submit" class="tf-btn tf-btn--danger" :disabled="deleteForm.processing">
+                        {{ t('settings.profile.deleteForever') }}
+                    </button>
+                    <button
+                        type="button"
+                        class="tf-btn tf-btn--ghost"
+                        @click="
+                            confirmingDelete = false;
+                            deleteForm.reset();
+                        "
+                    >
+                        {{ t('settings.profile.cancel') }}
+                    </button>
                 </div>
             </form>
         </section>

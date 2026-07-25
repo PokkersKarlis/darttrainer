@@ -12,21 +12,13 @@ import { computed } from 'vue';
 const { t } = useLocale();
 const store = useDartsLobbyStore();
 
-const formatHint = computed(() =>
-    store.config.format === 'best_of' ? t('games.lobby.formatBestOfHint') : t('games.lobby.formatFirstToHint'),
-);
+const formatHint = computed(() => (store.config.format === 'best_of' ? t('games.lobby.formatBestOfHint') : t('games.lobby.formatFirstToHint')));
 
-const startingPointsHint = computed(() =>
-    store.config.starting_points === 301 ? t('games.lobby.points301Hint') : t('games.lobby.points501Hint'),
-);
+const startingPointsHint = computed(() => (store.config.starting_points === 301 ? t('games.lobby.points301Hint') : t('games.lobby.points501Hint')));
 
-const startRuleHint = computed(() =>
-    store.config.in_rule === 'double' ? t('games.lobby.startDoubleHint') : t('games.lobby.startStraightHint'),
-);
+const startRuleHint = computed(() => (store.config.in_rule === 'double' ? t('games.lobby.startDoubleHint') : t('games.lobby.startStraightHint')));
 
-const finishRuleHint = computed(() =>
-    store.config.out_rule === 'double' ? t('games.lobby.finishDoubleHint') : t('games.lobby.finishStraightHint'),
-);
+const finishRuleHint = computed(() => (store.config.out_rule === 'double' ? t('games.lobby.finishDoubleHint') : t('games.lobby.finishStraightHint')));
 
 const scoringPreset = computed(() => {
     const inCode = store.config.in_rule === 'double' ? 'DI' : 'SI';
@@ -86,13 +78,7 @@ function setOutRule(rule: 'straight' | 'double') {
                     <span class="lcf-stepper-hint">{{ t('games.lobby.legsHint') }}</span>
                 </div>
                 <div class="lcf-stepper">
-                    <button
-                        type="button"
-                        class="lcf-stepper-btn"
-                        :disabled="store.config.legs_target <= 1"
-                        aria-label="-"
-                        @click="adjustLegs(-1)"
-                    >
+                    <button type="button" class="lcf-stepper-btn" :disabled="store.config.legs_target <= 1" aria-label="-" @click="adjustLegs(-1)">
                         −
                     </button>
                     <span class="lcf-stepper-value">{{ store.config.legs_target }}</span>
@@ -106,13 +92,7 @@ function setOutRule(rule: 'straight' | 'double') {
                     <span class="lcf-stepper-hint">{{ t('games.lobby.setsHint') }}</span>
                 </div>
                 <div class="lcf-stepper">
-                    <button
-                        type="button"
-                        class="lcf-stepper-btn"
-                        :disabled="store.config.sets_target <= 1"
-                        aria-label="-"
-                        @click="adjustSets(-1)"
-                    >
+                    <button type="button" class="lcf-stepper-btn" :disabled="store.config.sets_target <= 1" aria-label="-" @click="adjustSets(-1)">
                         −
                     </button>
                     <span class="lcf-stepper-value">{{ store.config.sets_target }}</span>

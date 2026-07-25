@@ -51,9 +51,7 @@ export function useEmailVerification(status?: string | null) {
 
     const canResend = computed(() => !isVerified.value && minutesSinceSent.value >= RESEND_COOLDOWN_MINUTES);
 
-    const minutesUntilResend = computed(() =>
-        Math.max(0, RESEND_COOLDOWN_MINUTES - minutesSinceSent.value),
-    );
+    const minutesUntilResend = computed(() => Math.max(0, RESEND_COOLDOWN_MINUTES - minutesSinceSent.value));
 
     const resendForm = useForm({ locale: locale.value });
 
