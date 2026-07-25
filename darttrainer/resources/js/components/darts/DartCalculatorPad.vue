@@ -120,33 +120,6 @@ const canSubmitBust = computed(() => {
     return wouldBust.value;
 });
 
-const needsDartCount = computed(() => {
-    const points = activePoints.value;
-    if (points === null) {
-        return false;
-    }
-
-    return requiresCheckoutDartCount(props.remainingPoints, props.trackCheckoutRate ?? false);
-});
-
-const needsCheckoutDart = computed(() => {
-    const points = activePoints.value;
-    if (points === null) {
-        return false;
-    }
-
-    return requiresCheckoutDart(points, props.remainingPoints, wouldBust.value);
-});
-
-const needsDoubleDarts = computed(() => {
-    const points = activePoints.value;
-    if (points === null) {
-        return false;
-    }
-
-    return requiresDoubleDartCount(points, props.remainingPoints, wouldBust.value);
-});
-
 const allowedDartCounts = computed(() => {
     const points = activePoints.value;
     if (points === null) {
@@ -460,19 +433,6 @@ function selectDoubleDarts(count: number) {
         emitPayload(lockedPoints.value);
         resetFlow();
     }
-}
-
-function appendToken(token: string) {
-    interact();
-    if (inputLocked.value || flowStep.value !== 'score') {
-        return;
-    }
-
-    if (display.value.length >= 14) {
-        return;
-    }
-
-    display.value = `${display.value}${token}`;
 }
 
 function appendDigit(digit: string) {

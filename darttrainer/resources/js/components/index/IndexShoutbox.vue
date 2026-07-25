@@ -12,7 +12,7 @@ export interface ShoutboxMessage {
     created_at: string;
 }
 
-const props = defineProps<{
+defineProps<{
     userId: number;
 }>();
 

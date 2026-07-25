@@ -68,15 +68,6 @@ function submitMiss() {
 
     emit('throw', 0, 0);
 }
-
-function dartLabel(throwEntry: TurnThrow): string {
-    if (throwEntry.sector === 0) {
-        return t('games.play.miss');
-    }
-
-    const prefix = throwEntry.multiplier === 3 ? 'T' : throwEntry.multiplier === 2 ? 'D' : 'S';
-    return `${prefix}${throwEntry.sector}`;
-}
 </script>
 
 <template>
