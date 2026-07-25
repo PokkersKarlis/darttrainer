@@ -30,6 +30,7 @@ class ProfileUpdateTest extends TestCase
             ->patch('/settings/profile', [
                 'name' => 'Test User',
                 'email' => 'test@example.com',
+                'default_scoring_mode' => 'board',
             ]);
 
         $response
@@ -43,6 +44,27 @@ class ProfileUpdateTest extends TestCase
         $this->assertNull($user->email_verified_at);
     }
 
+    public function test_default_scoring_mode_can_be_updated(): void
+    {
+        $user = User::factory()->create([
+            'default_scoring_mode' => 'board',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/settings/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+                'default_scoring_mode' => 'calculator',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/settings/profile');
+
+        $this->assertSame('calculator', $user->refresh()->default_scoring_mode);
+    }
+
     public function test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged()
     {
         $user = User::factory()->create();
@@ -52,6 +74,7 @@ class ProfileUpdateTest extends TestCase
             ->patch('/settings/profile', [
                 'name' => 'Test User',
                 'email' => $user->email,
+                'default_scoring_mode' => 'board',
             ]);
 
         $response
@@ -109,6 +132,7 @@ class ProfileUpdateTest extends TestCase
             ->patch('/settings/profile', [
                 'name' => 'Updated Name',
                 'email' => $user->email,
+                'default_scoring_mode' => 'board',
                 'is_admin' => true,
                 'is_banned' => true,
             ]);

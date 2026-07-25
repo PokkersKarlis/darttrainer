@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\Darts\LobbyInviteService;
+use App\Services\Darts\PlayerMatchAvailabilityService;
 use App\Support\AppVersion;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
@@ -50,6 +52,37 @@ class HandleInertiaRequests extends Middleware
             ],
             'emailVerified' => (bool) $request->user()?->hasVerifiedEmail(),
             'emailVerificationSentAt' => $request->user()?->email_verification_sent_at?->toIso8601String(),
+            'pendingFriendRequestsCount' => $request->user()?->pendingFriendRequestsCount() ?? 0,
+            'pendingLobbyInvites' => fn () => $this->pendingLobbyInvitesFor($request),
+            'activeLobby' => fn () => $this->activeLobbyFor($request),
         ];
+    }
+
+    /**
+     * @return array{uuid: string, mode: string, is_host: bool, status: string, lobby_code: string|null, player_count: int}|null
+     */
+    private function activeLobbyFor(Request $request): ?array
+    {
+        $user = $request->user();
+
+        if ($user === null || ! $user->hasVerifiedEmail()) {
+            return null;
+        }
+
+        return app(PlayerMatchAvailabilityService::class)->activeLobbyFor($user);
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function pendingLobbyInvitesFor(Request $request): array
+    {
+        $user = $request->user();
+
+        if ($user === null || ! $user->hasVerifiedEmail()) {
+            return [];
+        }
+
+        return app(LobbyInviteService::class)->pendingInvitesFor($user);
     }
 }

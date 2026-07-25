@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import SettingsShell from '@/layouts/SettingsShell.vue';
 import { useLocale } from '@/composables/useLocale';
+import { DISPLAY_NAME_MAX_LENGTH } from '@/lib/displayName';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import type { SharedData, User } from '@/types';
@@ -8,8 +9,9 @@ import type { SharedData, User } from '@/types';
 interface Props {
     mustVerifyEmail: boolean;
     status?: string;
+    defaultScoringMode: 'board' | 'calculator';
 }
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const { t, locale } = useLocale();
 const page = usePage<SharedData>();
@@ -18,6 +20,7 @@ const user = page.props.auth.user as User;
 const form = useForm({
     name: user.name,
     email: user.email,
+    default_scoring_mode: props.defaultScoringMode,
 });
 
 const submit = () => {
@@ -45,7 +48,16 @@ const deleteAccount = () => {
             <form class="tf-form" @submit.prevent="submit">
                 <div>
                     <label class="tf-label" for="name">{{ t('settings.profile.name') }}</label>
-                    <input id="name" v-model="form.name" type="text" class="tf-input" required autocomplete="name" />
+                    <input
+                        id="name"
+                        v-model="form.name"
+                        type="text"
+                        class="tf-input"
+                        required
+                        autocomplete="name"
+                        :maxlength="DISPLAY_NAME_MAX_LENGTH"
+                    />
+                    <p class="tf-desc tf-desc--inline">{{ t('settings.profile.nameHint', { max: DISPLAY_NAME_MAX_LENGTH }) }}</p>
                     <p v-if="form.errors.name" class="tf-error">{{ form.errors.name }}</p>
                 </div>
 
@@ -53,6 +65,22 @@ const deleteAccount = () => {
                     <label class="tf-label" for="email">{{ t('settings.profile.email') }}</label>
                     <input id="email" v-model="form.email" type="email" class="tf-input" required autocomplete="username" />
                     <p v-if="form.errors.email" class="tf-error">{{ form.errors.email }}</p>
+                </div>
+
+                <div>
+                    <p class="tf-label">{{ t('settings.profile.defaultInputTitle') }}</p>
+                    <p class="tf-desc tf-desc--inline">{{ t('settings.profile.defaultInputDesc') }}</p>
+                    <div class="tf-radio-group">
+                        <label class="tf-radio">
+                            <input v-model="form.default_scoring_mode" type="radio" value="board" />
+                            <span>{{ t('settings.profile.defaultInputBoard') }}</span>
+                        </label>
+                        <label class="tf-radio">
+                            <input v-model="form.default_scoring_mode" type="radio" value="calculator" />
+                            <span>{{ t('settings.profile.defaultInputCalculator') }}</span>
+                        </label>
+                    </div>
+                    <p v-if="form.errors.default_scoring_mode" class="tf-error">{{ form.errors.default_scoring_mode }}</p>
                 </div>
 
                 <div v-if="mustVerifyEmail && !user.email_verified_at" class="tf-note">
@@ -119,6 +147,27 @@ const deleteAccount = () => {
     color: #64748b;
     font-size: 14px;
     margin: 0 0 20px;
+}
+.tf-desc--inline {
+    margin: -12px 0 12px;
+    font-size: 13px;
+}
+.tf-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.tf-radio {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    color: #e2e8f0;
+    font-size: 14px;
+    cursor: pointer;
+}
+.tf-radio input {
+    margin-top: 3px;
+    accent-color: #39ff14;
 }
 .tf-form {
     display: flex;

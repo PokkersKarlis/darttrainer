@@ -40,6 +40,10 @@
                 "x01Multiplayer": "X01 Daudzspēlētāju",
                 "comingSoon": "Drīzumā",
                 "verifyToUnlock": "Apstiprini e-pastu, lai atbloķētu"
+            },
+            "social": {
+                "title": "Sociālais",
+                "friends": "Draugi"
             }
         },
         "emailNotice": {
@@ -50,6 +54,15 @@
             "resending": "Nosūta…",
             "resendSent": "Jauna apstiprinājuma saite ir nosūtīta.",
             "resendFailed": "Neizdevās nosūtīt e-pastu. Mēģini vēlāk."
+        },
+        "shoutbox": {
+            "title": "Arēnas shoutbox",
+            "retention": "Ziņas glabājas 1 nedēļu",
+            "loading": "Ielādē ziņas...",
+            "empty": "Esi pirmais, kas uzkliedz!",
+            "placeholder": "Uzraksti kaut ko arēnai...",
+            "send": "Sūtīt",
+            "you": "Tu"
         }
     }
 }

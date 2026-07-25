@@ -12,6 +12,7 @@ import lvLegal from './lv/legal.json';
 import lvCookies from './lv/cookies.json';
 import lvHeader from './lv/header.json';
 import lvIndex from './lv/index.json';
+import lvGames from './lv/games.json';
 
 import enCommon from './en/common.json';
 import enAuth from './en/auth.json';
@@ -22,8 +23,9 @@ import enLegal from './en/legal.json';
 import enCookies from './en/cookies.json';
 import enHeader from './en/header.json';
 import enIndex from './en/index.json';
+import enGames from './en/games.json';
 
 export const messages = {
-    lv: { ...lvCommon, ...lvAuth, ...lvGuest, ...lvDashboard, ...lvSettings, ...lvLegal, ...lvCookies, ...lvHeader, ...lvIndex },
-    en: { ...enCommon, ...enAuth, ...enGuest, ...enDashboard, ...enSettings, ...enLegal, ...enCookies, ...enHeader, ...enIndex },
+    lv: { ...lvCommon, ...lvAuth, ...lvGuest, ...lvDashboard, ...lvSettings, ...lvLegal, ...lvCookies, ...lvHeader, ...lvIndex, ...lvGames },
+    en: { ...enCommon, ...enAuth, ...enGuest, ...enDashboard, ...enSettings, ...enLegal, ...enCookies, ...enHeader, ...enIndex, ...enGames },
 };

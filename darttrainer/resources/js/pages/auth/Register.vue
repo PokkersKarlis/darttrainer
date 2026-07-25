@@ -2,6 +2,7 @@
 import AuthShell from '@/layouts/AuthShell.vue';
 import PasswordField from '@/components/PasswordField.vue';
 import { useLocale } from '@/composables/useLocale';
+import { DISPLAY_NAME_MAX_LENGTH } from '@/lib/displayName';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const { t, locale } = useLocale();
@@ -46,8 +47,9 @@ const submit = () => {
                     required
                     autofocus
                     autocomplete="nickname"
+                    :maxlength="DISPLAY_NAME_MAX_LENGTH"
                 />
-                <p class="td-hint">{{ t('auth.register.nameHint') }}</p>
+                <p class="td-hint">{{ t('auth.register.nameHint', { max: DISPLAY_NAME_MAX_LENGTH }) }}</p>
                 <p v-if="form.errors.name" class="td-error">{{ form.errors.name }}</p>
             </div>
 

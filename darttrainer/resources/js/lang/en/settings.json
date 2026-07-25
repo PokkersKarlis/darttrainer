@@ -4,7 +4,8 @@
         "subtitle": "Manage your profile and account settings.",
         "tabs": {
             "profile": "Profile",
-            "password": "Password"
+            "password": "Password",
+            "friends": "Friends"
         },
         "saved": "Saved.",
         "profile": {
@@ -12,11 +13,16 @@
             "title": "Profile information",
             "desc": "Update your name and email address.",
             "name": "Name",
+            "nameHint": "Shown on scoreboards and in lobbies. Up to {max} characters.",
             "email": "Email",
             "unverified": "Your email is unverified.",
             "resend": "Resend verification link",
             "linkSent": "Link sent.",
             "save": "Save",
+            "defaultInputTitle": "Default match input",
+            "defaultInputDesc": "Choose which scoring pad opens first in new matches. You can still switch during play.",
+            "defaultInputBoard": "Board (sector-by-sector)",
+            "defaultInputCalculator": "Calculator (visit total)",
             "deleteTitle": "Delete account",
             "deleteDesc": "Once your account is deleted, all data is permanently removed.",
             "delete": "Delete account",
@@ -33,6 +39,47 @@
             "new": "New password",
             "confirm": "Confirm password",
             "save": "Save password"
+        },
+        "friends": {
+            "head": "Friends",
+            "inviteTitle": "Find players",
+            "inviteDesc": "Search by username or email to send a friend invite.",
+            "searchLabel": "Search",
+            "searchPlaceholder": "Username or email",
+            "searchHint": "Type at least 2 characters to search.",
+            "searchClear": "Clear search",
+            "searchEmptyTitle": "No players found",
+            "searchEmptyDesc": "Try a different username or email address.",
+            "alreadyFriends": "Friends",
+            "email": "Email",
+            "emailPlaceholder": "friend{'@'}example.com",
+            "sendInvite": "Send invite",
+            "incomingTitle": "Incoming requests",
+            "incomingDesc": "You have {count} pending request(s).",
+            "outgoingTitle": "Sent invites",
+            "outgoingDesc": "Waiting for others to accept your invite.",
+            "listTitle": "Your friends",
+            "listDesc": "Players you're connected with on TrainDart.",
+            "accept": "Accept",
+            "decline": "Decline",
+            "cancel": "Cancel invite",
+            "remove": "Remove",
+            "pending": "Pending",
+            "emptyTitle": "No friends yet",
+            "emptyDesc": "Search for someone above to start building your squad.",
+            "status": {
+                "friendship-invite-sent": "Invite sent.",
+                "friendship-accepted": "You're now friends!",
+                "friendship-declined": "Request declined.",
+                "friendship-cancelled": "Invite cancelled.",
+                "friendship-removed": "Friend removed."
+            },
+            "errors": {
+                "friendship-self": "You can't add yourself.",
+                "friendship-not-found": "No account found with this email.",
+                "friendship-already-friends": "You're already friends with this player.",
+                "friendship-already-sent": "An invite is already pending."
+            }
         }
     }
 }

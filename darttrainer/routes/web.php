@@ -22,3 +22,8 @@ Route::post('/locale', [LocaleController::class, 'update'])->name('locale.update
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
+require __DIR__.'/darts.php';
+
+Route::middleware(['web', 'auth', 'verified.darts'])->group(function () {
+    require __DIR__.'/api.php';
+});

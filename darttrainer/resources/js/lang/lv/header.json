@@ -3,10 +3,12 @@
         "home": "TrainDart sākums",
         "guestNav": "Viesu navigācija",
         "accountMenu": "Konta izvēlne",
-        "verifyEmail": "Apstiprini savu e-pasta adresi"
+        "verifyEmail": "Apstiprini savu e-pasta adresi",
+        "friendRequests": "Tev ir {count} draugu uzaicinājums(-i)"
     },
     "menu": {
         "settings": "Iestatījumi",
+        "friends": "Draugi",
         "logout": "Iziet"
     }
 }

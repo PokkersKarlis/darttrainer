@@ -1,0 +1,171 @@
+/**
+ * Full-screen game shell — landscape / square / portrait (aspect ratio frames).
+ * Tokens inherit from .game-shell[data-frame] into page content.
+ */
+.game-shell {
+    --game-pad-x: 18px;
+    --game-pad-y: 12px;
+    --game-gap: 12px;
+    --game-gap-sm: 8px;
+    --game-title: clamp(24px, 3.2vw, 36px);
+    --game-lead: 13px;
+    --game-label: 15px;
+    --game-body: 13px;
+    --game-panel-pad: 16px;
+    --game-panel-gap: 10px;
+    --game-radius: 14px;
+    --game-stepper-btn: 44px;
+    --game-stepper-value: 28px;
+}
+
+.game-shell[data-frame='landscape'] {
+    --game-pad-x: 16px;
+    --game-pad-y: 10px;
+    --game-gap: 12px;
+    --game-title: clamp(26px, 2.8vw, 38px);
+    --game-panel-pad: 12px;
+}
+
+.game-shell[data-frame='landscape'] .game-viewport {
+    align-items: stretch;
+    justify-content: stretch;
+}
+
+.game-shell[data-frame='landscape'] .game-stage--fill {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+}
+
+.game-shell[data-frame='portrait'] .game-viewport,
+.game-shell[data-frame='square'] .game-viewport {
+    align-items: stretch;
+    justify-content: stretch;
+}
+
+.game-shell[data-frame='portrait'] .game-stage--fill,
+.game-shell[data-frame='square'] .game-stage--fill {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+}
+
+.game-shell[data-frame='square'] {
+    --game-pad-x: 10px;
+    --game-pad-y: 8px;
+    --game-gap: 8px;
+    --game-title: clamp(22px, 3.8vw, 32px);
+    --game-lead: 12px;
+    --game-panel-pad: 10px;
+    --game-panel-gap: 6px;
+    --game-stepper-btn: 38px;
+    --game-stepper-value: 24px;
+}
+
+.game-shell[data-frame='portrait'] {
+    /* Brutāli minimizēti paddingi/gapi — visa atbrīvotā vieta portrait
+       režīmā iet uz kalkulatora pogām, ne uz dekoratīvām atstarpēm. */
+    --game-pad-x: 6px;
+    --game-pad-y: 4px;
+    --game-gap: 4px;
+    --game-gap-sm: 3px;
+    --game-title: clamp(18px, 4.8vw, 26px);
+    --game-lead: 11px;
+    --game-label: 14px;
+    --game-body: 12px;
+    --game-panel-pad: 6px;
+    --game-panel-gap: 3px;
+    --game-radius: 10px;
+    --game-stepper-btn: 38px;
+    --game-stepper-value: 24px;
+}
+
+.game-viewport {
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.game-stage {
+    width: 100%;
+    min-height: 0;
+    transform-origin: top center;
+    will-change: transform;
+}
+
+.game-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--game-gap);
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-height: 100%;
+    height: auto;
+    padding: var(--game-pad-y) var(--game-pad-x);
+    overflow: hidden;
+}
+
+.game-page__footer {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.game-stage--fill .game-page {
+    height: 100%;
+    flex: 1;
+    min-height: 0;
+}
+
+.game-viewport--fill:has(.play-page) {
+    align-items: stretch;
+}
+
+/* Play page "strict height chain" — TIKAI fillViewport (--fill, portrait)
+ * režīmā. Landscape (arī mobile) apzināti to NEIZMANTO: .play-page tur drīkst
+ * augt dabīgi (kā jebkura cita .game-page), lai useGameViewportFit var
+ * pareizi izmērīt stage.scrollHeight un pielietot proporcionālu
+ * transform:scale — tieši tāpat kā PC/desktop landscape.
+ * Iepriekš šis klambars bija BEZ --fill nosacījuma, kas nozīmēja, ka
+ * .play-page nekad nevarēja ziņot par savu īsto (pārpildīto) augstumu uz
+ * augšu — stage.scrollHeight vienmēr ≈ clientHeight, un JS scale mehānisms
+ * nekad neieslēdzās landscape telefonā (tikai desktop, kur saturs jau
+ * dabiski ietilpa, tāpēc kļūda nebija pamanāma).
+ * Keep in sync with darts-play-layout.mdc */
+.game-stage--fill:has(.play-page) {
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.game-page.play-page {
+    gap: 0;
+    padding: var(--game-pad-y) var(--game-pad-x);
+    display: flex;
+    flex-direction: column;
+}
+
+.game-stage--fill .game-page.play-page {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
+}
+
+.game-page__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}

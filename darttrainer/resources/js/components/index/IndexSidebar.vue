@@ -2,7 +2,10 @@
 import IndexSidebarItem from '@/components/index/IndexSidebarItem.vue';
 import IndexSidebarSection from '@/components/index/IndexSidebarSection.vue';
 import { useLocale } from '@/composables/useLocale';
-import { Target, X } from 'lucide-vue-next';
+import type { SharedData } from '@/types';
+import { usePage } from '@inertiajs/vue3';
+import { Target, Users, X } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 withDefaults(
     defineProps<{
@@ -18,6 +21,9 @@ defineEmits<{
 }>();
 
 const { t } = useLocale();
+const page = usePage<SharedData>();
+
+const pendingFriendRequestsCount = computed(() => page.props.pendingFriendRequestsCount ?? 0);
 </script>
 
 <template>
@@ -50,11 +56,18 @@ const { t } = useLocale();
         <nav class="ix-sidebar-nav" :aria-label="t('index.sidebar.aria')">
             <IndexSidebarSection :title="t('index.sidebar.games.title')">
                 <IndexSidebarItem
-                    href="#"
+                    :href="route('darts.x01.lobby.index')"
                     :label="t('index.sidebar.games.x01Multiplayer')"
-                    :hint="t('index.sidebar.games.comingSoon')"
                     :icon="Target"
-                    disabled
+                />
+            </IndexSidebarSection>
+
+            <IndexSidebarSection :title="t('index.sidebar.social.title')">
+                <IndexSidebarItem
+                    :href="route('friends.edit')"
+                    :label="t('index.sidebar.social.friends')"
+                    :icon="Users"
+                    :badge="pendingFriendRequestsCount > 0 ? pendingFriendRequestsCount : undefined"
                 />
             </IndexSidebarSection>
         </nav>

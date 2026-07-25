@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Support\AppLocale;
+use App\Support\DisplayName;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -38,7 +39,7 @@ class RegisteredUserController extends Controller
         }
 
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:'.DisplayName::MAX_LENGTH,
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'locale' => ['nullable', 'in:'.implode(',', AppLocale::SUPPORTED)],
