@@ -1,9 +1,7 @@
-import { LANDSCAPE_MIN_HEIGHT, resolveGameFrame } from '@/lib/gameFrame';
+import { resolveGameFrame } from '@/lib/gameFrame';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 export type GameFrame = 'landscape' | 'portrait' | 'square';
-
-export { LANDSCAPE_MIN_HEIGHT };
 
 export function useGameResponsive() {
     const width = ref(typeof window !== 'undefined' ? window.innerWidth : 1280);
