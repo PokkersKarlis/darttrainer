@@ -1,0 +1,177 @@
+name: Build & Deploy to Test (test.traindart.com)
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches-ignore:
+      - main
+  # Tāpat kā prod deploy.yml — neizvietojam uz pull_request eventiem, tikai reāliem pushiem.
+
+jobs:
+  # ── Tieši tāda pati testu pārbaude kā prod deploy.yml "test" job. ──
+  test:
+    name: Tests (Pest)
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v4
+
+      - name: 🐘 Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo, pdo_sqlite, bcmath, intl
+          tools: composer:v2
+          coverage: none
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: darttrainer/package-lock.json
+
+      - name: 📥 Install Composer Dependencies
+        working-directory: darttrainer
+        run: composer install --no-progress --no-interaction --prefer-dist --ignore-platform-reqs --ignore-platform-req=php
+
+      - name: 📥 Install Node Dependencies
+        working-directory: darttrainer
+        run: npm ci
+
+      - name: ⚙️ Sagatavo vidi
+        working-directory: darttrainer
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: 🛠️ Build assets (manifest.json testiem)
+        working-directory: darttrainer
+        run: npm run build
+
+      - name: 🧪 Palaid Pest testus
+        working-directory: darttrainer
+        env:
+          VITE_BUILD_DIR: 'build'
+        run: php artisan test
+
+  # ── PAPILDUS pret prod deploy.yml: pilnā lint.yml pārbaužu kopa (Pint,      ──
+  # ── Prettier --check, ESLint bez --fix, vue-tsc), nevis tikai vājākais     ──
+  # ── `npm run lint --if-present` (kas prodā = `eslint . --fix`, bez         ──
+  # ── type-check un bez PHP/Prettier stila pārbaudes vispār). Sk. manu       ──
+  # ── ziņojumu par šo atšķirību.                                             ──
+  lint:
+    name: Lint & Type-check
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v4
+
+      - name: 🐘 Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: darttrainer/package-lock.json
+
+      - name: 📥 Install Composer Dependencies
+        working-directory: darttrainer
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: 📥 Install Node Dependencies
+        working-directory: darttrainer
+        run: npm ci
+
+      - name: PHP code style (Pint)
+        working-directory: darttrainer
+        run: ./vendor/bin/pint --test
+
+      - name: Prettier (formatēšanas pārbaude)
+        working-directory: darttrainer
+        run: npm run format:check
+
+      - name: ESLint
+        working-directory: darttrainer
+        run: npx eslint .
+
+      - name: TypeScript tipu pārbaude
+        working-directory: darttrainer
+        run: npx vue-tsc --noEmit
+
+  build-and-deploy:
+    name: Build Frontend & Deploy to Test
+    needs: [test, lint] # ← deploy tikai, ja ABI iepriekšējie jobi izgāja veiksmīgi
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v4
+
+      - name: 🐘 Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+
+      - name: 📥 Install Composer Dependencies
+        working-directory: darttrainer
+        run: composer install --no-progress --no-interaction --prefer-dist --ignore-platform-reqs
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: darttrainer/package-lock.json
+
+      - name: 📥 Install Node Dependencies
+        working-directory: darttrainer
+        run: npm ci
+
+      - name: 📦 Compile Assets (Vite Build)
+        working-directory: darttrainer
+        run: npm run build
+
+      - name: ⚙️ Install SSH Key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: 'unnecessary_because_we_ignore_it'
+          if_key_exists: replace
+
+      - name: 🚚 Deploy via Rsync to Test Server
+        run: |
+          # Izmanto tos pašus SSH_HOST/SSH_PORT/SSH_PRIVATE_KEY secrets kā prod
+          # deploy.yml (pieņemot, ka test.traindart.com ir tajā pašā serverī/
+          # cPanel kontā, tikai cits ceļš). Ja test videi ir cits serveris,
+          # pasaki — nomainīšu uz atsevišķiem TEST_SSH_HOST/TEST_SSH_PORT secrets.
+          PORT="${{ secrets.SSH_PORT }}"
+          if [ -z "$PORT" ]; then
+            PORT="722"
+          fi
+
+          rsync -az --stats -e "ssh -p $PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
+            --exclude='node_modules' \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='.env' \
+            ./darttrainer/ traindar@${{ secrets.SSH_HOST }}:${{ vars.TEST_DEPLOY_PATH }}/
+
+      - name: 🧹 Clear & rebuild Laravel cache uz test servera
+        run: |
+          PORT="${{ secrets.SSH_PORT }}"
+          if [ -z "$PORT" ]; then
+            PORT="722"
+          fi
+
+          ssh -p $PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+            traindar@${{ secrets.SSH_HOST }} \
+            "cd ${{ vars.TEST_DEPLOY_PATH }} && php artisan migrate --force && php artisan optimize:clear"
