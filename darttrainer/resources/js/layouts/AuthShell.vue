@@ -47,6 +47,11 @@ const brandFeatures = [
             <div class="td-gridlines" />
         </div>
 
+        <header class="td-mobile-header">
+            <BrandLogo :width="140" class="td-mobile-logo" />
+            <LanguageSwitcher class="td-mobile-lang" />
+        </header>
+
         <aside class="td-brand">
             <div class="td-brand-board" aria-hidden="true">
                 <svg class="td-board" viewBox="0 0 320 320" fill="none">
@@ -139,10 +144,6 @@ const brandFeatures = [
 
         <main class="td-form-wrap">
             <div class="td-form td-rise td-rise--form">
-                <div class="td-mobile-top">
-                    <BrandLogo :width="140" class="td-mobile-logo" />
-                    <LanguageSwitcher class="td-mobile-lang" />
-                </div>
                 <slot />
             </div>
         </main>
@@ -375,11 +376,12 @@ const brandFeatures = [
     width: 100%;
     max-width: 420px;
 }
-.td-mobile-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 32px;
+
+/* Mobilajā skatā (<960px) logo + valodas pārslēgs ir fiksēts header augšā,
+   nevis formas kartītes iekšpusē (kur tas ritinātos kopā ar to). No 960px
+   augšup šis header ir paslēpts — tur logo/pārslēgs jau ir .td-brand sānjoslā. */
+.td-mobile-header {
+    display: none;
 }
 .td-mobile-logo {
     display: block;
@@ -420,8 +422,27 @@ const brandFeatures = [
     .td-brand {
         display: flex;
     }
-    .td-mobile-top {
-        display: none;
+}
+
+@media (max-width: 959.98px) {
+    .td-mobile-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 5;
+        padding: 14px 20px;
+        background: color-mix(in srgb, var(--td-panel) 94%, transparent);
+        border-bottom: 1px solid color-mix(in srgb, var(--td-line) 85%, transparent);
+        backdrop-filter: blur(10px);
+    }
+
+    .td-form-wrap {
+        /* Vieta fiksētajam header'im virs formas, lai tā nesāktos zem tā. */
+        padding-top: 88px;
     }
 }
 

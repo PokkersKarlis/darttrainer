@@ -33,7 +33,7 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        if ($request->filled('company')) {
+        if ($request->filled('hp_check')) {
             return back()->withInput()->withErrors([
                 'email' => __('Registration could not be completed.'),
             ]);

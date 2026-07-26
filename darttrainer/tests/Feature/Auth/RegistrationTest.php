@@ -116,7 +116,7 @@ class RegistrationTest extends TestCase
             'password' => 'Password123',
             'password_confirmation' => 'Password123',
             'terms_accepted' => true,
-            'company' => 'https://spam.example',
+            'hp_check' => 'https://spam.example',
         ]);
 
         $this->assertGuest();

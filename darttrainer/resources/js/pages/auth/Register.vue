@@ -14,7 +14,9 @@ const form = useForm({
     password_confirmation: '',
     locale: locale.value,
     terms_accepted: false,
-    company: '',
+    // Honeypot: apzināti neitrāls nosaukums (ne "company"/"website" u.c.),
+    // lai neko neietu pretim pārlūka/paroļu pārvaldnieka autofill loģikai.
+    hp_check: '',
 });
 
 const submit = () => {
@@ -89,8 +91,8 @@ const submit = () => {
             />
 
             <div class="td-hp" aria-hidden="true">
-                <label for="company">{{ t('auth.register.honeypotLabel') }}</label>
-                <input id="company" v-model="form.company" type="text" name="company" tabindex="-1" autocomplete="off" />
+                <label for="hp_check">{{ t('auth.register.honeypotLabel') }}</label>
+                <input id="hp_check" v-model="form.hp_check" type="text" name="hp_check" tabindex="-1" autocomplete="off" />
             </div>
 
             <label class="td-check-row td-check-row--top">
