@@ -57,58 +57,9 @@ jobs:
           VITE_BUILD_DIR: 'build'
         run: php artisan test
 
-  # ── PAPILDUS pret prod deploy.yml: pilnā lint.yml pārbaužu kopa (Pint,      ──
-  # ── Prettier --check, ESLint bez --fix, vue-tsc), nevis tikai vājākais     ──
-  # ── `npm run lint --if-present` (kas prodā = `eslint . --fix`, bez         ──
-  # ── type-check un bez PHP/Prettier stila pārbaudes vispār). Sk. manu       ──
-  # ── ziņojumu par šo atšķirību.                                             ──
-  lint:
-    name: Lint & Type-check
-    runs-on: ubuntu-latest
-    steps:
-      - name: 🚚 Get latest code
-        uses: actions/checkout@v4
-
-      - name: 🐘 Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.3'
-          coverage: none
-
-      - name: 🟢 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: 'npm'
-          cache-dependency-path: darttrainer/package-lock.json
-
-      - name: 📥 Install Composer Dependencies
-        working-directory: darttrainer
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
-
-      - name: 📥 Install Node Dependencies
-        working-directory: darttrainer
-        run: npm ci
-
-      - name: PHP code style (Pint)
-        working-directory: darttrainer
-        run: ./vendor/bin/pint --test
-
-      - name: Prettier (formatēšanas pārbaude)
-        working-directory: darttrainer
-        run: npm run format:check
-
-      - name: ESLint
-        working-directory: darttrainer
-        run: npx eslint .
-
-      - name: TypeScript tipu pārbaude
-        working-directory: darttrainer
-        run: npx vue-tsc --noEmit
-
   build-and-deploy:
     name: Build Frontend & Deploy to Test
-    needs: [test, lint] # ← deploy tikai, ja ABI iepriekšējie jobi izgāja veiksmīgi
+    needs: test # ← deploy tikai, ja testi izgāja veiksmīgi
     runs-on: ubuntu-latest
 
     steps:
