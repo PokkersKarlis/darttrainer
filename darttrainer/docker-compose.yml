@@ -8,6 +8,12 @@ services:
     working_dir: /var/www
     volumes:
       - .:/var/www
+      # vendor/ savā named volume — tas pats triks, kas jau izmantots node_modules
+      # zemāk: Windows/Docker Desktop bind-mount ir ļoti lēns priekš tūkstošiem
+      # mazu PHP failu, un tas izraisīja php-fpm 504 (upstream timed out) pirmajā
+      # pieprasījumā. Named volume tiek uzpildīts no image (composer install
+      # Dockerfile) pirmajā startā un pēc tam paliek ātrs Linux-native tilpums.
+      - vendor:/var/www/vendor
     networks:
       - traindart-network
   webserver:
@@ -89,6 +95,8 @@ volumes:
   mysql_data:
     driver: local
   node_modules:
+    driver: local
+  vendor:
     driver: local
   # postgres_data:
   #   driver: local
