@@ -10,7 +10,7 @@ import LobbyModePicker from '@/components/darts/lobby/LobbyModePicker.vue';
 import LobbyOnlineJoinPanel from '@/components/darts/lobby/LobbyOnlineJoinPanel.vue';
 import LobbyRoster from '@/components/darts/lobby/LobbyRoster.vue';
 import LobbySetupStep from '@/components/darts/lobby/LobbySetupStep.vue';
-import LobbyStepIndicator from '@/components/darts/lobby/LobbyStepIndicator.vue';
+//import LobbyStepIndicator from '@/components/darts/lobby/LobbyStepIndicator.vue';
 import LocalLobbyPanel from '@/components/darts/LocalLobbyPanel.vue';
 import { useActiveLobby } from '@/composables/useActiveLobby';
 import { useGameResponsive } from '@/composables/useGameResponsive';
@@ -560,14 +560,14 @@ async function confirmExit() {
         @exit="showExitConfirm = true"
         @copy-code="handleCopyCode"
     >
-        <div class="xl game-page" :class="`xl--${frame}`">
+        <!-- <div class="xl game-page" :class="`xl--${frame}`">
             <LobbyStepIndicator :step="store.step" :is-host="isLobbyHost" :has-lobby="!!lobbyUuid" />
 
             <p v-if="infoMessage" class="xl-toast xl-toast--info">{{ infoMessage }}</p>
             <p v-if="errorMessage" class="xl-toast xl-toast--error">{{ errorMessage }}</p>
 
             <!-- STEP 1: players / mode pick / roster -->
-            <section v-if="store.step === 1 || !isLobbyHost" class="xl-body xl-rise xl-body--step1 game-page__body">
+            <!-- <section v-if="store.step === 1 || !isLobbyHost" class="xl-body xl-rise xl-body--step1 game-page__body">
                 <div class="xl-intro">
                     <h1 class="xl-title">{{ step1Title }}</h1>
                     <p class="xl-lead">{{ step1Lead }}</p>
@@ -647,7 +647,7 @@ async function confirmExit() {
             </section>
 
             <!-- STEP 2 (host only): config -->
-            <section v-else-if="isLobbyHost && store.step === 2" class="xl-body xl-rise game-page__body xl-body--step2">
+            <!-- <section v-else-if="isLobbyHost && store.step === 2" class="xl-body xl-rise game-page__body xl-body--step2">
                 <div class="xl-intro">
                     <h1 class="xl-title">{{ t('games.lobby.step2Title') }}</h1>
                     <p class="xl-lead">{{ t('games.lobby.step2Lead') }}</p>
@@ -667,7 +667,7 @@ async function confirmExit() {
             </section>
 
             <!-- STEP 3 (host only): throw order / starting points -->
-            <section v-else-if="isLobbyHost && store.step === 3" class="xl-body xl-rise game-page__body xl-body--step3">
+            <!-- <section v-else-if="isLobbyHost && store.step === 3" class="xl-body xl-rise game-page__body xl-body--step3">
                 <div class="xl-intro">
                     <h1 class="xl-title">{{ t('games.lobby.step3Title') }}</h1>
                     <p class="xl-lead">{{ t('games.lobby.step3Lead') }}</p>
@@ -701,9 +701,9 @@ async function confirmExit() {
                 @back="handleBack"
                 @next="handleNext"
             />
-        </div>
+        </div> -->
 
-        <LobbyExitConfirmModal :show="showExitConfirm" :loading="store.loading" @cancel="showExitConfirm = false" @confirm="confirmExit" />
+        <!-- <LobbyExitConfirmModal :show="showExitConfirm" :loading="store.loading" @cancel="showExitConfirm = false" @confirm="confirmExit" /> -->
     </GameLayout>
 </template>
 

@@ -4,7 +4,7 @@ import { useGameResponsive } from '@/composables/useGameResponsive';
 import { GameViewportRemeasureKey, useGameViewportFit } from '@/composables/useGameViewportFit';
 import { useLocale } from '@/composables/useLocale';
 import '@/styles/game-frame.css';
-import { computed, provide, ref, toRef } from 'vue';
+import { computed, onMounted, onUnmounted, provide, ref, toRef } from 'vue';
 
 const props = defineProps<{
     playerName: string;
@@ -37,10 +37,24 @@ const frameClass = computed(() => ({
     'game-frame--portrait': frame.value === 'portrait',
     'game-frame--square': frame.value === 'square',
 }));
+
+// Kamēr GameLayout ir uzstādīts (visu laiku, kad lobby vai play skats ir
+// atvērts — abi to izmanto), <html> dabū marker klasi, kas piespiež
+// html/body/#app vienmēr būt tieši 100%×100% bez dokumenta ritināšanas (sk.
+// game-frame.css). Pēc unmount (iziet no spēles) klase tiek noņemta, un
+// pārējās (ne-spēles) lapas turpina strādāt ar normālu, dabīgi augošu
+// dokumenta izkārtojumu.
+onMounted(() => {
+    document.documentElement.classList.add('game-shell-active');
+});
+
+onUnmounted(() => {
+    document.documentElement.classList.remove('game-shell-active');
+});
 </script>
 
 <template>
-    <div class="game-shell" :class="frameClass" :data-frame="frame">
+    <div class="game-shell" :class="frameClass" :data-frame="frame" style="border: 1px solid red;">
         <div class="game-atmosphere" aria-hidden="true">
             <div class="game-glow game-glow--a" />
             <div class="game-glow game-glow--b" />
@@ -88,15 +102,15 @@ const frameClass = computed(() => ({
     --game-cyan: #22d3ee;
     --game-line: #1f2937;
     --game-text: #f4f4f5;
-
-    position: fixed;
-    inset: 0;
-    display: grid;
-    grid-template-rows: auto 1fr;
-    overflow: hidden;
     background: var(--game-bg);
     color: var(--game-text);
     font-family: Inter, sans-serif;
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    max-height: 100%;
 }
 
 .game-atmosphere {

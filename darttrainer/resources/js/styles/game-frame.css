@@ -2,6 +2,30 @@
  * Full-screen game shell — landscape / square / portrait (aspect ratio frames).
  * Tokens inherit from .game-shell[data-frame] into page content.
  */
+
+/* Kamēr GameLayout.vue ir uzstādīts (lobby + play skati), <html> dabū
+ * .game-shell-active klasi. Tas piespiež html/body/#app vienmēr precīzi
+ * pārklāt vizuālo viewport, bez dokumenta ritināšanas.
+ *
+ * TĪŠI position:fixed;inset:0 uz VISIEM trim (nevis height:100% procentu
+ * ķēde html→body→#app) — tieši tā pati tehnika, ko jau lieto .game-shell
+ * pats. height:100% ķēde mobilajās pārlūkprogrammās (dinamiskā adrešu josla
+ * maina redzamo augstumu) var atstāt html/body/#app FAKTISKI garākus par
+ * vizuālo viewport, kas ļauj nelielu, redzamu ritināšanu uz leju pat ar
+ * overflow:hidden — position:fixed;inset:0 to novērš, jo piesaista tieši pie
+ * vizuālā viewport, nevis pie vecāka procentuālā izmēra.
+ */
+html.game-shell-active,
+html.game-shell-active body,
+html.game-shell-active #app {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+
 .game-shell {
     --game-pad-x: 18px;
     --game-pad-y: 12px;
