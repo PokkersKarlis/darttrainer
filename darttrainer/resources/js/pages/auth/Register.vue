@@ -197,11 +197,14 @@ const submit = () => {
     text-decoration: underline;
 }
 .td-hp {
-    position: absolute;
-    left: -9999px;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
+    /* display:none (nevis tikai off-screen position) — boti CSS parasti
+       neizpilda, tāpēc tos šis lauks joprojām noķer tieši tāpat, bet reāli
+       pārlūki/paroļu pārvaldnieki (Chrome, Bitwarden u.c.) redz, ka lauks
+       nav attēlots, un to neaizpilda automātiski. Iepriekšējais
+       position:absolute;left:-9999px CSS ziņā joprojām ir "displayed", tāpēc
+       autofill to varēja ķert un aizpildīt ar reālu vērtību — tieši tas
+       izraisīja viltus-pozitīvu honeypot nostrādāšanu īstiem lietotājiem. */
+    display: none;
 }
 .td-link--bold {
     font-weight: 600;
