@@ -8,6 +8,7 @@ import BrandLogo from '@/components/BrandLogo.vue';
 import CookieConsent from '@/components/CookieConsent.vue';
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 import { useLocale } from '@/composables/useLocale';
+import { Link } from '@inertiajs/vue3';
 
 const { t } = useLocale();
 
@@ -48,7 +49,9 @@ const brandFeatures = [
         </div>
 
         <header class="td-mobile-header">
-            <BrandLogo :width="140" class="td-mobile-logo" />
+            <Link :href="route('home')" class="td-logo-link" aria-label="TrainDart">
+                <BrandLogo :width="140" class="td-mobile-logo" />
+            </Link>
             <LanguageSwitcher class="td-mobile-lang" />
         </header>
 
@@ -68,7 +71,9 @@ const brandFeatures = [
             </div>
 
             <div class="td-brand-top td-rise">
-                <BrandLogo :width="180" class="td-brand-logo" />
+                <Link :href="route('home')" class="td-logo-link" aria-label="TrainDart">
+                    <BrandLogo :width="180" class="td-brand-logo" />
+                </Link>
                 <LanguageSwitcher />
             </div>
 
@@ -385,6 +390,10 @@ const brandFeatures = [
 }
 .td-mobile-logo {
     display: block;
+}
+.td-logo-link {
+    display: inline-flex;
+    line-height: 0;
 }
 
 .td-rise {
