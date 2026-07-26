@@ -140,10 +140,12 @@ const showChatToggle = computed(() => !showInlineChat.value);
 // `.game-page.play-page { height:100%; max-height:100%; overflow:hidden; }`,
 // kas neļāva stage.scrollHeight jebkad ziņot par īsto (pārpildīto) satura
 // izmēru — JS tāpēc vienmēr aprēķināja scale≈1. Salaboju to game-frame.css
-// (klambars tagad tikai --fill/portrait režīmā), tāpēc landscape (arī
-// telefonā) tagad var izmantot īsto proporcionālo scale-to-fit, tieši kā PC.
-// Portrait paliek uz fillViewport (height-chain ar min-height aizsardzībām).
-const fillViewport = computed(() => frame.value === 'portrait');
+// (klambars tagad tikai --fill/portrait+square režīmā), tāpēc landscape
+// (arī telefonā) tagad var izmantot īsto proporcionālo scale-to-fit, tieši
+// kā PC. Portrait un square paliek uz fillViewport (height-chain ar
+// min-height aizsardzībām) — sk. game-frame.css `[data-frame='square']`,
+// kas jau grupē square kopā ar portrait šai pašai uzvedībai.
+const fillViewport = computed(() => frame.value === 'portrait' || frame.value === 'square');
 const calcSidebarLayout = computed(() => showInlineChat.value);
 const calcSidebarActive = computed(
     () => calcSidebarLayout.value && ownScoringMode.value === 'calculator' && !isSpectator.value && matchState.value?.status === 'active',
@@ -639,6 +641,13 @@ watch(
  *
  * play-main: 9fr score panel / 11fr input (~45/55)
  * score panel: scoreboard (timer in header when online) → turn history
+ *
+ * 3-breakpoint frame system (no separate raw-pixel "mobile" breakpoints):
+ * `frame` comes from useGameResponsive() → resolveGameFrame() (resources/js/lib/gameFrame.ts),
+ * purely from viewport aspect ratio. It drives the root `.play-page--${frame}` class below,
+ * and everything scales proportionally to fit via useGameViewportFit (see GameLayout.vue).
+ * `square` intentionally reuses the `portrait` (stacked) layout rules everywhere in this file —
+ * same convention already used in game-frame.css ([data-frame='square']) and DartsLobby.css.
  */
 /* ── Play shell: strict height chain, no overflow ── */
 .play-page.game-page {
@@ -664,7 +673,8 @@ watch(
     min-width: 0;
 }
 
-.play-page--portrait .play-layout {
+.play-page--portrait .play-layout,
+.play-page--square .play-layout {
     display: flex;
     flex-direction: column;
     flex: 1 1 auto;
@@ -674,10 +684,11 @@ watch(
     width: 100%;
 }
 
-.play-page--portrait .play-main {
-    /* Portrait: pogas ir galvenais elements — dod ievades panelim krietni
-       vairāk vietas nekā "frozen" 9fr/11fr (~45/55). 3fr/9fr (~25/75) atbilst
-       mockup proporcijai. */
+.play-page--portrait .play-main,
+.play-page--square .play-main {
+    /* Portrait/square: pogas ir galvenais elements — dod ievades panelim
+       krietni vairāk vietas nekā "frozen" 9fr/11fr (~45/55). 3fr/9fr (~25/75)
+       atbilst mockup proporcijai. */
     grid-template-rows: minmax(0, 3fr) minmax(0, 9fr);
     gap: 3px;
     flex: 1 1 auto;
@@ -742,14 +753,16 @@ watch(
     overflow: hidden;
 }
 
-.play-page--portrait .play-score-panel {
+.play-page--portrait .play-score-panel,
+.play-page--square .play-score-panel {
     /* Brutāli samazināta pēdējo gājienu joslas minimālā rezervācija
        (96px→64px) un gap — atbrīvotā vieta iet uz pogām zemāk. */
     grid-template-rows: minmax(0, 1fr) minmax(52px, 64px);
     gap: 3px;
 }
 
-.play-page--portrait .play-score-top {
+.play-page--portrait .play-score-top,
+.play-page--square .play-score-top {
     gap: 2px;
 }
 
@@ -858,21 +871,26 @@ watch(
     min-width: 0;
 }
 
-:global(.game-frame--portrait) .play-header-tools {
+:global(.game-frame--portrait) .play-header-tools,
+:global(.game-frame--square) .play-header-tools {
     gap: 4px;
 }
 
-:global(.game-frame--portrait) .play-input-mode {
+:global(.game-frame--portrait) .play-input-mode,
+:global(.game-frame--square) .play-input-mode {
     flex-shrink: 1;
     min-width: 0;
 }
 
-:global(.game-frame--portrait) .play-calc-badge {
+:global(.game-frame--portrait) .play-calc-badge,
+:global(.game-frame--square) .play-calc-badge {
     display: none;
 }
 
 :global(.game-frame--portrait) .play-mode-btn,
-:global(.game-frame--portrait) .play-chat-toggle {
+:global(.game-frame--portrait) .play-chat-toggle,
+:global(.game-frame--square) .play-mode-btn,
+:global(.game-frame--square) .play-chat-toggle {
     padding: 5px 7px;
     font-size: 9px;
 }

@@ -142,29 +142,39 @@ const { visibleInvites, acceptInvite, declineInvite, loadingInviteId } = useLobb
     background: rgba(148, 163, 184, 0.1);
 }
 
-@media (max-width: 640px) {
-    .lib-inner {
-        padding: 10px 12px;
-        gap: 8px;
-    }
+/*
+ * Compact banner treatment: driven by the shared 3-breakpoint game frame
+ * (portrait/square/landscape from resources/js/lib/gameFrame.ts via
+ * GameLayout.vue's `.game-frame--*` class on the ancestor `.game-shell`),
+ * not a raw viewport-width media query. Portrait and square have less
+ * horizontal room than landscape, so they get the same compact treatment.
+ */
+:global(.game-frame--portrait) .lib-inner,
+:global(.game-frame--square) .lib-inner {
+    padding: 10px 12px;
+    gap: 8px;
+}
 
-    .lib-badge {
-        display: none;
-    }
+:global(.game-frame--portrait) .lib-badge,
+:global(.game-frame--square) .lib-badge {
+    display: none;
+}
 
-    .lib-code {
-        display: block;
-        margin: 4px 0 0;
-    }
+:global(.game-frame--portrait) .lib-code,
+:global(.game-frame--square) .lib-code {
+    display: block;
+    margin: 4px 0 0;
+}
 
-    .lib-actions {
-        width: 100%;
-    }
+:global(.game-frame--portrait) .lib-actions,
+:global(.game-frame--square) .lib-actions {
+    width: 100%;
+}
 
-    .lib-action {
-        flex: 1 1 0;
-        justify-content: center;
-    }
+:global(.game-frame--portrait) .lib-action,
+:global(.game-frame--square) .lib-action {
+    flex: 1 1 0;
+    justify-content: center;
 }
 
 @media (prefers-reduced-motion: reduce) {
