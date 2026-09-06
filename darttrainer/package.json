@@ -53,7 +53,7 @@
         "vue": "^3.5.13",
         "vue-i18n": "^11.4.5",
         "vue-tsc": "^2.2.0",
-        "ziggy-js": "^2.4.2"
+        "ziggy-js": "^2.6.4"
     },
     "optionalDependencies": {
         "@rollup/rollup-linux-x64-gnu": "4.62.2",
